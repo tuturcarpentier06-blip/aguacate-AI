@@ -1,42 +1,34 @@
+
 const express = require("express");
-const OpenAI = require("openai");
+const { chat, image } = require("./ai");
 
 const app = express();
 app.use(express.json());
 app.use(express.static("."));
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: "https://openrouter.ai/api/v1"
-});
-
 const port = process.env.PORT || 3000;
 
+// accueil
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
 });
 
-app.post("/api", async (req, res) => {
-  const message = req.body.message;
-
+// 💬 chat
+app.post("/chat", async (req, res) => {
   try {
-    const response = await openai.chat.completions.create({
-      model: "openrouter/auto",
-      messages: [
-        { role: "user", content: message }
-      ]
-    });
-
-    res.json({
-      reply: response.choices[0].message.content
-    });
-
-  } catch (err) {
-    console.error(err); // 👈 IMPORTANT
+    const reply = await chat(req.body.message);
+    res.json({ reply });
+  } catch (e) {
     res.json({ reply: "Erreur IA" });
   }
 });
 
+// 🖼️ image
+app.post("/image", async (req, res) => {
+  const url = await image(req.body.prompt);
+  res.json({ url });
+});
+
 app.listen(port, () => {
-  console.log("Server running on port " + port);
+  console.log("Server running");
 });
