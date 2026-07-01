@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Aguacate AI</title>
+</head>
+<body>
+  <h1>Aguacate AI 🤖</h1>
+
+  <input id="input" placeholder="Pose ta question..." />
+  <button onclick="send()">Envoyer</button>
+
+  <p id="response"></p>
+
+  <script>
+    async function send() {
+      const message = document.getElementById("input").value;
+
+      const res = await fetch("/api", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
+      });
+
+      const data = await res.json();
+      document.getElementById("response").innerText = data.reply;
+    }
+  </script>
+</body>
+</html>
+``
