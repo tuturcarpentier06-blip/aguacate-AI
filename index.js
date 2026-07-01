@@ -1,23 +1,20 @@
-
+const express = require("express");
 const OpenAI = require("openai");
+
+const app = express();
+app.use(express.json());
+app.use(express.static("."));
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
-const express = require("express");
-const app = express();
-
-app.use(express.json());
-app.use(express.static(".")); // sert index.html
 
 const port = process.env.PORT || 3000;
 
-// test route
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
 });
 
-// API route
 app.post("/api", async (req, res) => {
   const message = req.body.message;
 
@@ -34,17 +31,11 @@ app.post("/api", async (req, res) => {
     });
 
   } catch (err) {
-    res.json({ reply: "Erreur avec OpenAI" });
+    console.error(err);
+    res.json({ reply: "Erreur OpenAI" });
   }
-});
-
-
-
-  // pour l'instant on répond simple
-  res.json({ reply: "Tu as dit : " + message });
 });
 
 app.listen(port, () => {
   console.log("Server running on port " + port);
 });
-``
