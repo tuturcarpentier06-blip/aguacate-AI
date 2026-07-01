@@ -21,7 +21,7 @@ app.post("/api", async (req, res) => {
 
   try {
     const response = await openai.chat.completions.create({
-      model: "mistralai/mistral-7b-instruct:free",
+      model: "openrouter/auto",
       messages: [
         { role: "user", content: message }
       ]
