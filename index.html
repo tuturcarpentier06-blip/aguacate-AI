@@ -1,30 +1,29 @@
+
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Aguacate AI</title>
-</head>
 <body>
-  <h1>Aguacate AI 🤖</h1>
 
-  <input id="input" placeholder="Pose ta question..." />
-  <button onclick="send()">Envoyer</button>
+<h1>Aguacate AI 🤖</h1>
 
-  <p id="response"></p>
+<input id="input">
+<button onclick="send()">Envoyer</button>
 
-  <script>
-    async function send() {
-      const message = document.getElementById("input").value;
+<p id="output"></p>
 
-      const res = await fetch("/api", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message })
-      });
+<script>
+async function send() {
+  const msg = document.getElementById("input").value;
 
-      const data = await res.json();
-      document.getElementById("response").innerText = data.reply;
-    }
-  </script>
+  const res = await fetch("/chat", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({message: msg})
+  });
+
+  const data = await res.json();
+  document.getElementById("output").innerText = data.reply;
+}
+</script>
+
 </body>
 </html>
-``
