@@ -4,10 +4,6 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "preinstall": "...",
-    "build": "...",
-    "typecheck:libs": "...",
-    "typecheck": "...",
     "start": "node index.js"
   },
   "private": true,
