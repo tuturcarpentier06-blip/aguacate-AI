@@ -24,7 +24,7 @@ app.post("/api", async (req, res) => {
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "mistralai/mistral-7b-instruct"
       messages: [
         { role: "user", content: message }
       ]
