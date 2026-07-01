@@ -1,5 +1,9 @@
-const express = require("express");
 const OpenAI = require("openai");
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: "https://openrouter.ai/api/v1"
+});
 
 const app = express();
 app.use(express.json());
