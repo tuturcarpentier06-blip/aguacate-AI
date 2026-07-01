@@ -1,28 +1,110 @@
 
 <!DOCTYPE html>
 <html>
+<head>
+<style>
+body {
+  background:#0f172a;
+  color:white;
+  text-align:center;
+  font-family:Arial;
+}
+
+.kawaii {
+  font-size:80px;
+  animation: bounce 1s infinite alternate;
+}
+
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-20px); }
+}
+
+button {
+  padding:10px;
+  margin:5px;
+}
+</style>
+</head>
+
 <body>
 
-<h1>Aguacate AI 🤖</h1>
+<h1>Aguacate AI 🥑 v2.7.5</h1>
 
-<input id="input">
+<div id="login">
+  <input id="pass" placeholder="Mot de passe">
+  <button onclick="login()">Entrer</button>
+</div>
+
+<div id="app" style="display:none">
+
+<div class="kawaii">🥑</div>
+
+<select id="mode">
+  <option>Kids</option>
+  <option>Collégien</option>
+  <option>Professeur</option>
+</select>
+
+<br><br>
+
+<input id="input" placeholder="Pose ta question">
 <button onclick="send()">Envoyer</button>
 
 <p id="output"></p>
 
+<button onclick="voice()">🎤 parler</button>
+
+</div>
+
 <script>
+
+async function login() {
+  const pass = document.getElementById("pass").value;
+
+  const res = await fetch("/login", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({password:pass})
+  });
+
+  const data = await res.json();
+
+  if (data.ok) {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("app").style.display = "block";
+  } else {
+    alert("Mot de passe incorrect");
+  }
+}
+
 async function send() {
   const msg = document.getElementById("input").value;
 
   const res = await fetch("/chat", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({message: msg})
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({message:msg})
   });
 
   const data = await res.json();
-  document.getElementById("output").innerText = data.reply;
+
+  document.getElementById("output").innerText = data.reply + " 🥑";
 }
+
+// 🎤 voix
+function voice() {
+  const recognition = new webkitSpeechRecognition();
+
+  recognition.lang = "fr-FR";
+
+  recognition.onresult = function(e) {
+    document.getElementById("input").value = e.results[0][0].transcript;
+  };
+
+  recognition.start();
+}
+
 </script>
 
 </body>
