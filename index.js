@@ -1,16 +1,13 @@
+const express = require("express");
 const OpenAI = require("openai");
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: "https://openrouter.ai/api/v1"
-});
 
 const app = express();
 app.use(express.json());
 app.use(express.static("."));
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: "https://openrouter.ai/api/v1"
 });
 
 const port = process.env.PORT || 3000;
@@ -24,7 +21,7 @@ app.post("/api", async (req, res) => {
 
   try {
     const response = await openai.chat.completions.create({
-      model: "mistralai/mistral-7b-instruct"
+      model: "mistralai/mistral-7b-instruct",
       messages: [
         { role: "user", content: message }
       ]
@@ -35,8 +32,8 @@ app.post("/api", async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
-    res.json({ reply: "Erreur OpenAI" });
+    console.error(err); // 👈 IMPORTANT
+    res.json({ reply: "Erreur IA" });
   }
 });
 
