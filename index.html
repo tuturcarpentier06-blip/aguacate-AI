@@ -2,39 +2,163 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <style>
 body {
-  background:#0f172a;
-  color:white;
-  text-align:center;
-  font-family:Arial;
+  margin:0;
+  display:flex;
+  font-family:sans-serif;
 }
 
-.kawaii {
-  font-size:80px;
-  animation: bounce 1s infinite alternate;
+/* SIDEBAR */
+.sidebar {
+  width:250px;
+  background:#0c3c35;
+  color:white;
+  padding:15px;
+}
+
+/* CHAT */
+.chat {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+.messages {
+  flex:1;
+  padding:10px;
+}
+
+.msg-user {
+  text-align:right;
+  margin:5px;
+}
+
+.msg-ai {
+  text-align:left;
+  margin:5px;
+}
+
+/* INPUT */
+.input {
+  display:flex;
+}
+
+input {
+  flex:1;
+}
+
+/* 🥑 AVATAR */
+.avatar {
+  font-size:40px;
+  animation:bounce 1s infinite alternate;
 }
 
 @keyframes bounce {
-  from { transform: translateY(0); }
-  to { transform: translateY(-20px); }
+  from{transform:translateY(0)}
+  to{transform:translateY(-10px)}
 }
 
-button {
-  padding:10px;
-  margin:5px;
-}
 </style>
+
 </head>
 
 <body>
 
-<h1>Aguacate AI 🥑 v2.8.5</h1>
-
 <div id="login">
-  <input id="pass" placeholder="Mot de passe">
-  <button onclick="login()">Entrer</button>
+  <input id="pass" type="password">
+  <button onclick="login()">Login</button>
 </div>
+
+<div id="app" style="display:none">
+
+<div class="sidebar">
+  <h2>🥑 Aguacate AI</h2>
+  <p id="user"></p>
+</div>
+
+<div class="chat">
+
+<div class="messages" id="messages"></div>
+
+<div class="avatar">🥑</div>
+
+<div class="input">
+  <input id="input">
+  <button onclick="send()">➤</button>
+  <button onclick="voice()">🎤</button>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let userId = null;
+
+async function login(){
+  const pass = document.getElementById("pass").value;
+
+  const res = await fetch("/login",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({password:pass})
+  });
+
+  const data = await res.json();
+
+  if(data.ok){
+    userId = data.id;
+    document.getElementById("login").style.display="none";
+    document.getElementById("app").style.display="flex";
+    document.getElementById("user").innerText="Avocat #" + data.id;
+  }
+}
+
+async function send(){
+  const msg = document.getElementById("input").value;
+
+  add("user",msg);
+
+  const res = await fetch("/chat",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({message:msg,user:userId})
+  });
+
+  const data = await res.json();
+
+  add("ai",data.reply);
+}
+
+function add(type,text){
+  const div = document.getElementById("messages");
+
+  div.innerHTML += `
+  <div class="${type === "user" ? "msg-user" : "msg-ai"}">
+    ${text} 🥑
+  </div>`;
+}
+
+/* 🎤 VOIX */
+function voice(){
+  const rec = new webkitSpeechRecognition();
+  rec.lang="fr-FR";
+
+  rec.onresult = e=>{
+    document.getElementById("input").value =
+      e.results[0][0].transcript;
+  };
+
+  rec.start();
+}
+
+</script>
+
+</body>
+</html>
 
 <div id="app" style="display:none">
 
