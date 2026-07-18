@@ -1,14 +1,14 @@
 
 {
-  "name": "workspace",
-  "version": "0.0.0",
-  "license": "MIT",
-  "scripts": {
-    "start": "node index.js"
-  },
+  "name": "aguacate-ai",
+  "version": "3.5.0",
   "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
     "express": "^4.18.2",
     "openai": "^4.0.0",
-  "multer": "^2.0.0"
+    "multer": "^2.0.0"
+  }
 }
