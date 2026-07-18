@@ -1,62 +1,254 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Aguacate AI v3.5.0 🥑</title>
 
 <style>
-body {
-  margin:0;
-  display:flex;
-  font-family:sans-serif;
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Segoe UI,sans-serif;
+}
+
+body{
+background:#f6f8f5;
+height:100vh;
+overflow:hidden;
+}
+
+/* LOGIN */
+
+#login-screen{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#f9fbf8;
+}
+
+.login-card{
+width:420px;
+background:white;
+padding:30px;
+border-radius:25px;
+box-shadow:0 15px 50px rgba(0,0,0,.15);
+text-align:center;
+}
+
+.avocado{
+font-size:90px;
+animation:bounce 1.5s infinite ease-in-out;
+}
+
+@keyframes bounce{
+0%{transform:translateY(0px);}
+50%{transform:translateY(-12px);}
+100%{transform:translateY(0px);}
+}
+
+.login-title{
+font-size:36px;
+font-weight:700;
+color:#18453b;
+margin-top:15px;
+}
+
+.login-subtitle{
+color:#5f8d7f;
+margin-bottom:25px;
+}
+
+.password-wrapper{
+position:relative;
+}
+
+.password-wrapper input{
+width:100%;
+padding:14px;
+border-radius:12px;
+border:2px solid #2f8f7b;
+font-size:16px;
+}
+
+.eye-btn{
+position:absolute;
+right:12px;
+top:12px;
+background:none;
+border:none;
+cursor:pointer;
+font-size:18px;
+}
+
+.login-btn{
+width:100%;
+padding:14px;
+margin-top:15px;
+border:none;
+border-radius:12px;
+background:#78c6b0;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+.version{
+margin-top:15px;
+color:#888;
+font-size:13px;
+}
+
+.legal{
+margin-top:25px;
+font-size:12px;
+color:#999;
+line-height:1.5;
+}
+
+/* APP */
+
+#app{
+display:none;
+height:100vh;
 }
 
 /* SIDEBAR */
-.sidebar {
-  width:250px;
-  background:#0c3c35;
-  color:white;
-  padding:15px;
+
+.sidebar{
+width:290px;
+background:#012f2d;
+color:white;
+display:flex;
+flex-direction:column;
+padding:15px;
+}
+
+.logo{
+font-size:28px;
+font-weight:bold;
+margin-bottom:20px;
+}
+
+.mode-box{
+background:#124b42;
+padding:12px;
+border-radius:10px;
+margin-bottom:12px;
+}
+
+.new-chat{
+background:#f6c648;
+border:none;
+padding:12px;
+border-radius:10px;
+font-weight:bold;
+cursor:pointer;
+margin-bottom:15px;
+}
+
+.conversations{
+flex:1;
+overflow:auto;
+}
+
+.conversation{
+padding:10px;
+background:#0d463d;
+border-radius:10px;
+margin-bottom:10px;
+cursor:pointer;
+}
+
+.user-zone{
+border-top:1px solid rgba(255,255,255,.1);
+padding-top:15px;
+}
+
+.user-badge{
+font-weight:bold;
+margin-bottom:10px;
+}
+
+.bottom-buttons button{
+width:100%;
+margin-bottom:8px;
+padding:10px;
+border:none;
+border-radius:10px;
+cursor:pointer;
 }
 
 /* CHAT */
-.chat {
-  flex:1;
-  display:flex;
-  flex-direction:column;
+
+.chat{
+flex:1;
+display:flex;
+flex-direction:column;
+background:white;
 }
 
-.messages {
-  flex:1;
-  padding:10px;
+.chat-header{
+height:70px;
+display:flex;
+align-items:center;
+padding:15px 25px;
+border-bottom:1px solid #eee;
+justify-content:space-between;
 }
 
-.msg-user {
-  text-align:right;
-  margin:5px;
+.version-badge{
+color:#777;
 }
 
-.msg-ai {
-  text-align:left;
-  margin:5px;
+.messages{
+flex:1;
+overflow:auto;
+padding:20px;
 }
 
-/* INPUT */
-.input {
-  display:flex;
+.message-user{
+background:#dff8f2;
+padding:12px;
+border-radius:12px;
+margin-bottom:10px;
+max-width:70%;
+margin-left:auto;
 }
 
-input {
-  flex:1;
+.message-ai{
+background:#f3f3f3;
+padding:12px;
+border-radius:12px;
+margin-bottom:10px;
+max-width:70%;
 }
 
-/* 🥑 AVATAR */
-.avatar {
-  font-size:40px;
-  animation:bounce 1s infinite alternate;
+.input-bar{
+display:flex;
+padding:15px;
+border-top:1px solid #eee;
 }
 
-@keyframes bounce {
-  from{transform:translateY(0)}
-  to{transform:translateY(-10px)}
+.input-bar input{
+flex:1;
+padding:14px;
+border-radius:10px;
+border:1px solid #ddd;
+}
+
+.send-btn{
+margin-left:10px;
+padding:14px 18px;
+border:none;
+border-radius:10px;
+background:#77bda8;
+color:white;
+cursor:pointer;
 }
 
 </style>
@@ -65,28 +257,141 @@ input {
 
 <body>
 
-<div id="login">
-  <input id="pass" type="password">
-  <button onclick="login()">Login</button>
+<div id="login-screen">
+
+<div class="login-card">
+
+<div class="avocado">🥑</div>
+
+<div class="login-title">
+Aguacate AI
 </div>
 
-<div id="app" style="display:none">
+<div class="login-subtitle">
+Entrez le mot de passe pour accéder
+</div>
+
+<div class="password-wrapper">
+
+<input
+id="password"
+type="password"
+placeholder="Mot de passe...">
+
+<button
+class="eye-btn"
+onclick="togglePassword()">
+👁
+</button>
+
+</div>
+
+<button
+class="login-btn"
+onclick="login()">
+
+Accéder 🔑
+
+</button>
+
+<div class="version">
+Version v3.5.0
+</div>
+
+<div class="legal">
+
+Ce site est un projet personnel et éducatif.<br>
+Il peut utiliser des services tiers.<br>
+Il n’est pas affilié directement à OpenAI ni à ChatGPT.
+
+</div>
+
+</div>
+
+</div>
+
+<div id="app">
 
 <div class="sidebar">
-  <h2>🥑 Aguacate AI</h2>
-  <p id="user"></p>
+
+<div class="logo">
+🥑 Aguacate AI
+</div>
+
+<div class="mode-box">
+
+<select id="mode" style="width:100%;padding:8px;border-radius:8px;">
+
+<option>Kids</option>
+<option>Collégien</option>
+<option>Professeur</option>
+
+</select>
+
+</div>
+
+<button class="new-chat">
+➕ Nouvelle conversation
+</button>
+
+<div class="conversations">
+
+<div class="conversation">
+Nouvelle conversation
+</div>
+
+</div>
+
+<div class="user-zone">
+
+<div id="user-badge" class="user-badge">
+🥑 Avocat #0000
+</div>
+
+<div class="bottom-buttons">
+
+<button>🎤 Mode Live</button>
+<button>⚙️ Admin</button>
+<button>👥 Utilisateurs</button>
+
+</div>
+
+</div>
+
 </div>
 
 <div class="chat">
 
-<div class="messages" id="messages"></div>
+<div class="chat-header">
 
-<div class="avatar">🥑</div>
+<div>
+🥑 Aguacate AI
+</div>
 
-<div class="input">
-  <input id="input">
-  <button onclick="send()">➤</button>
-  <button onclick="voice()">🎤</button>
+<div class="version-badge">
+v3.5.0
+</div>
+
+</div>
+
+<div id="messages" class="messages">
+
+<div class="message-ai">
+Bonjour 👋 Je suis Aguacate AI !
+</div>
+
+</div>
+
+<div class="input-bar">
+
+<input
+id="prompt"
+placeholder="Demande quelque chose à Aguacate AI...">
+
+<button class="send-btn">
+➤
+</button>
+
 </div>
 
 </div>
@@ -95,63 +400,45 @@ input {
 
 <script>
 
-let userId = null;
+const PASSWORD = "BenjaminAguacateAI2026#";
 
-async function login(){
-  const pass = document.getElementById("pass").value;
+function togglePassword(){
 
-  const res = await fetch("/login",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({password:pass})
-  });
+const input =
+document.getElementById("password");
 
-  const data = await res.json();
+input.type =
+input.type === "password"
+? "text"
+: "password";
 
-  if(data.ok){
-    userId = data.id;
-    document.getElementById("login").style.display="none";
-    document.getElementById("app").style.display="flex";
-    document.getElementById("user").innerText="Avocat #" + data.id;
-  }
 }
 
-async function send(){
-  const msg = document.getElementById("input").value;
+function login(){
 
-  add("user",msg);
+const entered =
+document.getElementById("password").value;
 
-  const res = await fetch("/chat",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({message:msg,user:userId})
-  });
+if(entered === PASSWORD){
 
-  const data = await res.json();
+document.getElementById("login-screen").style.display="none";
+document.getElementById("app").style.display="flex";
 
-  add("ai",data.reply);
+const id =
+localStorage.getItem("aguacate-id") ||
+Math.random().toString(16).substring(2,6).toUpperCase();
+
+localStorage.setItem("aguacate-id",id);
+
+document.getElementById("user-badge").innerText =
+"🥑 Avocat #" + id;
+
+}else{
+
+alert("Mot de passe incorrect");
+
 }
 
-function add(type,text){
-  const div = document.getElementById("messages");
-
-  div.innerHTML += `
-  <div class="${type === "user" ? "msg-user" : "msg-ai"}">
-    ${text} 🥑
-  </div>`;
-}
-
-/* 🎤 VOIX */
-function voice(){
-  const rec = new webkitSpeechRecognition();
-  rec.lang="fr-FR";
-
-  rec.onresult = e=>{
-    document.getElementById("input").value =
-      e.results[0][0].transcript;
-  };
-
-  rec.start();
 }
 
 </script>
