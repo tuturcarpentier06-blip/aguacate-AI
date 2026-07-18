@@ -351,8 +351,8 @@ Nouvelle conversation
 <div class="bottom-buttons">
 
 <button>🎤 Mode Live</button>
-<button>⚙️ Admin</button>
-<button>👥 Utilisateurs</button>
+<button onclick="openAdmin()">⚙️ Admin</button>
+<button onclick="openUsers()">👥 Utilisateurs</button>
 
 </div>
 
@@ -441,7 +441,160 @@ alert("Mot de passe incorrect");
 
 }
 
+let currentVoice = "female";
+let liveMode = false;
+
+function openAdmin(){
+  document.getElementById("admin-panel").style.display = "flex";
+}
+
+function openUsers(){
+  document.getElementById("users-panel").style.display = "flex";
+  loadUsers();
+}
+
+function openMailbox(){
+  document.getElementById("mailbox-panel").style.display = "flex";
+  loadMailbox();
+}
+
+function setVoice(v){
+  currentVoice = v;
+  alert("Voix : " + v);
+}
+
+function toggleLive(){
+  liveMode = !liveMode;
+  alert(
+    liveMode
+    ? "Mode Live activé"
+    : "Mode Live désactivé"
+  );
+}
+
+async function loadUsers(){
+
+  const res =
+  await fetch("/users");
+
+  const users =
+  await res.json();
+
+  const box =
+  document.getElementById("user-list");
+
+  box.innerHTML = "";
+
+  users.forEach(user=>{
+
+    let dot = "🟢";
+
+    if(user.role==="admin"){
+      dot = "🟡";
+    }
+
+    if(user.role==="supreme"){
+      dot = "⚫";
+    }
+
+    box.innerHTML += `
+      <p>
+      ${dot} Avocat #${user.id}
+      (⚠ ${user.warnings})
+      </p>
+    `;
+  });
+
+}
+
+async function loadMailbox(){
+
+  const res =
+  await fetch("/adminlogs");
+
+  const logs =
+  await res.json();
+
+  const box =
+  document.getElementById("mailbox-list");
+
+  box.innerHTML = "";
+
+  logs.forEach(log=>{
+
+    box.innerHTML += `
+    <p>
+    ${log.type}
+    -
+    ${log.user}
+    </p>
+    `;
+
+  });
+
+}
+
 </script>
+
+<!-- PANNEAU ADMIN -->
+<div id="admin-panel" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);justify-content:center;align-items:center;">
+
+<div style="background:white;padding:25px;border-radius:20px;width:500px;">
+
+<h2>🛡️ Panneau Admin</h2>
+
+<button onclick="setVoice('female')">♀ Féminine</button>
+<button onclick="setVoice('male')">♂ Masculine</button>
+
+<br><br>
+
+<button onclick="toggleLive()">
+🎤 Mode Live
+</button>
+
+<br><br>
+
+<button onclick="openMailbox()">
+📬 Boîte Mail Admin
+</button>
+
+</div>
+
+</div>
+
+<!-- UTILISATEURS -->
+<div id="users-panel" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);justify-content:center;align-items:center;">
+
+<div style="background:white;padding:20px;border-radius:20px;width:500px;">
+
+<h2>👥 Utilisateurs</h2>
+
+<div id="user-list">
+
+Chargement...
+
+</div>
+
+</div>
+
+</div>
+
+<!-- BOITE MAIL -->
+<div id="mailbox-panel" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);justify-content:center;align-items:center;">
+
+<div style="background:white;padding:20px;border-radius:20px;width:500px;">
+
+<h2>📬 Boîte Mail Admin</h2>
+
+<div id="mailbox-list">
+
+Chargement...
+
+</div>
+
+</div>
+
+</div>
 
 </body>
 </html>
