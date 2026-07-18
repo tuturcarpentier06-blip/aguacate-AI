@@ -8,92 +8,6 @@
 
 <style>
   
-#aguacate{
-width:140px;
-height:180px;
-background:#a7d948;
-border:6px solid #2f6d2f;
-border-radius:80px;
-position:relative;
-animation:bounce 2s infinite;
-}
-
-#aguacate::before{
-content:"";
-position:absolute;
-top:25px;
-left:20px;
-width:95px;
-height:120px;
-background:#dff29d;
-border-radius:60px;
-}
-
-#aguacate::after{
-content:"";
-position:absolute;
-top:75px;
-left:48px;
-width:40px;
-height:40px;
-background:#8b5a2b;
-border-radius:50%;
-}
-
-.eyes{
-position:absolute;
-top:55px;
-left:40px;
-display:flex;
-gap:25px;
-z-index:10;
-}
-
-.eye{
-width:14px;
-height:14px;
-background:black;
-border-radius:50%;
-animation:blink 5s infinite;
-}
-
-#mouth{
-position:absolute;
-top:85px;
-left:55px;
-width:30px;
-height:8px;
-background:black;
-border-radius:50px;
-z-index:10;
-}
-
-.tie{
-position:absolute;
-bottom:15px;
-left:57px;
-width:20px;
-height:45px;
-background:#4d85ff;
-clip-path:polygon(50% 0%,100% 25%,70% 100%,30% 100%,0% 25%);
-animation:swing 2s infinite;
-}
-
-@keyframes swing{
-0%{transform:rotate(-5deg);}
-50%{transform:rotate(5deg);}
-100%{transform:rotate(-5deg);}
-}
-
-@keyframes blink{
-0%,45%,50%,100%{
-height:14px;
-}
-48%{
-height:2px;
-}
-}
-
 *{
 margin:0;
 padding:0;
@@ -338,6 +252,188 @@ cursor:pointer;
 }
 
 </style>
+#aguacate{
+width:140px;
+height:180px;
+background:#a7d948;
+border:6px solid #2f6d2f;
+border-radius:80px;
+position:relative;
+animation:bounce 2s infinite;
+}
+
+#aguacate::before{
+content:"";
+position:absolute;
+top:25px;
+left:20px;
+width:95px;
+height:120px;
+background:#dff29d;
+border-radius:60px;
+}
+
+#aguacate::after{
+content:"";
+position:absolute;
+top:75px;
+left:48px;
+width:40px;
+height:40px;
+background:#8b5a2b;
+border-radius:50%;
+}
+
+.eyes{
+position:absolute;
+top:55px;
+left:40px;
+display:flex;
+gap:25px;
+z-index:10;
+}
+
+
+.eye{
+width:18px;
+height:18px;
+background:black;
+border-radius:50%;
+position:relative;
+animation:blink 5s infinite;
+}
+
+.eye::after{
+content:"";
+position:absolute;
+top:2px;
+left:3px;
+width:5px;
+height:5px;
+background:white;
+border-radius:50%;
+}
+
+
+function thinkingAvocado(){
+
+const eyes =
+document.querySelectorAll(".eye");
+
+eyes.forEach(eye=>{
+eye.style.transform =
+"translateX(-4px)";
+});
+
+const mouth =
+document.getElementById("mouth");
+
+mouth.style.width="15px";
+mouth.style.height="15px";
+mouth.style.borderRadius="50%";
+
+}
+
+.blush{
+position:absolute;
+width:18px;
+height:12px;
+background:#ffb6c1;
+border-radius:50%;
+z-index:10;
+opacity:.8;
+}
+
+.blush-left{
+top:78px;
+left:28px;
+}
+
+.blush-right{
+top:78px;
+right:28px;
+}
+
+
+function talkingAvocado(){
+
+const mouth =
+document.getElementById("mouth");
+
+const eyes =
+document.querySelectorAll(".eye");
+
+eyes.forEach(eye=>{
+eye.style.transform =
+"translateX(0px)";
+});
+
+let open = false;
+
+const talking = setInterval(()=>{
+
+if(open){
+
+mouth.style.height="6px";
+
+}else{
+
+mouth.style.height="22px";
+
+}
+
+open = !open;
+
+},150);
+
+setTimeout(()=>{
+
+clearInterval(talking);
+
+mouth.style.height="8px";
+mouth.style.width="28px";
+
+},3000);
+
+}
+
+#mouth{
+position:absolute;
+top:92px;
+left:55px;
+width:28px;
+height:8px;
+background:black;
+border-radius:50px;
+z-index:10;
+transition:.2s;
+}
+
+.tie{
+position:absolute;
+bottom:15px;
+left:57px;
+width:20px;
+height:45px;
+background:#4d85ff;
+clip-path:polygon(50% 0%,100% 25%,70% 100%,30% 100%,0% 25%);
+animation:swing 2s infinite;
+}
+
+@keyframes swing{
+0%{transform:rotate(-5deg);}
+50%{transform:rotate(5deg);}
+100%{transform:rotate(-5deg);}
+}
+
+@keyframes blink{
+0%,45%,50%,100%{
+height:14px;
+}
+48%{
+height:2px;
+}
+}
 
 </head>
 
@@ -349,12 +445,23 @@ cursor:pointer;
 
 <div id="aguacate-container">
 
+
 <div id="aguacate">
 
   <div class="eyes">
     <div class="eye"></div>
     <div class="eye"></div>
   </div>
+
+  <div class="blush blush-left"></div>
+  <div class="blush blush-right"></div>
+
+  <div id="mouth"></div>
+
+  <div class="tie"></div>
+
+</div>
+
 
   <div id="mouth"></div>
 
@@ -489,7 +596,7 @@ Bonjour 👋 Je suis Aguacate AI !
 id="prompt"
 placeholder="Demande quelque chose à Aguacate AI...">
 
-<button class="send-btn">
+<button class="send-btn" onclick="send()">
 ➤
 </button>
 
@@ -500,6 +607,51 @@ placeholder="Demande quelque chose à Aguacate AI...">
 </div>
 
 <script>
+
+function thinkingAvocado(){
+
+const mouth =
+document.getElementById("mouth");
+
+mouth.style.width="15px";
+mouth.style.height="15px";
+mouth.style.borderRadius="50%";
+
+}
+
+function talkingAvocado(){
+
+const mouth =
+document.getElementById("mouth");
+
+let open = false;
+
+const talking = setInterval(()=>{
+
+if(open){
+
+mouth.style.height="5px";
+
+}else{
+
+mouth.style.height="20px";
+
+}
+
+open = !open;
+
+},150);
+
+setTimeout(()=>{
+
+clearInterval(talking);
+
+mouth.style.height="8px";
+
+},3000);
+
+}
+`
 
 const PASSWORD = "BenjaminAguacateAI2026#";
 
@@ -632,6 +784,50 @@ async function loadMailbox(){
     `;
 
   });
+
+}
+
+async function send(){
+
+  const msg =
+  document.getElementById("prompt").value;
+
+  if(!msg) return;
+
+  thinkingAvocado();
+
+  const res = await fetch("/chat",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+      message:msg,
+      user:"local-user",
+      mode:"Collégien"
+    })
+  });
+
+  const data = await res.json();
+
+  talkingAvocado();
+
+  const messages =
+  document.getElementById("messages");
+
+  messages.innerHTML += `
+    <div class="message-user">
+      ${msg}
+    </div>
+  `;
+
+  messages.innerHTML += `
+    <div class="message-ai">
+      ${data.reply}
+    </div>
+  `;
+
+  document.getElementById("prompt").value="";
 
 }
 
