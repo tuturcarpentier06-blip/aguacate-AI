@@ -631,3 +631,26 @@ document.addEventListener(
 
   }
 );
+function closeAdmin(){
+
+  document.getElementById(
+    "admin-panel"
+  ).style.display = "none";
+
+}
+
+function closeUsers(){
+
+  document.getElementById(
+    "users-panel"
+  ).style.display = "none";
+
+}
+
+function closeMailbox(){
+
+  document.getElementById(
+    "mailbox-panel"
+  ).style.display = "none";
+
+}
