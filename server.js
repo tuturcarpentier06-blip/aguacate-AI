@@ -434,7 +434,31 @@ app.post(
 // ======================
 // START
 // ======================
+app.post("/deleteConversation", (req, res) => {
 
+  const {
+    user,
+    conversationId
+  } = req.body;
+
+  if (!conversations[user]) {
+
+    return res.json({
+      ok: false
+    });
+
+  }
+
+  conversations[user] =
+    conversations[user].filter(
+      conv => conv.id !== conversationId
+    );
+
+  res.json({
+    ok: true
+  });
+
+});
 app.listen(PORT, () => {
 
   console.log(
