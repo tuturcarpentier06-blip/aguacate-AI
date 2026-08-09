@@ -2,252 +2,540 @@
 2
 <html lang="fr">
 3
-<head>
+ 
 4
- 
+<head>
 5
-<meta charset="UTF-8">
+ 
 6
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
 7
- 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 8
-<title>Aguacate AI v3.5.0 🥑</title>
+ 
 9
- 
+<title>Aguacate AI v3.5.0 🥑</title>
 10
-style.css
-11
  
+11
+style.css
 12
-</head>
+<link rel="stylesheet" href="avatar.css">
 13
  
 14
-<body>
+</head>
 15
  
 16
-<div id="login-screen">
+<body>
 17
  
 18
-<div class="login-card">
+<!-- LOGIN -->
 19
  
 20
-<div id="aguacate">
+<div id="login-screen">
 21
-<div class="eyes">
+ 
 22
-<div class="eye"></div>
+<div class="login-card">
 23
-<div class="eye"></div>
+ 
 24
-</div>
+<div id="aguacate-container">
 25
  
 26
-<div class="blush blush-left"></div>
+<div id="aguacate">
 27
-<div class="blush blush-right"></div>
+ 
 28
- 
+<div class="eyes">
 29
-<div id="mouth"></div>
+<div class="eye"></div>
 30
- 
+<div class="eye"></div>
 31
-<div class="tie"></div>
+</div>
 32
  
 33
-</div>
+<div class="blush blush-left"></div>
 34
- 
+<div class="blush blush-right"></div>
 35
-<h1>Aguacate AI</h1>
-36
  
+36
+<div id="mouth"></div>
 37
-<input
+ 
 38
-id="password"
+<div class="tie"></div>
 39
-type="password"
+ 
 40
-placeholder="Mot de passe">
+</div>
 41
  
 42
-<button onclick="togglePassword()">
+</div>
 43
-👁
+ 
 44
-</button>
+<h1>Aguacate AI 🥑</h1>
 45
  
 46
-<button onclick="login()">
+<p>
 47
-Accéder 🔑
+Accès sécurisé
 48
-</button>
+</p>
 49
  
 50
-<p>
+<div class="password-wrapper">
 51
-Version v3.5.0
+ 
 52
-</p>
-53
- 
-54
-</div>
-55
- 
-56
-</div>
-57
- 
-58
-<div id="app">
-59
- 
-60
-<div class="sidebar">
-61
- 
-62
-<h2>🥑 Aguacate AI</h2>
-63
- 
-64
-<select id="mode">
-65
- 
-66
-<option>Kids</option>
-67
-<option>Collégien</option>
-68
-<option>Professeur</option>
-69
- 
-70
-</select>
-71
- 
-72
-<button>
-73
-➕ Nouvelle conversation
-74
-</button>
-75
- 
-76
-<div id="user-badge">
-77
-🥑 Avocat #0000
-78
-</div>
-79
- 
-80
-<button>
-81
-🎤 Mode Live
-82
-</button>
-83
- 
-84
-</div>
-85
- 
-86
-<div class="chat">
-87
- 
-88
-<div class="chat-header">
-89
- 
-90
-<span>Aguacate AI</span>
-91
- 
-92
-<span>v3.5.0</span>
-93
- 
-94
-</div>
-95
- 
-96
-<div id="messages">
-97
- 
-98
-<div class="message-ai">
-99
- 
-100
-Bonjour 👋
-101
- 
-102
-</div>
-103
- 
-104
-</div>
-105
- 
-106
-<div class="input-bar">
-107
- 
-108
 <input
-109
-id="prompt"
-110
-placeholder="Pose une question">
-111
+53
+id="password"
+54
+type="password"
+55
+placeholder="Mot de passe">
+56
  
-112
-<button onclick="send()">
-113
- 
-114
-➤
-115
- 
-116
+57
+<button
+58
+class="eye-btn"
+59
+onclick="togglePassword()">
+60
+👁
+61
 </button>
+62
+ 
+63
+</div>
+64
+ 
+65
+<button
+66
+class="login-btn"
+67
+onclick="login()">
+68
+ 
+69
+Accéder 🔑
+70
+ 
+71
+</button>
+72
+ 
+73
+<div class="version">
+74
+Version v3.5.0
+75
+</div>
+76
+ 
+77
+<div class="legal">
+78
+ 
+79
+Ce site est un projet personnel et éducatif.<br>
+80
+Il peut utiliser des services tiers.<br>
+81
+Il n’est pas affilié directement à OpenAI ni à ChatGPT.
+82
+ 
+83
+</div>
+84
+ 
+85
+</div>
+86
+ 
+87
+</div>
+88
+ 
+89
+<!-- APPLICATION -->
+90
+ 
+91
+<div id="app">
+92
+ 
+93
+<!-- SIDEBAR -->
+94
+ 
+95
+<div class="sidebar">
+96
+ 
+97
+<div class="logo">
+98
+🥑 Aguacate AI
+99
+</div>
+100
+ 
+101
+<div class="mode-box">
+102
+ 
+103
+<select id="mode">
+104
+ 
+105
+<option>Kids</option>
+106
+<option>Collégien</option>
+107
+<option>Professeur</option>
+108
+ 
+109
+</select>
+110
+ 
+111
+</div>
+112
+ 
+113
+<button
+114
+class="new-chat"
+115
+onclick="newConversation()">
+116
+ 
 117
- 
+➕ Nouvelle conversation
 118
-</div>
+ 
 119
- 
+</button>
 120
-</div>
+ 
 121
- 
+<div class="conversations"></div>
 122
-</div>
+ 
 123
- 
+<div class="user-zone">
 124
-app.js"></script>
-125
  
+125
+<div id="user-badge">
 126
-</body>
+ 
 127
+🥑 Avocat #0000
+128
+ 
+129
+</div>
+130
+ 
+131
+<div class="bottom-buttons">
+132
+ 
+133
+<button onclick="toggleLive()">
+134
+🎤 Mode Live
+135
+</button>
+136
+ 
+137
+<button onclick="openAdmin()">
+138
+⚙️ Admin
+139
+</button>
+140
+ 
+141
+<button onclick="openUsers()">
+142
+👥 Utilisateurs
+143
+</button>
+144
+ 
+145
+</div>
+146
+ 
+147
+</div>
+148
+ 
+149
+</div>
+150
+ 
+151
+<!-- CHAT -->
+152
+ 
+153
+<div class="chat">
+154
+ 
+155
+<div class="chat-header">
+156
+ 
+157
+<div>
+158
+🥑 Aguacate AI
+159
+</div>
+160
+ 
+161
+<div>
+162
+v3.5.0
+163
+</div>
+164
+ 
+165
+</div>
+166
+ 
+167
+<div id="messages">
+168
+ 
+169
+<div class="message-ai">
+170
+ 
+171
+Bonjour 👋<br>
+172
+Je suis Aguacate AI.
+173
+ 
+174
+</div>
+175
+ 
+176
+</div>
+177
+ 
+178
+<div class="input-bar">
+179
+ 
+180
+<input
+181
+id="prompt"
+182
+placeholder="Pose une question à Aguacate AI">
+183
+ 
+184
+<button
+185
+class="send-btn"
+186
+onclick="send()">
+187
+ 
+188
+➤
+189
+ 
+190
+</button>
+191
+ 
+192
+</div>
+193
+ 
+194
+</div>
+195
+ 
+196
+</div>
+197
+ 
+198
+<!-- PANEL ADMIN -->
+199
+ 
+200
+<div id="admin-panel" class="modal">
+201
+ 
+202
+<div class="modal-card">
+203
+ 
+204
+<h2>🛡️ Panneau Admin</h2>
+205
+ 
+206
+<button onclick="setVoice('female')">
+207
+♀ Voix féminine
+208
+</button>
+209
+ 
+210
+<button onclick="setVoice('male')">
+211
+♂ Voix masculine
+212
+</button>
+213
+ 
+214
+<br><br>
+215
+ 
+216
+<button onclick="toggleLive()">
+217
+🎤 Mode Live
+218
+</button>
+219
+ 
+220
+<br><br>
+221
+ 
+222
+<button onclick="openMailbox()">
+223
+📬 Boîte Mail Admin
+224
+</button>
+225
+ 
+226
+</div>
+227
+ 
+228
+</div>
+229
+ 
+230
+<!-- PANEL USERS -->
+231
+ 
+232
+<div id="users-panel" class="modal">
+233
+ 
+234
+<div class="modal-card">
+235
+ 
+236
+<h2>👥 Utilisateurs</h2>
+237
+ 
+238
+<div id="user-list">
+239
+ 
+240
+Chargement...
+241
+ 
+242
+</div>
+243
+ 
+244
+</div>
+245
+ 
+246
+</div>
+247
+ 
+248
+<!-- MAILBOX -->
+249
+ 
+250
+<div id="mailbox-panel" class="modal">
+251
+ 
+252
+<div class="modal-card">
+253
+ 
+254
+<h2>📬 Boîte Mail Admin</h2>
+255
+ 
+256
+<div id="mailbox-list">
+257
+ 
+258
+Chargement...
+259
+ 
+260
+</div>
+261
+ 
+262
+</div>
+263
+ 
+264
+</div>
+265
+ 
+266
+voice.js
+267
+admin.js"></script>
+268
+<script src="app.js"></script>
+269
+ 
+270
+</body>
+271
 </html>
