@@ -336,11 +336,28 @@ async function loadConversations() {
 
   list.forEach(conv => {
 
-    box.innerHTML += `
-    <div class="conversation"
-         onclick="selectConversation('${conv.id}')">
-      ${conv.title}
-    </div>`;
+box.innerHTML += `
+
+<div class="conversation">
+
+  <span
+    onclick="selectConversation('${conv.id}')">
+
+    ${conv.title}
+
+  </span>
+
+  <button
+    class="delete-conversation"
+    onclick="deleteConversation('${conv.id}')">
+
+    🗑
+
+  </button>
+
+</div>
+
+`;
 
   });
 
