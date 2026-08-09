@@ -1,541 +1,271 @@
 <!DOCTYPE html>
-2
 <html lang="fr">
-3
- 
-4
+
 <head>
-5
- 
-6
+
 <meta charset="UTF-8">
-7
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-8
- 
-9
+
 <title>Aguacate AI v3.5.0 🥑</title>
-10
- 
-11
+
 style.css
-12
 <link rel="stylesheet" href="avatar.css">
-13
- 
-14
+
 </head>
-15
- 
-16
+
 <body>
-17
- 
-18
+
 <!-- LOGIN -->
-19
- 
-20
+
 <div id="login-screen">
-21
- 
-22
-<div class="login-card">
-23
- 
-24
-<div id="aguacate-container">
-25
- 
-26
-<div id="aguacate">
-27
- 
-28
-<div class="eyes">
-29
-<div class="eye"></div>
-30
-<div class="eye"></div>
-31
+
+  <div class="login-card">
+
+    <div id="aguacate-container">
+
+      <div id="aguacate">
+
+        <div class="eyes">
+          <div class="eye"></div>
+          <div class="eye"></div>
+        </div>
+
+        <div class="blush blush-left"></div>
+        <div class="blush blush-right"></div>
+
+        <div id="mouth"></div>
+
+        <div class="tie"></div>
+
+      </div>
+
+    </div>
+
+    <h1>Aguacate AI 🥑</h1>
+
+    <p>
+      Accès sécurisé
+    </p>
+
+    <div class="password-wrapper">
+
+      <input
+        id="password"
+        type="password"
+        placeholder="Mot de passe">
+
+      <button
+        class="eye-btn"
+        onclick="togglePassword()">
+        👁
+      </button>
+
+    </div>
+
+    <button
+      class="login-btn"
+      onclick="login()">
+
+      Accéder 🔑
+
+    </button>
+
+    <div class="version">
+      Version v3.5.0
+    </div>
+
+    <div class="legal">
+
+      Ce site est un projet personnel et éducatif.<br>
+      Il peut utiliser des services tiers.<br>
+      Il n’est pas affilié directement à OpenAI ni à ChatGPT.
+
+    </div>
+
+  </div>
+
 </div>
-32
- 
-33
-<div class="blush blush-left"></div>
-34
-<div class="blush blush-right"></div>
-35
- 
-36
-<div id="mouth"></div>
-37
- 
-38
-<div class="tie"></div>
-39
- 
-40
-</div>
-41
- 
-42
-</div>
-43
- 
-44
-<h1>Aguacate AI 🥑</h1>
-45
- 
-46
-<p>
-47
-Accès sécurisé
-48
-</p>
-49
- 
-50
-<div class="password-wrapper">
-51
- 
-52
-<input
-53
-id="password"
-54
-type="password"
-55
-placeholder="Mot de passe">
-56
- 
-57
-<button
-58
-class="eye-btn"
-59
-onclick="togglePassword()">
-60
-👁
-61
-</button>
-62
- 
-63
-</div>
-64
- 
-65
-<button
-66
-class="login-btn"
-67
-onclick="login()">
-68
- 
-69
-Accéder 🔑
-70
- 
-71
-</button>
-72
- 
-73
-<div class="version">
-74
-Version v3.5.0
-75
-</div>
-76
- 
-77
-<div class="legal">
-78
- 
-79
-Ce site est un projet personnel et éducatif.<br>
-80
-Il peut utiliser des services tiers.<br>
-81
-Il n’est pas affilié directement à OpenAI ni à ChatGPT.
-82
- 
-83
-</div>
-84
- 
-85
-</div>
-86
- 
-87
-</div>
-88
- 
-89
+
 <!-- APPLICATION -->
-90
- 
-91
+
 <div id="app">
-92
- 
-93
-<!-- SIDEBAR -->
-94
- 
-95
-<div class="sidebar">
-96
- 
-97
-<div class="logo">
-98
-🥑 Aguacate AI
-99
+
+  <!-- SIDEBAR -->
+
+  <div class="sidebar">
+
+    <div class="logo">
+      🥑 Aguacate AI
+    </div>
+
+    <div class="mode-box">
+
+      <select id="mode">
+
+        <option>Kids</option>
+        <option>Collégien</option>
+        <option>Professeur</option>
+
+      </select>
+
+    </div>
+
+    <button
+      class="new-chat"
+      onclick="newConversation()">
+
+      ➕ Nouvelle conversation
+
+    </button>
+
+    <div class="conversations"></div>
+
+    <div class="user-zone">
+
+      <div id="user-badge">
+
+        🥑 Avocat #0000
+
+      </div>
+
+      <div class="bottom-buttons">
+
+        <button onclick="toggleLive()">
+          🎤 Mode Live
+        </button>
+
+        <button onclick="openAdmin()">
+          ⚙️ Admin
+        </button>
+
+        <button onclick="openUsers()">
+          👥 Utilisateurs
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- CHAT -->
+
+  <div class="chat">
+
+    <div class="chat-header">
+
+      <div>
+        🥑 Aguacate AI
+      </div>
+
+      <div>
+        v3.5.0
+      </div>
+
+    </div>
+
+    <div id="messages">
+
+      <div class="message-ai">
+
+        Bonjour 👋<br>
+        Je suis Aguacate AI.
+
+      </div>
+
+    </div>
+
+    <div class="input-bar">
+
+      <input
+        id="prompt"
+        placeholder="Pose une question à Aguacate AI">
+
+      <button
+        class="send-btn"
+        onclick="send()">
+
+        ➤
+
+      </button>
+
+    </div>
+
+  </div>
+
 </div>
-100
- 
-101
-<div class="mode-box">
-102
- 
-103
-<select id="mode">
-104
- 
-105
-<option>Kids</option>
-106
-<option>Collégien</option>
-107
-<option>Professeur</option>
-108
- 
-109
-</select>
-110
- 
-111
-</div>
-112
- 
-113
-<button
-114
-class="new-chat"
-115
-onclick="newConversation()">
-116
- 
-117
-➕ Nouvelle conversation
-118
- 
-119
-</button>
-120
- 
-121
-<div class="conversations"></div>
-122
- 
-123
-<div class="user-zone">
-124
- 
-125
-<div id="user-badge">
-126
- 
-127
-🥑 Avocat #0000
-128
- 
-129
-</div>
-130
- 
-131
-<div class="bottom-buttons">
-132
- 
-133
-<button onclick="toggleLive()">
-134
-🎤 Mode Live
-135
-</button>
-136
- 
-137
-<button onclick="openAdmin()">
-138
-⚙️ Admin
-139
-</button>
-140
- 
-141
-<button onclick="openUsers()">
-142
-👥 Utilisateurs
-143
-</button>
-144
- 
-145
-</div>
-146
- 
-147
-</div>
-148
- 
-149
-</div>
-150
- 
-151
-<!-- CHAT -->
-152
- 
-153
-<div class="chat">
-154
- 
-155
-<div class="chat-header">
-156
- 
-157
-<div>
-158
-🥑 Aguacate AI
-159
-</div>
-160
- 
-161
-<div>
-162
-v3.5.0
-163
-</div>
-164
- 
-165
-</div>
-166
- 
-167
-<div id="messages">
-168
- 
-169
-<div class="message-ai">
-170
- 
-171
-Bonjour 👋<br>
-172
-Je suis Aguacate AI.
-173
- 
-174
-</div>
-175
- 
-176
-</div>
-177
- 
-178
-<div class="input-bar">
-179
- 
-180
-<input
-181
-id="prompt"
-182
-placeholder="Pose une question à Aguacate AI">
-183
- 
-184
-<button
-185
-class="send-btn"
-186
-onclick="send()">
-187
- 
-188
-➤
-189
- 
-190
-</button>
-191
- 
-192
-</div>
-193
- 
-194
-</div>
-195
- 
-196
-</div>
-197
- 
-198
+
 <!-- PANEL ADMIN -->
-199
- 
-200
+
 <div id="admin-panel" class="modal">
-201
- 
-202
-<div class="modal-card">
-203
- 
-204
-<h2>🛡️ Panneau Admin</h2>
-205
- 
-206
-<button onclick="setVoice('female')">
-207
-♀ Voix féminine
-208
-</button>
-209
- 
-210
-<button onclick="setVoice('male')">
-211
-♂ Voix masculine
-212
-</button>
-213
- 
-214
-<br><br>
-215
- 
-216
-<button onclick="toggleLive()">
-217
-🎤 Mode Live
-218
-</button>
-219
- 
-220
-<br><br>
-221
- 
-222
-<button onclick="openMailbox()">
-223
-📬 Boîte Mail Admin
-224
-</button>
-225
- 
-226
+
+  <div class="modal-card">
+
+    <h2>🛡️ Panneau Admin</h2>
+
+    <button onclick="setVoice('female')">
+      ♀ Voix féminine
+    </button>
+
+    <button onclick="setVoice('male')">
+      ♂ Voix masculine
+    </button>
+
+    <br><br>
+
+    <button onclick="toggleLive()">
+      🎤 Mode Live
+    </button>
+
+    <br><br>
+
+    <button onclick="openMailbox()">
+      📬 Boîte Mail Admin
+    </button>
+
+  </div>
+
 </div>
-227
- 
-228
-</div>
-229
- 
-230
+
 <!-- PANEL USERS -->
-231
- 
-232
+
 <div id="users-panel" class="modal">
-233
- 
-234
-<div class="modal-card">
-235
- 
-236
-<h2>👥 Utilisateurs</h2>
-237
- 
-238
-<div id="user-list">
-239
- 
-240
-Chargement...
-241
- 
-242
+
+  <div class="modal-card">
+
+    <h2>👥 Utilisateurs</h2>
+
+    <div id="user-list">
+
+      Chargement...
+
+    </div>
+
+  </div>
+
 </div>
-243
- 
-244
-</div>
-245
- 
-246
-</div>
-247
- 
-248
+
 <!-- MAILBOX -->
-249
- 
-250
+
 <div id="mailbox-panel" class="modal">
-251
- 
-252
-<div class="modal-card">
-253
- 
-254
-<h2>📬 Boîte Mail Admin</h2>
-255
- 
-256
-<div id="mailbox-list">
-257
- 
-258
-Chargement...
-259
- 
-260
+
+  <div class="modal-card">
+
+    <h2>📬 Boîte Mail Admin</h2>
+
+    <div id="mailbox-list">
+
+      Chargement...
+
+    </div>
+
+  </div>
+
 </div>
-261
- 
-262
-</div>
-263
- 
-264
-</div>
-265
- 
-266
+
 voice.js
-267
 admin.js"></script>
-268
 <script src="app.js"></script>
-269
- 
-270
+
 </body>
-271
 </html>
