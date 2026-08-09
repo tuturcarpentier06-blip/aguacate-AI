@@ -1,25 +1,13 @@
 {
-2
 "name": "aguacate-ai",
-3
 "version": "3.5.0",
-4
 "private": true,
-5
 "scripts": {
-6
 "start": "node server.js"
-7
 },
-8
 "dependencies": {
-9
 "express": "^4.18.2",
-10
 "multer": "^2.0.0",
-11
 "openai": "^4.0.0"
-12
 }
-13
 }
