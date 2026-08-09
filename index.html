@@ -1,897 +1,253 @@
 <!DOCTYPE html>
+2
 <html lang="fr">
+3
 <head>
+4
+ 
+5
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+6
+<meta name="viewport" content="width=device-width, initial-scale=1">
+7
+ 
+8
 <title>Aguacate AI v3.5.0 🥑</title>
-
-<style>
-  
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Segoe UI,sans-serif;
-}
-
-body{
-background:#f6f8f5;
-height:100vh;
-overflow:hidden;
-}
-
-/* LOGIN */
-
-#login-screen{
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-background:#f9fbf8;
-}
-
-.login-card{
-width:420px;
-background:white;
-padding:30px;
-border-radius:25px;
-box-shadow:0 15px 50px rgba(0,0,0,.15);
-text-align:center;
-}
-
-.avocado{
-font-size:90px;
-animation:bounce 1.5s infinite ease-in-out;
-}
-
-@keyframes bounce{
-0%{transform:translateY(0px);}
-50%{transform:translateY(-12px);}
-100%{transform:translateY(0px);}
-}
-
-.login-title{
-font-size:36px;
-font-weight:700;
-color:#18453b;
-margin-top:15px;
-}
-
-.login-subtitle{
-color:#5f8d7f;
-margin-bottom:25px;
-}
-
-.password-wrapper{
-position:relative;
-}
-
-.password-wrapper input{
-width:100%;
-padding:14px;
-border-radius:12px;
-border:2px solid #2f8f7b;
-font-size:16px;
-}
-
-.eye-btn{
-position:absolute;
-right:12px;
-top:12px;
-background:none;
-border:none;
-cursor:pointer;
-font-size:18px;
-}
-
-.login-btn{
-width:100%;
-padding:14px;
-margin-top:15px;
-border:none;
-border-radius:12px;
-background:#78c6b0;
-color:white;
-font-weight:bold;
-cursor:pointer;
-}
-
-.version{
-margin-top:15px;
-color:#888;
-font-size:13px;
-}
-
-.legal{
-margin-top:25px;
-font-size:12px;
-color:#999;
-line-height:1.5;
-}
-
-/* APP */
-
-#app{
-display:none;
-height:100vh;
-}
-
-/* SIDEBAR */
-
-.sidebar{
-width:290px;
-background:#012f2d;
-color:white;
-display:flex;
-flex-direction:column;
-padding:15px;
-}
-
-.logo{
-font-size:28px;
-font-weight:bold;
-margin-bottom:20px;
-}
-
-.mode-box{
-background:#124b42;
-padding:12px;
-border-radius:10px;
-margin-bottom:12px;
-}
-
-.new-chat{
-background:#f6c648;
-border:none;
-padding:12px;
-border-radius:10px;
-font-weight:bold;
-cursor:pointer;
-margin-bottom:15px;
-}
-
-.conversations{
-flex:1;
-overflow:auto;
-}
-
-.conversation{
-padding:10px;
-background:#0d463d;
-border-radius:10px;
-margin-bottom:10px;
-cursor:pointer;
-}
-
-.user-zone{
-border-top:1px solid rgba(255,255,255,.1);
-padding-top:15px;
-}
-
-.user-badge{
-font-weight:bold;
-margin-bottom:10px;
-}
-
-.bottom-buttons button{
-width:100%;
-margin-bottom:8px;
-padding:10px;
-border:none;
-border-radius:10px;
-cursor:pointer;
-}
-
-/* CHAT */
-
-.chat{
-flex:1;
-display:flex;
-flex-direction:column;
-background:white;
-}
-
-.chat-header{
-height:70px;
-display:flex;
-align-items:center;
-padding:15px 25px;
-border-bottom:1px solid #eee;
-justify-content:space-between;
-}
-
-.version-badge{
-color:#777;
-}
-
-.messages{
-flex:1;
-overflow:auto;
-padding:20px;
-}
-
-.message-user{
-background:#dff8f2;
-padding:12px;
-border-radius:12px;
-margin-bottom:10px;
-max-width:70%;
-margin-left:auto;
-}
-
-.message-ai{
-background:#f3f3f3;
-padding:12px;
-border-radius:12px;
-margin-bottom:10px;
-max-width:70%;
-}
-
-.input-bar{
-display:flex;
-padding:15px;
-border-top:1px solid #eee;
-}
-
-.input-bar input{
-flex:1;
-padding:14px;
-border-radius:10px;
-border:1px solid #ddd;
-}
-
-.send-btn{
-margin-left:10px;
-padding:14px 18px;
-border:none;
-border-radius:10px;
-background:#77bda8;
-color:white;
-cursor:pointer;
-}
-
-</style>
-#aguacate{
-width:140px;
-height:180px;
-background:#a7d948;
-border:6px solid #2f6d2f;
-border-radius:80px;
-position:relative;
-animation:bounce 2s infinite;
-}
-
-#aguacate::before{
-content:"";
-position:absolute;
-top:25px;
-left:20px;
-width:95px;
-height:120px;
-background:#dff29d;
-border-radius:60px;
-}
-
-#aguacate::after{
-content:"";
-position:absolute;
-top:75px;
-left:48px;
-width:40px;
-height:40px;
-background:#8b5a2b;
-border-radius:50%;
-}
-
-.eyes{
-position:absolute;
-top:55px;
-left:40px;
-display:flex;
-gap:25px;
-z-index:10;
-}
-
-
-.eye{
-width:18px;
-height:18px;
-background:black;
-border-radius:50%;
-position:relative;
-animation:blink 5s infinite;
-}
-
-.eye::after{
-content:"";
-position:absolute;
-top:2px;
-left:3px;
-width:5px;
-height:5px;
-background:white;
-border-radius:50%;
-}
-
-
-function thinkingAvocado(){
-
-const eyes =
-document.querySelectorAll(".eye");
-
-eyes.forEach(eye=>{
-eye.style.transform =
-"translateX(-4px)";
-});
-
-const mouth =
-document.getElementById("mouth");
-
-mouth.style.width="15px";
-mouth.style.height="15px";
-mouth.style.borderRadius="50%";
-
-}
-
-.blush{
-position:absolute;
-width:18px;
-height:12px;
-background:#ffb6c1;
-border-radius:50%;
-z-index:10;
-opacity:.8;
-}
-
-.blush-left{
-top:78px;
-left:28px;
-}
-
-.blush-right{
-top:78px;
-right:28px;
-}
-
-
-function talkingAvocado(){
-
-const mouth =
-document.getElementById("mouth");
-
-const eyes =
-document.querySelectorAll(".eye");
-
-eyes.forEach(eye=>{
-eye.style.transform =
-"translateX(0px)";
-});
-
-let open = false;
-
-const talking = setInterval(()=>{
-
-if(open){
-
-mouth.style.height="6px";
-
-}else{
-
-mouth.style.height="22px";
-
-}
-
-open = !open;
-
-},150);
-
-setTimeout(()=>{
-
-clearInterval(talking);
-
-mouth.style.height="8px";
-mouth.style.width="28px";
-
-},3000);
-
-}
-
-#mouth{
-position:absolute;
-top:92px;
-left:55px;
-width:28px;
-height:8px;
-background:black;
-border-radius:50px;
-z-index:10;
-transition:.2s;
-}
-
-.tie{
-position:absolute;
-bottom:15px;
-left:57px;
-width:20px;
-height:45px;
-background:#4d85ff;
-clip-path:polygon(50% 0%,100% 25%,70% 100%,30% 100%,0% 25%);
-animation:swing 2s infinite;
-}
-
-@keyframes swing{
-0%{transform:rotate(-5deg);}
-50%{transform:rotate(5deg);}
-100%{transform:rotate(-5deg);}
-}
-
-@keyframes blink{
-0%,45%,50%,100%{
-height:14px;
-}
-48%{
-height:2px;
-}
-}
-
+9
+ 
+10
+style.css
+11
+ 
+12
 </head>
-
+13
+ 
+14
 <body>
-
+15
+ 
+16
 <div id="login-screen">
-
+17
+ 
+18
 <div class="login-card">
-
-<div id="aguacate-container">
-
-
+19
+ 
+20
 <div id="aguacate">
-
-  <div class="eyes">
-    <div class="eye"></div>
-    <div class="eye"></div>
-  </div>
-
-  <div class="blush blush-left"></div>
-  <div class="blush blush-right"></div>
-
-  <div id="mouth"></div>
-
-  <div class="tie"></div>
-
+21
+<div class="eyes">
+22
+<div class="eye"></div>
+23
+<div class="eye"></div>
+24
 </div>
-
-
-  <div id="mouth"></div>
-
-  <div class="tie"></div>
-
+25
+ 
+26
+<div class="blush blush-left"></div>
+27
+<div class="blush blush-right"></div>
+28
+ 
+29
+<div id="mouth"></div>
+30
+ 
+31
+<div class="tie"></div>
+32
+ 
+33
 </div>
-
-</div>
-
-<div class="login-title">
-Aguacate AI
-</div>
-
-<div class="login-subtitle">
-Entrez le mot de passe pour accéder
-</div>
-
-<div class="password-wrapper">
-
+34
+ 
+35
+<h1>Aguacate AI</h1>
+36
+ 
+37
 <input
+38
 id="password"
+39
 type="password"
-placeholder="Mot de passe...">
-
-<button
-class="eye-btn"
-onclick="togglePassword()">
+40
+placeholder="Mot de passe">
+41
+ 
+42
+<button onclick="togglePassword()">
+43
 👁
+44
 </button>
-
-</div>
-
-<button
-class="login-btn"
-onclick="login()">
-
+45
+ 
+46
+<button onclick="login()">
+47
 Accéder 🔑
-
+48
 </button>
-
-<div class="version">
+49
+ 
+50
+<p>
+51
 Version v3.5.0
+52
+</p>
+53
+ 
+54
 </div>
-
-<div class="legal">
-
-Ce site est un projet personnel et éducatif.<br>
-Il peut utiliser des services tiers.<br>
-Il n’est pas affilié directement à OpenAI ni à ChatGPT.
-
+55
+ 
+56
 </div>
-
-</div>
-
-</div>
-
+57
+ 
+58
 <div id="app">
-
+59
+ 
+60
 <div class="sidebar">
-
-<div class="logo">
-🥑 Aguacate AI
-</div>
-
-<div class="mode-box">
-
-<select id="mode" style="width:100%;padding:8px;border-radius:8px;">
-
+61
+ 
+62
+<h2>🥑 Aguacate AI</h2>
+63
+ 
+64
+<select id="mode">
+65
+ 
+66
 <option>Kids</option>
+67
 <option>Collégien</option>
+68
 <option>Professeur</option>
-
+69
+ 
+70
 </select>
-
-</div>
-
-<button class="new-chat">
+71
+ 
+72
+<button>
+73
 ➕ Nouvelle conversation
+74
 </button>
-
-<div class="conversations">
-
-<div class="conversation">
-Nouvelle conversation
-</div>
-
-</div>
-
-<div class="user-zone">
-
-<div id="user-badge" class="user-badge">
+75
+ 
+76
+<div id="user-badge">
+77
 🥑 Avocat #0000
+78
 </div>
-
-<div class="bottom-buttons">
-
-<button>🎤 Mode Live</button>
-<button onclick="openAdmin()">⚙️ Admin</button>
-<button onclick="openUsers()">👥 Utilisateurs</button>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="chat">
-
-<div class="chat-header">
-
-<div>
-🥑 Aguacate AI
-</div>
-
-<div class="version-badge">
-v3.5.0
-</div>
-
-</div>
-
-<div id="messages" class="messages">
-
-<div class="message-ai">
-Bonjour 👋 Je suis Aguacate AI !
-</div>
-
-</div>
-
-<div class="input-bar">
-
-<input
-id="prompt"
-placeholder="Demande quelque chose à Aguacate AI...">
-
-<button class="send-btn" onclick="send()">
-➤
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-<script>
-
-function thinkingAvocado(){
-
-const mouth =
-document.getElementById("mouth");
-
-mouth.style.width="15px";
-mouth.style.height="15px";
-mouth.style.borderRadius="50%";
-
-}
-
-function talkingAvocado(){
-
-const mouth =
-document.getElementById("mouth");
-
-let open = false;
-
-const talking = setInterval(()=>{
-
-if(open){
-
-mouth.style.height="5px";
-
-}else{
-
-mouth.style.height="20px";
-
-}
-
-open = !open;
-
-},150);
-
-setTimeout(()=>{
-
-clearInterval(talking);
-
-mouth.style.height="8px";
-
-},3000);
-
-}
-`
-
-const PASSWORD = "BenjaminAguacateAI2026#";
-
-function togglePassword(){
-
-const input =
-document.getElementById("password");
-
-input.type =
-input.type === "password"
-? "text"
-: "password";
-
-}
-
-function login(){
-
-const entered =
-document.getElementById("password").value;
-
-if(entered === PASSWORD){
-
-document.getElementById("login-screen").style.display="none";
-document.getElementById("app").style.display="flex";
-
-const id =
-localStorage.getItem("aguacate-id") ||
-Math.random().toString(16).substring(2,6).toUpperCase();
-
-localStorage.setItem("aguacate-id",id);
-
-document.getElementById("user-badge").innerText =
-"🥑 Avocat #" + id;
-
-}else{
-
-alert("Mot de passe incorrect");
-
-}
-
-}
-
-let currentVoice = "female";
-let liveMode = false;
-
-function openAdmin(){
-  document.getElementById("admin-panel").style.display = "flex";
-}
-
-function openUsers(){
-  document.getElementById("users-panel").style.display = "flex";
-  loadUsers();
-}
-
-function openMailbox(){
-  document.getElementById("mailbox-panel").style.display = "flex";
-  loadMailbox();
-}
-
-function setVoice(v){
-  currentVoice = v;
-  alert("Voix : " + v);
-}
-
-function toggleLive(){
-  liveMode = !liveMode;
-  alert(
-    liveMode
-    ? "Mode Live activé"
-    : "Mode Live désactivé"
-  );
-}
-
-async function loadUsers(){
-
-  const res =
-  await fetch("/users");
-
-  const users =
-  await res.json();
-
-  const box =
-  document.getElementById("user-list");
-
-  box.innerHTML = "";
-
-  users.forEach(user=>{
-
-    let dot = "🟢";
-
-    if(user.role==="admin"){
-      dot = "🟡";
-    }
-
-    if(user.role==="supreme"){
-      dot = "⚫";
-    }
-
-    box.innerHTML += `
-      <p>
-      ${dot} Avocat #${user.id}
-      (⚠ ${user.warnings})
-      </p>
-    `;
-  });
-
-}
-
-async function loadMailbox(){
-
-  const res =
-  await fetch("/adminlogs");
-
-  const logs =
-  await res.json();
-
-  const box =
-  document.getElementById("mailbox-list");
-
-  box.innerHTML = "";
-
-  logs.forEach(log=>{
-
-    box.innerHTML += `
-    <p>
-    ${log.type}
-    -
-    ${log.user}
-    </p>
-    `;
-
-  });
-
-}
-
-async function send(){
-
-  const msg =
-  document.getElementById("prompt").value;
-
-  if(!msg) return;
-
-  thinkingAvocado();
-
-  const res = await fetch("/chat",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify({
-      message:msg,
-      user:"local-user",
-      mode:"Collégien"
-    })
-  });
-
-  const data = await res.json();
-
-  talkingAvocado();
-
-  const messages =
-  document.getElementById("messages");
-
-  messages.innerHTML += `
-    <div class="message-user">
-      ${msg}
-    </div>
-  `;
-
-  messages.innerHTML += `
-    <div class="message-ai">
-      ${data.reply}
-    </div>
-  `;
-
-  document.getElementById("prompt").value="";
-
-}
-
-</script>
-
-<!-- PANNEAU ADMIN -->
-<div id="admin-panel" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);justify-content:center;align-items:center;">
-
-<div style="background:white;padding:25px;border-radius:20px;width:500px;">
-
-<h2>🛡️ Panneau Admin</h2>
-
-<button onclick="setVoice('female')">♀ Féminine</button>
-<button onclick="setVoice('male')">♂ Masculine</button>
-
-<br><br>
-
-<button onclick="toggleLive()">
+79
+ 
+80
+<button>
+81
 🎤 Mode Live
+82
 </button>
-
-<br><br>
-
-<button onclick="openMailbox()">
-📬 Boîte Mail Admin
+83
+ 
+84
+</div>
+85
+ 
+86
+<div class="chat">
+87
+ 
+88
+<div class="chat-header">
+89
+ 
+90
+<span>Aguacate AI</span>
+91
+ 
+92
+<span>v3.5.0</span>
+93
+ 
+94
+</div>
+95
+ 
+96
+<div id="messages">
+97
+ 
+98
+<div class="message-ai">
+99
+ 
+100
+Bonjour 👋
+101
+ 
+102
+</div>
+103
+ 
+104
+</div>
+105
+ 
+106
+<div class="input-bar">
+107
+ 
+108
+<input
+109
+id="prompt"
+110
+placeholder="Pose une question">
+111
+ 
+112
+<button onclick="send()">
+113
+ 
+114
+➤
+115
+ 
+116
 </button>
-
+117
+ 
+118
 </div>
-
+119
+ 
+120
 </div>
-
-<!-- UTILISATEURS -->
-<div id="users-panel" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);justify-content:center;align-items:center;">
-
-<div style="background:white;padding:20px;border-radius:20px;width:500px;">
-
-<h2>👥 Utilisateurs</h2>
-
-<div id="user-list">
-
-Chargement...
-
+121
+ 
+122
 </div>
-
-</div>
-
-</div>
-
-<!-- BOITE MAIL -->
-<div id="mailbox-panel" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);justify-content:center;align-items:center;">
-
-<div style="background:white;padding:20px;border-radius:20px;width:500px;">
-
-<h2>📬 Boîte Mail Admin</h2>
-
-<div id="mailbox-list">
-
-Chargement...
-
-</div>
-
-</div>
-
-</div>
-
+123
+ 
+124
+app.js"></script>
+125
+ 
+126
 </body>
+127
 </html>
