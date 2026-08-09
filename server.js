@@ -20,617 +20,617 @@ const PORT = process.env.PORT || 3000;
 11
  
 12
-// MOTS DE PASSE
+// ======================
 13
- 
+// MOTS DE PASSE
 14
-const USER_PASSWORD = "BenjaminAguacateAI2026#";
+// ======================
 15
-const ADMIN_PASSWORD = "sinonAnanasAIneserapascontent2026!";
-16
-const SUPREME_PASSWORD = "situestristeBenjaBabynepleurepas2026?";
-17
  
+16
+const USER_PASSWORD = "BenjaminAguacateAI2026#";
+17
+const ADMIN_PASSWORD = "sinonAnanasAIneserapascontent2026!";
 18
-// DONNÉES
+const SUPREME_PASSWORD = "situestristeBenjaBabynepleurepas2026?";
 19
  
 20
-const users = {};
+// ======================
 21
-const memories = {};
+// STOCKAGE MEMOIRE
 22
-const adminLogs = [];
+// ======================
 23
  
 24
-// UPLOAD
+const users = {};
 25
- 
+const memories = {};
 26
-const upload = multer({
+const conversations = {};
 27
-limits: {
+const adminLogs = [];
 28
-fileSize: 10 * 1024 * 1024
+ 
 29
-}
+// ======================
 30
-});
-31
- 
-32
 // OPENROUTER
+31
+// ======================
+32
+ 
 33
- 
-34
 const openai = new OpenAI({
-35
+34
 apiKey: process.env.OPENAI_API_KEY,
-36
+35
 baseURL: "https://openrouter.ai/api/v1"
+36
+});
 37
-});
+ 
 38
- 
+// ======================
 39
-// LOGIN
+// UPLOAD
 40
- 
+// ======================
 41
-app.post("/login", (req, res) => {
+ 
 42
- 
+const upload = multer({
 43
-const { password, deviceId } = req.body;
+limits: {
 44
- 
+fileSize: 10 * 1024 * 1024
 45
-if (
+}
 46
-password !== USER_PASSWORD &&
-47
-password !== ADMIN_PASSWORD &&
-48
-password !== SUPREME_PASSWORD
-49
-) {
-50
-return res.json({
-51
-ok: false
-52
 });
+47
+ 
+48
+// ======================
+49
+// LOGIN
+50
+// ======================
+51
+ 
+52
+app.post("/login", (req, res) => {
 53
-}
+ 
 54
- 
+const { password, deviceId } = req.body;
 55
-let role = "user";
+ 
 56
- 
+if (
 57
-if (password === ADMIN_PASSWORD) {
+password !== USER_PASSWORD &&
 58
-role = "admin";
+password !== ADMIN_PASSWORD &&
 59
-}
+password !== SUPREME_PASSWORD
 60
- 
+) {
 61
-if (password === SUPREME_PASSWORD) {
+return res.json({
 62
-role = "supreme";
+ok: false
 63
-}
+});
 64
- 
+}
 65
-const id =
+ 
 66
-deviceId ||
+let role = "user";
 67
-Math.random()
+ 
 68
-.toString(36)
+if (password === ADMIN_PASSWORD) {
 69
-.substring(2, 6)
+role = "admin";
 70
-.toUpperCase();
+}
 71
  
 72
-if (!users[id]) {
+if (password === SUPREME_PASSWORD) {
 73
- 
+role = "supreme";
 74
-users[id] = {
+}
 75
  
 76
-id,
+let id = deviceId;
 77
  
 78
-role,
+if (!id) {
 79
- 
+id = Math.random()
 80
-warnings: 0,
+.toString(36)
 81
- 
+.substring(2, 6)
 82
-banned: false,
+.toUpperCase();
 83
- 
+}
 84
-connected: true,
+ 
 85
- 
+if (!users[id]) {
 86
-createdAt: Date.now()
+ 
 87
- 
+users[id] = {
 88
-};
+id,
 89
- 
-90
-}
-91
- 
-92
-users[id].connected = true;
-93
- 
-94
-return res.json({
-95
- 
-96
-ok: true,
-97
- 
-98
 role,
+90
+warnings: 0,
+91
+banned: false,
+92
+connected: true
+93
+};
+94
+ 
+95
+}
+96
+ 
+97
+users[id].connected = true;
+98
+ 
 99
- 
+return res.json({
 100
-id
+ok: true,
 101
- 
+role,
 102
-});
+id
 103
- 
+});
 104
-});
+ 
 105
- 
+});
 106
-// LISTE UTILISATEURS
+ 
 107
- 
+// ======================
 108
-app.get("/users", (req, res) => {
+// UTILISATEURS
 109
- 
+// ======================
 110
-res.json(
+ 
 111
-Object.values(users)
+app.get("/users", (req, res) => {
 112
-);
+ 
 113
- 
+res.json(
 114
-});
+Object.values(users)
 115
- 
+);
 116
-// AVERTISSEMENTS
+ 
 117
- 
+});
 118
-app.post("/warn", (req, res) => {
+ 
 119
- 
+// ======================
 120
-const { id } = req.body;
+// CONVERSATIONS
 121
- 
+// ======================
 122
-const user = users[id];
+ 
 123
- 
+app.post("/newConversation", (req, res) => {
 124
-if (!user) {
+ 
 125
-return res.json({
+const { user } = req.body;
 126
-ok: false
+ 
 127
-});
+const id = Date.now().toString();
 128
-}
+ 
 129
- 
+if (!conversations[user]) {
 130
-if (user.role === "supreme") {
+conversations[user] = [];
 131
-return res.json({
-132
-ok: false,
-133
-message: "Admin suprême protégé"
-134
-});
-135
 }
-136
+132
  
+133
+conversations[user].push({
+134
+id,
+135
+title: "Nouvelle conversation",
+136
+messages: []
 137
-user.warnings++;
+});
 138
  
 139
-if (user.warnings >= 3) {
+res.json({
 140
-user.banned = true;
-141
-}
-142
- 
-143
-adminLogs.push({
-144
- 
-145
-type: "warning",
-146
- 
-147
-user: id,
-148
- 
-149
-date: Date.now()
-150
- 
-151
-});
-152
- 
-153
-res.json({
-154
- 
-155
 ok: true,
+141
+id
+142
+});
+143
+ 
+144
+});
+145
+ 
+146
+// ======================
+147
+// LISTER CONVERSATIONS
+148
+// ======================
+149
+ 
+150
+app.get("/conversations/:user", (req, res) => {
+151
+ 
+152
+const user = req.params.user;
+153
+ 
+154
+res.json(
+155
+conversations[user] || []
 156
- 
-157
-warnings: user.warnings,
-158
- 
-159
-banned: user.banned
-160
- 
-161
-});
-162
- 
-163
-});
-164
- 
-165
-// RETIRER AVERTISSEMENT
-166
- 
-167
-app.post("/unwarn", (req, res) => {
-168
- 
-169
-const user = users[req.body.id];
-170
- 
-171
-if (!user) {
-172
-return res.json({
-173
-ok: false
-174
-});
-175
-}
-176
- 
-177
-user.warnings = Math.max(
-178
-0,
-179
-user.warnings - 1
-180
 );
-181
+157
  
-182
-res.json({
-183
-warnings: user.warnings
-184
+158
 });
-185
+159
  
-186
-});
-187
+160
+// ======================
+161
+// RENOMMER CONVERSATION
+162
+// ======================
+163
  
-188
-// BANNIR
-189
+164
+app.post("/renameConversation", (req, res) => {
+165
  
-190
-app.post("/ban", (req, res) => {
-191
+166
+const {
+167
+user,
+168
+conversationId,
+169
+title
+170
+} = req.body;
+171
  
-192
-const user =
-193
-users[req.body.id];
-194
- 
-195
-if (!user) {
-196
-return res.json({
-197
-ok: false
-198
-});
-199
+172
+if (!conversations[user]) {
+173
+return res.json({ ok: false });
+174
 }
+175
+ 
+176
+const conv =
+177
+conversations[user].find(
+178
+c => c.id === conversationId
+179
+);
+180
+ 
+181
+if (!conv) {
+182
+return res.json({ ok: false });
+183
+}
+184
+ 
+185
+conv.title = title;
+186
+ 
+187
+return res.json({
+188
+ok: true
+189
+});
+190
+ 
+191
+});
+192
+ 
+193
+// ======================
+194
+// WARN
+195
+// ======================
+196
+ 
+197
+app.post("/warn", (req, res) => {
+198
+ 
+199
+const { id } = req.body;
 200
  
 201
-if (user.role === "supreme") {
+const user = users[id];
 202
-return res.json({
-203
-ok: false
-204
-});
-205
-}
-206
  
+203
+if (!user) {
+204
+return res.json({
+205
+ok: false
+206
+});
 207
-user.banned = true;
+}
 208
  
 209
-adminLogs.push({
+if (user.role === "supreme") {
 210
- 
+return res.json({
 211
-type: "ban",
+ok: false
 212
- 
+});
 213
-user: user.id,
+}
 214
  
 215
-date: Date.now()
+user.warnings++;
 216
  
 217
-});
+if (user.warnings >= 3) {
 218
- 
+user.banned = true;
 219
-res.json({
+}
 220
-ok: true
+ 
 221
-});
+adminLogs.push({
 222
- 
+type: "warning",
 223
-});
+user: id,
 224
- 
+date: Date.now()
 225
-// DEBANNIR
+});
 226
  
 227
-app.post("/unban", (req, res) => {
+res.json({
 228
- 
+warnings: user.warnings,
 229
-const user =
+banned: user.banned
 230
-users[req.body.id];
+});
 231
  
 232
-if (!user) {
-233
-return res.json({
-234
-ok: false
-235
 });
+233
+ 
+234
+// ======================
+235
+// RETIRER AVERTISSEMENT
 236
-}
+// ======================
 237
  
 238
-user.banned = false;
+app.post("/unwarn", (req, res) => {
 239
  
 240
-adminLogs.push({
+const user = users[req.body.id];
 241
  
 242
-type: "unban",
+if (!user) {
 243
- 
+return res.json({
 244
-user: user.id,
+ok: false
 245
- 
+});
 246
-date: Date.now()
+}
 247
  
 248
-});
+user.warnings = Math.max(
 249
- 
+0,
 250
-res.json({
+user.warnings - 1
 251
-ok: true
+);
 252
-});
+ 
 253
- 
+res.json({
 254
-});
+warnings: user.warnings
 255
- 
+});
 256
-// CHAT
+ 
 257
- 
+});
 258
-app.post("/chat", async (req, res) => {
+ 
 259
- 
+// ======================
 260
-try {
+// BAN
 261
- 
+// ======================
 262
-const {
+ 
 263
-user,
+app.post("/ban", (req, res) => {
 264
-message,
+ 
 265
-mode
+const user = users[req.body.id];
 266
-} = req.body;
+ 
 267
- 
+if (!user) {
 268
-if (!memories[user]) {
+return res.json({
 269
-memories[user] = [];
+ok: false
 270
-}
+});
 271
- 
+}
 272
-let systemPrompt =
+ 
 273
-"Tu es Aguacate AI.";
+if (user.role === "supreme") {
 274
- 
+return res.json({
 275
-if (mode === "Kids") {
+ok: false
 276
-systemPrompt =
+});
 277
-"Tu expliques simplement pour les enfants.";
+}
 278
-}
+ 
 279
- 
+user.banned = true;
 280
-if (mode === "Collégien") {
+ 
 281
-systemPrompt =
+adminLogs.push({
 282
-"Tu aides les collégiens et les étudiants.";
+type: "ban",
 283
-}
+user: user.id,
 284
- 
+date: Date.now()
 285
-if (mode === "Professeur") {
+});
 286
-systemPrompt =
+ 
 287
-"Tu aides à créer des cours, exercices et évaluations.";
+res.json({
 288
-}
+ok: true
 289
- 
+});
 290
-memories[user].push({
+ 
 291
-role: "user",
+});
 292
-content: message
+ 
 293
-});
+// ======================
 294
- 
+// DEBAN
 295
-const response =
+// ======================
 296
-await openai.chat.completions.create({
+ 
 297
- 
+app.post("/unban", (req, res) => {
 298
-model: "openrouter/auto",
+ 
 299
- 
+const user = users[req.body.id];
 300
-messages: [
+ 
 301
-{
+if (!user) {
 302
-role: "system",
+return res.json({
 303
-content: systemPrompt
+ok: false
 304
-},
-305
-...memories[user].slice(-15)
-306
-]
-307
- 
-308
 });
+305
+}
+306
+ 
+307
+user.banned = false;
+308
+ 
 309
- 
+adminLogs.push({
 310
-const reply =
+type: "unban",
 311
-response.choices[0]
+user: user.id,
 312
-.message.content;
+date: Date.now()
 313
- 
+});
 314
-memories[user].push({
-315
  
+315
+res.json({
 316
-role: "assistant",
+ok: true
 317
-content: reply
+});
 318
  
 319
@@ -638,116 +638,12 @@ content: reply
 320
  
 321
-return res.json({
+// ======================
 322
-reply
+// MAILBOX ADMIN
 323
-});
+// ======================
 324
  
 325
-} catch (err) {
-326
- 
-327
-console.error(err);
-328
- 
-329
-return res.json({
-330
-reply: "🥑 Une erreur est survenue."
-331
-});
-332
- 
-333
-}
-334
- 
-335
-});
-336
- 
-337
-// UPLOAD PDF / IMAGE
-338
- 
-339
-app.post(
-340
-"/upload",
-341
-upload.single("file"),
-342
-async (req, res) => {
-343
- 
-344
-if (!req.file) {
-345
-return res.json({
-346
-ok: false
-347
-});
-348
-}
-349
- 
-350
-return res.json({
-351
- 
-352
-ok: true,
-353
- 
-354
-filename:
-355
-req.file.originalname
-356
- 
-357
-});
-358
-}
-359
-);
-360
- 
-361
-// LOGS ADMIN
-362
- 
-363
-app.get("/adminlogs", (req, res) => {
-364
- 
-365
-res.json(adminLogs);
-366
- 
-367
-});
-368
- 
-369
-// DÉMARRAGE
-370
- 
-371
-app.listen(PORT, () => {
-372
- 
-373
-console.log(
-374
-"🥑 Aguacate AI v3.5.0 ONLINE"
-375
-);
-376
- 
-377
-});
+app.get("/adminlogs", (req, res) =>
