@@ -15,7 +15,9 @@
 
 <body>
 
-<!-- PAGE DE CONNEXION -->
+<!-- =========================
+     LOGIN
+========================= -->
 
 <div id="login-screen">
 
@@ -55,7 +57,9 @@
       <button
         class="eye-btn"
         onclick="togglePassword()">
+
         👁
+
       </button>
 
     </div>
@@ -63,7 +67,9 @@
     <button
       class="login-btn"
       onclick="login()">
+
       Accéder 🔑
+
     </button>
 
     <div class="version">
@@ -80,7 +86,9 @@
 
 </div>
 
-<!-- APPLICATION -->
+<!-- =========================
+     APPLICATION
+========================= -->
 
 <div id="app">
 
@@ -107,15 +115,29 @@
     <button
       class="new-chat"
       onclick="newConversation()">
+
       ➕ Nouvelle conversation
+
     </button>
 
-    <div class="conversations"></div>
+    <button
+      class="new-chat"
+      onclick="renameConversation()">
+
+      ✏️ Renommer
+
+    </button>
+
+    <div class="conversations">
+
+    </div>
 
     <div class="user-zone">
 
       <div id="user-badge">
+
         🥑 Avocat #0000
+
       </div>
 
       <div class="bottom-buttons">
@@ -157,8 +179,10 @@
     <div id="messages">
 
       <div class="message-ai">
+
         Bonjour 👋<br>
         Je suis Aguacate AI.
+
       </div>
 
     </div>
@@ -167,12 +191,14 @@
 
       <input
         id="prompt"
-        placeholder="Pose une question à Aguacate AI">
+        placeholder="Pose une question à Aguacate AI...">
 
       <button
         class="send-btn"
         onclick="send()">
+
         ➤
+
       </button>
 
     </div>
@@ -181,13 +207,27 @@
 
 </div>
 
-<!-- ADMIN -->
+<!-- =========================
+     ADMIN
+========================= -->
 
 <div id="admin-panel" class="modal">
 
   <div class="modal-card">
 
-    <h2>🛡️ Panneau Admin</h2>
+    <div class="menu-header">
+
+      <h2>🛡️ Panneau Admin</h2>
+
+      <button
+        class="close-btn"
+        onclick="closeAdmin()">
+
+        ← Retour
+
+      </button>
+
+    </div>
 
     <button onclick="setVoice('female')">
       ♀ Voix féminine
@@ -213,40 +253,72 @@
 
 </div>
 
-<!-- UTILISATEURS -->
+<!-- =========================
+     UTILISATEURS
+========================= -->
 
 <div id="users-panel" class="modal">
 
   <div class="modal-card">
 
-    <h2>👥 Utilisateurs</h2>
+    <div class="menu-header">
+
+      <h2>👥 Utilisateurs</h2>
+
+      <button
+        class="close-btn"
+        onclick="closeUsers()">
+
+        ← Retour
+
+      </button>
+
+    </div>
 
     <div id="user-list">
+
       Chargement...
+
     </div>
 
   </div>
 
 </div>
 
-<!-- BOITE MAIL -->
+<!-- =========================
+     BOITE MAIL
+========================= -->
 
 <div id="mailbox-panel" class="modal">
 
   <div class="modal-card">
 
-    <h2>📬 Boîte Mail Admin</h2>
+    <div class="menu-header">
+
+      <h2>📬 Boîte Mail Admin</h2>
+
+      <button
+        class="close-btn"
+        onclick="closeMailbox()">
+
+        ← Retour
+
+      </button>
+
+    </div>
 
     <div id="mailbox-list">
-      Chargement...
+
+      📭 Aucun événement enregistré.
+
     </div>
 
   </div>
 
 </div>
 
-voice.jsscript>
-admin.js
+voice.js
+admin.js"></script>
 <script src="app.js"></script>
 
 </body>
