@@ -654,3 +654,39 @@ function closeMailbox(){
   ).style.display = "none";
 
 }
+async function deleteConversation(id){
+
+  const confirmDelete =
+    confirm(
+      "Supprimer cette conversation ?"
+    );
+
+  if(!confirmDelete){
+    return;
+  }
+
+  await fetch(
+    "/deleteConversation",
+    {
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":
+          "application/json"
+      },
+
+      body:JSON.stringify({
+
+        user:getDeviceId(),
+
+        conversationId:id
+
+      })
+
+    }
+  );
+
+  loadConversations();
+
+}
