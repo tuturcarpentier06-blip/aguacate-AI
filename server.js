@@ -75,7 +75,29 @@ function containsBlacklisted(text) {
 // LOGIN SANS MOT DE PASSE
 // ======================
 
-app.post("/login", (req, res) => {
+// POST /login (remplacer la version sans token)
+app.post('/login', (req, res) => {
+  const { deviceId } = req.body;
+  let id = deviceId || Math.random().toString(36).substring(2,6).toUpperCase();
+
+  if (!users[id]) {
+    users[id] = {
+      id,
+      role: 'user',
+      warnings: 0,
+      banned: false,
+      connected: true,
+      consumptionLitres: 0,
+      token: genToken()
+    };
+  } else {
+    users[id].connected = true;
+    // refresh token if not present
+    if (!users[id].token) users[id].token = genToken();
+  }
+
+  return res.json({ ok: true, role: users[id].role, id, token: users[id].token });
+});
   const { deviceId } = req.body;
 
   let id = deviceId;
