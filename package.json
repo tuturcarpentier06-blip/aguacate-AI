@@ -11,6 +11,3 @@
     "openai": "^4.0.0"
   }
 }
-git add package.json pnpm-lock.yaml
-git commit -m "chore: add node-cron"
-git push origin main
