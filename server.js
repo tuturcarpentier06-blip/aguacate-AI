@@ -325,52 +325,6 @@ app.post('/upload', upload.single('file'), (req, res) => {
   res.json({ ok: true, filename: req.file.originalname, url });
 });
 
-// ========== Images: describe (OCR) and generate ==========
-app.post('/images/describe', upload.single('image'), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ ok: false, error: 'no-file' });
-    const inputPath = req.file.path;
-    const prePath = inputPath + '-pre.png';
-    // preprocess
-    await preprocessImage(inputPath, prePath);
-    await initOCR('fra'); // 'fra' pour français ; change si besoin
-    const { data: { text } } = await ocrWorker.recognize(prePath);
-    // cleanup
-    try { fs.unlinkSync(prePath); } catch(e) {}
-    // return
-    res.json({ ok: true, text, url: `/uploads/${path.basename(inputPath)}` });
-  } catch (err) {
-    console.error('OCR error', err);
-    res.status(500).json({ ok: false, error: 'ocr_failed' });
-  }
-});
-
-app.post('/images/generate', async (req, res) => {
-  try {
-    const { prompt, size = '1024x1024' } = req.body || {};
-    if (!prompt) return res.status(400).json({ ok: false, error: 'no-prompt' });
-    // TODO: add moderation of prompt if needed
-    const imageRes = await openai.images.generate({
-      model: 'stable-diffusion',
-      prompt,
-      size
-    });
-    const url = imageRes.data?.[0]?.url || null;
-    const b64 = imageRes.data?.[0]?.b64_json || null;
-    if (url) return res.json({ ok: true, url });
-    if (b64) {
-      const buffer = Buffer.from(b64, 'base64');
-      const outPath = path.join(uploadsDir, `gen-${Date.now()}.png`);
-      fs.writeFileSync(outPath, buffer);
-      return res.json({ ok: true, url: `/uploads/${path.basename(outPath)}` });
-    }
-    return res.status(500).json({ ok: false, error: 'no-image' });
-  } catch (err) {
-    console.error('Image generation error', err);
-    res.status(500).json({ ok: false, error: 'image_failed' });
-  }
-});
-
 // ========== Start ==========
 app.listen(PORT, () => {
   console.log(`🥑 Aguacate AI server running on port ${PORT}`);
