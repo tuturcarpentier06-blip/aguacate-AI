@@ -416,3 +416,81 @@ app.post('/ban', ensureAdmin, (req, res) => {
   adminLogs.push({ type: 'ban', user: id, by: req.authUser.id, date: Date.now() });
   res.json({ ok: true });
 });
+// dépendances
+const express = require('express');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+const sharp = require('sharp');
+const { createWorker } = require('tesseract.js');
+
+const app = express();
+const upload = multer({ dest: path.join(__dirname, 'uploads/') });
+
+// Worker global réutilisable (évite de recréer à chaque requête)
+let ocrWorker = null;
+let workerReady = false;
+
+async function initWorker(lang = 'fra') {
+  if (workerReady) return;
+  ocrWorker = createWorker({
+    logger: m => console.log('[TESSERACT]', m) // utile pour debug/progress
+  });
+  await ocrWorker.load();
+  await ocrWorker.loadLanguage(lang);
+  await ocrWorker.initialize(lang);
+  workerReady = true;
+  console.log('Tesseract worker ready for', lang);
+}
+
+// Utilitaire : prétraitement optionnel (améliore la reconnaissance)
+async function preprocessImage(inputPath, outputPath) {
+  // ex : convertir en niveau de gris, augmenter la largeur (dpi) et appliquer un seuil
+  await sharp(inputPath)
+    .resize({ width: 1600, withoutEnlargement: true })
+    .grayscale()
+    .normalise()
+    .toFile(outputPath);
+}
+
+// Endpoint upload + OCR
+app.post('/images/describe', upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ ok: false, error: 'no-file' });
+
+    // initialise worker si jamais
+    await initWorker('fra'); // 'eng' pour anglais, 'fra' pour français, etc.
+
+    const inputPath = req.file.path;
+    const prePath = inputPath + '-pre.png';
+
+    // Prétraitement (optionnel mais souvent améliore la qualité)
+    await preprocessImage(inputPath, prePath);
+
+    // Reconnaissance OCR
+    const { data: { text } } = await ocrWorker.recognize(prePath);
+
+    // nettoie fichiers temporaires si tu veux
+    try { fs.unlinkSync(inputPath); } catch(e){ }
+    try { fs.unlinkSync(prePath); } catch(e){ }
+
+    return res.json({
+      ok: true,
+      text, // texte extrait
+      // url: `/uploads/${path.basename(inputPath)}` // si tu veux servir l'image
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ ok: false, error: 'ocr-failed' });
+  }
+});
+
+// fermer proprement le worker lors d'un arrêt (optionnel)
+process.on('SIGINT', async () => {
+  if (ocrWorker && workerReady) {
+    await ocrWorker.terminate();
+  }
+  process.exit();
+});
+
+app.listen(3000, () => console.log('Server started on 3000'));
