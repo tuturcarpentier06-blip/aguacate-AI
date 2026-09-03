@@ -1,54 +1,32 @@
 function openAdmin(){
-
-document.getElementById(
-"admin-panel"
-).style.display="flex";
-
+  const panel = document.getElementById("admin-panel");
+  if (panel) panel.style.display = "flex";
 }
 
 function closeAdmin(){
-
-document.getElementById(
-"admin-panel"
-).style.display="none";
-
+  const panel = document.getElementById("admin-panel");
+  if (panel) panel.style.display = "none";
 }
 
-async function loadUsers(){
-
-const res =
-await fetch("/users");
-
-const users =
-await res.json();
-
-const box =
-document.getElementById(
-"user-list"
-);
-
-box.innerHTML="";
-
-users.forEach(user=>{
-
-let dot="🟢";
-
-if(user.role==="admin"){
-dot="🟡";
+function openUsers(){
+  const panel = document.getElementById("users-panel");
+  if (panel) panel.style.display = "flex";
+  // loadUsers defined in app.js will fetch /users
+  if (typeof loadUsers === "function") loadUsers();
 }
 
-if(user.role==="supreme"){
-dot="⚫";
+function closeUsers(){
+  const panel = document.getElementById("users-panel");
+  if (panel) panel.style.display = "none";
 }
 
-box.innerHTML += `
-<p>
-${dot}
-Avocat #${user.id}
-(⚠ ${user.warnings})
-</p>
-`;
+function openMailbox(){
+  const panel = document.getElementById("mailbox-panel");
+  if (panel) panel.style.display = "flex";
+  if (typeof loadMailbox === "function") loadMailbox();
+}
 
-});
-
+function closeMailbox(){
+  const panel = document.getElementById("mailbox-panel");
+  if (panel) panel.style.display = "none";
 }
