@@ -375,3 +375,17 @@ app.post('/images/generate', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`🥑 Aguacate AI server running on port ${PORT}`);
 });
+// endpoint pour reset (protégé par un secret simple)
+app.post('/internal/reset-consumption', (req, res) => {
+  const secret = req.headers['x-admin-secret'] || req.query.secret;
+  if (!secret || secret !== process.env.RESET_SECRET) {
+    return res.status(403).json({ ok: false, error: 'forbidden' });
+  }
+  try {
+    resetDailyConsumption(); // ta fonction qui met consumptionLitres = 0
+    return res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ ok: false, error: 'error' });
+  }
+});
