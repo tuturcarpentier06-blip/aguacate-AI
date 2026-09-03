@@ -338,3 +338,5 @@
   // init on DOM ready
   document.addEventListener("DOMContentLoaded", init);
 })();
+// après fetch('/login', { ... }) -> response data
+localStorage.setItem('aguacate_token', data.token);
