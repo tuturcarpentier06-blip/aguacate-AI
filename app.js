@@ -340,3 +340,5 @@
 })();
 // après fetch('/login', { ... }) -> response data
 localStorage.setItem('aguacate_token', data.token);
+const token = localStorage.getItem('aguacate_token');
+const res = await fetch('/users', { headers: { 'Authorization': `Bearer ${token}` } });
