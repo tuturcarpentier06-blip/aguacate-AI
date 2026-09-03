@@ -483,7 +483,6 @@ app.post('/images/describe', upload.single('image'), async (req, res) => {
     console.error(err);
     return res.status(500).json({ ok: false, error: 'ocr-failed' });
   }
-});
 
 // fermer proprement le worker lors d'un arrêt (optionnel)
 process.on('SIGINT', async () => {
