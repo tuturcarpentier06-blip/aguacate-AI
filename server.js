@@ -396,3 +396,23 @@ function ensureAdmin(req, res, next) {
   req.authUser = user;
   next();
 }
+// GET /adminlogs -> seulement admin
+app.get('/adminlogs', ensureAdmin, (req, res) => {
+  res.json(adminLogs);
+});
+
+// GET /users -> seulement admin peut lister tous les utilisateurs
+app.get('/users', ensureAdmin, (req, res) => {
+  res.json(Object.values(users));
+});
+
+// POST /ban -> seulement admin
+app.post('/ban', ensureAdmin, (req, res) => {
+  const id = req.body.id;
+  const user = users[id];
+  if (!user) return res.json({ ok: false });
+  if (user.role === 'supreme') return res.json({ ok: false });
+  user.banned = true;
+  adminLogs.push({ type: 'ban', user: id, by: req.authUser.id, date: Date.now() });
+  res.json({ ok: true });
+});
