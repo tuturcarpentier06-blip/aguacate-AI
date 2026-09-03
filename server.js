@@ -341,3 +341,36 @@ app.post("/deleteConversation", (req, res) => {
 app.listen(PORT, () => {
   console.log("🥑 Aguacate AI v3.5.0 ONLINE");
 });
+// --- util / auth middleware (à ajouter en haut de server.js) ---
+const crypto = require('crypto');
+
+function genToken() {
+  return crypto.randomBytes(24).toString('hex');
+}
+
+// middleware pour récupérer user depuis le header Authorization
+function getUserFromRequest(req) {
+  // support: Authorization: Bearer <token> OR ?token=...
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : (req.query.token || req.body.token);
+  if (!token) return null;
+  // find user with that token
+  return Object.values(users).find(u => u.token === token) || null;
+}
+
+function ensureAuth(req, res, next) {
+  const user = getUserFromRequest(req);
+  if (!user) return res.status(401).json({ ok: false, error: 'unauthenticated' });
+  if (user.banned) return res.status(403).json({ ok: false, error: 'banned' });
+  req.authUser = user;
+  next();
+}
+
+function ensureAdmin(req, res, next) {
+  const user = getUserFromRequest(req);
+  if (!user) return res.status(403).json({ ok: false, error: 'forbidden' });
+  if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'forbidden' });
+  if (user.banned) return res.status(403).json({ ok: false, error: 'banned' });
+  req.authUser = user;
+  next();
+}
