@@ -5793,3 +5793,6 @@ snapshots:
 
   zod@4.3.6: {}
 pnpm add node-cron
+git add package.json pnpm-lock.yaml
+git commit -m "chore: add node-cron"
+git push origin main
