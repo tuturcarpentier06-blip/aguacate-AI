@@ -214,12 +214,10 @@ body{
 .water-circle.red{ border-color:var(--eco-red) }
 
 /* messages area */
-#messages{
-  flex:1;
-  overflow:auto;
-  padding:20px;
-  background:linear-gradient(180deg,#f8faf8,#f9fbfb);
-}
+#messages{ flex:1; overflow:auto; padding:20px; background:linear-gradient(180deg,#f8faf8,#f9fbfb); }
+.input-bar input{ width:100%; padding:12px; border-radius:12px; }
+.send-btn{ cursor:pointer; }
+#aguacate{ /* assure que l'élément existe visuellement */ }
 .message-user{
   align-self:flex-end;
   background:linear-gradient(180deg,#dff7ef,#cdeee4);
