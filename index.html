@@ -1236,118 +1236,91 @@
 </div>
 
 
-<!-- =====================================================
-     ÉCOGUACATE — SYNCHRONISATION
-     ===================================================== -->
-
 <script>
-
 (function () {
 
-  /*
-   * Au-delà de 40 L :
-   * l'arbre est considéré comme complètement sec.
-   */
-
-  const MAX_LITRES = 46;
-
+  const MAX_LITRES = 40;
 
   function getLitres() {
-
-    const element =
-      document.getElementById('eco-litres');
-
+    const element = document.getElementById('eco-litres');
     if (!element) return 0;
 
-    const value =
-      element.textContent
-        .replace(',', '.')
-        .replace(/[^\d.]/g, '');
+    const value = element.textContent
+      .replace(',', '.')
+      .replace(/[^\d.]/g, '');
 
-    const litres =
-      parseFloat(value);
+    const litres = parseFloat(value);
 
     return Number.isFinite(litres)
       ? Math.max(0, litres)
       : 0;
   }
 
-
   function updateEcoTree() {
 
-    const litres =
-      getLitres();
+    const litres = getLitres();
 
-    const tree =
-      document.getElementById('eco-tree');
-
-    const pump =
-      document.getElementById('eco-water-pump');
-
-    const water =
-      document.getElementById('pump-water');
-
-    const glow =
-      document.querySelector('.avocado-glow');
-
-    const bar =
-      document.getElementById('eco-bar-fill');
-
-    const marker =
-      document.getElementById('eco-marker');
+    const tree = document.getElementById('eco-tree');
+    const pump = document.getElementById('eco-water-pump');
+    const water = document.getElementById('pump-water');
+    const glow = document.querySelector('.avocado-glow');
+    const status = document.getElementById('eco-status');
+    const percent = document.getElementById('eco-pct');
+    const bar = document.getElementById('eco-bar-fill');
+    const marker = document.getElementById('eco-marker');
 
     if (!tree) return;
-
 
     /* =====================================================
        PROGRESSION
        ===================================================== */
 
-    const progress =
-      Math.min(litres / MAX_LITRES, 1);
+    const progress = Math.min(litres / MAX_LITRES, 1);
 
+    const waterRemaining = Math.max(0, 1 - progress);
 
-    /*
-     * Eau restante dans la pompe.
-     *
-     * 0 L  = 100 %
-     * 40 L = 0 %
-     */
-
-    const waterRemaining =
-      Math.max(0, 1 - progress);
-
-
+    /* Eau restante dans la pompe */
     if (water) {
-
-      water.style.height =
-        `${waterRemaining * 100}%`;
-
+      water.style.height = `${waterRemaining * 100}%`;
     }
 
+    /* =====================================================
+       POURCENTAGE
+       ===================================================== */
+
+    if (percent) {
+      percent.textContent = `${Math.round(progress * 100)}%`;
+    }
 
     /* =====================================================
-       BARRE
+       BARRE DE CONSOMMATION
        ===================================================== */
 
     if (bar) {
+      bar.style.width = `${progress * 100}%`;
 
-      bar.style.height =
-        `${progress * 100}%`;
-
+      if (litres <= 10) {
+        bar.style.background = '#22c55e';
+      } else if (litres <= 15) {
+        bar.style.background = '#eab308';
+      } else if (litres <= 25) {
+        bar.style.background = '#f97316';
+      } else {
+        bar.style.background = '#ef4444';
+      }
     }
-
 
     if (marker) {
-
-      marker.style.bottom =
-        `${progress * 100}%`;
-
+      marker.style.left = `${progress * 100}%`;
     }
 
-
     /* =====================================================
-       ÉTAT DE L'ARBRE
+       ÉTAT DE L'ARBRE + MESSAGE
+       
+       0–10  = VERT
+       11–15 = JAUNE
+       16–25 = ORANGE
+       26+   = ROUGE
        ===================================================== */
 
     tree.classList.remove(
@@ -1358,97 +1331,42 @@
       'tree-dead'
     );
 
-
     if (litres <= 10) {
 
-      /*
-       * 🟢 0–10 L
-       */
-
+      /* 🟢 0 à 10 L */
       tree.classList.add('tree-good');
 
-    }
+      if (status) {
+        status.textContent = 'Excellent 🌿';
+      }
 
-    else if (litres <= 15) {
+    } else if (litres <= 15) {
 
-      /*
-       * 🟡 11–15 L
-       */
-
+      /* 🟡 11 à 15 L */
       tree.classList.add('tree-warning');
 
-    }
+      if (status) {
+        status.textContent = 'Attention 🌱';
+      }
 
-    else if (litres <= 25) {
+    } else if (litres <= 25) {
 
-      /*
-       * 🟠 16–25 L
-       */
-
+      /* 🟠 16 à 25 L */
       tree.classList.add('tree-danger');
 
-    }
+      if (status) {
+        status.textContent = 'L’arbre souffre 💧';
+      }
 
-    else {
+    } else {
 
-      /*
-       * 🔴 26 L+
-       */
-
+      /* 🔴 26 L et + */
       tree.classList.add('tree-dead');
 
+      if (status) {
+        status.textContent = 'Arbre desséché 🥀';
+      }
     }
-
-
-    /* =====================================================
-       COULEUR DE LA BARRE
-       ===================================================== */
-
-    let color;
-
-    if (litres <= 10) {
-
-      color = '#22c55e';
-
-    }
-
-    else if (litres <= 15) {
-
-      color = '#eab308';
-
-    }
-
-    else if (litres <= 25) {
-
-      color = '#f97316';
-
-    }
-
-    else {
-
-      color = '#ef4444';
-
-    }
-
-
-    if (bar) {
-
-      bar.style.background =
-        color;
-
-      bar.style.boxShadow =
-        `0 0 12px ${color}66`;
-
-    }
-
-
-    if (marker) {
-
-      marker.style.background =
-        color;
-
-    }
-
 
     /* =====================================================
        POMPE
@@ -1457,19 +1375,12 @@
     if (pump) {
 
       if (litres >= MAX_LITRES) {
-
         pump.classList.add('dry');
-
-      }
-
-      else {
-
+      } else {
         pump.classList.remove('dry');
-
       }
 
     }
-
 
     /* =====================================================
        LUMIÈRE
@@ -1484,39 +1395,29 @@
 
         glow.style.opacity = '1';
 
-      }
-
-      else if (litres <= 15) {
+      } else if (litres <= 15) {
 
         glow.style.background =
           'radial-gradient(circle, rgba(234,179,8,.25), rgba(234,179,8,.06) 45%, transparent 72%)';
 
         glow.style.opacity = '.9';
 
-      }
-
-      else if (litres <= 25) {
+      } else if (litres <= 25) {
 
         glow.style.background =
           'radial-gradient(circle, rgba(249,115,22,.25), rgba(249,115,22,.06) 45%, transparent 72%)';
 
         glow.style.opacity = '.8';
 
-      }
-
-      else {
+      } else {
 
         glow.style.background =
           'radial-gradient(circle, rgba(239,68,68,.22), rgba(239,68,68,.04) 45%, transparent 72%)';
 
         glow.style.opacity = '.5';
-
       }
-
     }
-
   }
-
 
   /* =====================================================
      SURVEILLANCE DU COMPTEUR
@@ -1524,7 +1425,6 @@
 
   const litresElement =
     document.getElementById('eco-litres');
-
 
   if (litresElement) {
 
@@ -1539,31 +1439,16 @@
         subtree: true
       }
     );
-
   }
 
+  /* Vérification régulière */
+  setInterval(updateEcoTree, 500);
 
-  /*
-   * Vérification régulière.
-   */
-
-  setInterval(
-    updateEcoTree,
-    500
-  );
-
-
-  /*
-   * Initialisation.
-   */
-
+  /* Première mise à jour */
   updateEcoTree();
 
 })();
-
 </script>
-
-
 <!-- =====================================================
      SCRIPTS AGUACATE AI
      ===================================================== -->
