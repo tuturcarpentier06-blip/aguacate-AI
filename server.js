@@ -219,17 +219,59 @@ async function askAI(messages) {
   return response.choices?.[0]?.message?.content || '🥑 Je n’ai pas reçu de réponse.';
 }
 function moderationHit(u, message) {
+  // Aucun langage grossier détecté
   if (!containsGrossLanguage(message)) return false;
-  addWarning(u, 'Langage grossier détecté automatiquement', 'system');
-  banFor24h(u, 'Langage grossier détecté automatiquement', 'system');
-  return true;
+
+  // Un seul avertissement est ajouté par message,
+  // même si le message contient plusieurs mots interdits.
+  const warning = addWarning(
+    u,
+    'Langage grossier détecté automatiquement',
+    'system'
+  );
+
+  // addWarning() s'occupe déjà du bannissement
+  // lorsque le nombre d'avertissements atteint 3.
+  if (isBanned(u)) {
+    return {
+      banned: true,
+      warning
+    };
+  }
+
+  return {
+    banned: false,
+    warning
+  };
 }
 
 app.post('/chat', chatLimiter, ensureAuth, async (req,res) => {
   try {
     const u=req.authUser,message=safeText(req.body.message).trim(),mode=safeText(req.body.mode)||'Kids';
     if(!message)return res.status(400).json({ok:false,error:'empty-message'});
-    if(moderationHit(u,message))return res.status(403).json({ok:false,error:'auto-banned',bannedUntil:u.bannedUntil,message:'Ton message contient un langage interdit. Ton accès a été suspendu pendant 24 heures.'});
+  const moderation = moderationHit(u, message);
+
+if (moderation && moderation.banned) {
+  return res.status(403).json({
+    ok: false,
+    error: 'auto-banned',
+    bannedUntil: u.bannedUntil,
+    warningNumber: u.warnings.length,
+    message: 'Tu as atteint 3 avertissements. Ton accès à Aguacate AI est suspendu pendant 24 heures.'
+  });
+}
+
+if (moderation && moderation.warning) {
+  saveData();
+
+  return res.status(400).json({
+    ok: false,
+    error: 'warning',
+    warningNumber: u.warnings.length,
+    warning: moderation.warning,
+    message: `⚠️ Avertissement n°${u.warnings.length} : ton message contient un langage interdit.`
+  });
+}
     if(!data.memories[u.id])data.memories[u.id]=[];
     const system=mode==='Kids'?'Tu es Aguacate AI. Explique avec des mots simples, adaptés à un enfant, sans être infantilisant.':mode==='Collégien'?'Tu es Aguacate AI, un assistant pédagogique pour collégien. Explique clairement et aide à raisonner.':mode==='Professeur'?'Tu es Aguacate AI, assistant pédagogique pour enseignants. Sois structuré et précis.':'Tu es Aguacate AI, assistant polyvalent.';
     data.memories[u.id].push({role:'user',content:message});
