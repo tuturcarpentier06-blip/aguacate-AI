@@ -683,25 +683,421 @@
 
 </main>
 
-
 <!-- =====================================================
-     ÉCOGUACATE
+     ÉCOGUACATE — ARBRE + POMPE + BARRE
      ===================================================== -->
+
+<style>
+/* ================================
+   ZONE ÉCOGUACATE COMPACTE
+   ================================ */
+
+.eco-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.avocado-wrap {
+  position: relative;
+  width: 170px;
+  height: 205px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avocado-glow {
+  position: absolute;
+  width: 125px;
+  height: 125px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(34,197,94,.25),
+    rgba(34,197,94,.06) 45%,
+    transparent 72%
+  );
+  filter: blur(7px);
+  transition: all .8s ease;
+}
+
+.eco-tree-svg {
+  width: 145px;
+  height: 195px;
+  position: relative;
+  z-index: 2;
+  overflow: visible;
+}
+
+/* ================================
+   ARBRE
+   ================================ */
+
+.tree-leaves {
+  transition:
+    opacity .9s ease,
+    transform .9s ease,
+    filter .9s ease;
+  transform-origin: 50% 70%;
+}
+
+.tree-fruit {
+  transition:
+    opacity .8s ease,
+    transform .8s ease;
+  transform-origin: center;
+}
+
+.tree-trunk {
+  transition:
+    filter .8s ease,
+    opacity .8s ease;
+}
+
+/* Arbre vert */
+.eco-tree-svg.tree-good .tree-leaves {
+  opacity: 1;
+  transform: scale(1);
+  filter: saturate(1.15);
+}
+
+/* Jaune */
+.eco-tree-svg.tree-warning .tree-leaves {
+  opacity: .82;
+  transform: scale(.97);
+  filter: saturate(.9);
+}
+
+/* Orange */
+.eco-tree-svg.tree-danger .tree-leaves {
+  opacity: .42;
+  transform: scale(.91);
+  filter: saturate(.55);
+}
+
+/* Rouge */
+.eco-tree-svg.tree-dry .tree-leaves {
+  opacity: .08;
+  transform: scale(.82);
+  filter: grayscale(1);
+}
+
+/* Tronc uniquement */
+.eco-tree-svg.tree-dead .tree-leaves {
+  opacity: 0;
+  transform: scale(.65);
+}
+
+.eco-tree-svg.tree-dead .tree-fruit {
+  opacity: 0;
+}
+
+.eco-tree-svg.tree-danger .tree-fruit:nth-of-type(n+4) {
+  opacity: 0;
+}
+
+.eco-tree-svg.tree-warning .tree-fruit:nth-of-type(n+6) {
+  opacity: 0;
+}
+
+.eco-tree-svg.tree-dry .tree-fruit {
+  opacity: 0;
+}
+
+/* Animation des feuilles */
+.leaf {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: leafFloat 3.5s ease-in-out infinite;
+}
+
+.leaf:nth-child(2n) {
+  animation-delay: -.8s;
+}
+
+.leaf:nth-child(3n) {
+  animation-delay: -1.5s;
+}
+
+@keyframes leafFloat {
+  0%,100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-2px) rotate(1.5deg);
+  }
+}
+
+/* ================================
+   POMPE COMPACTE
+   ================================ */
+
+.water-pump {
+  position: absolute;
+  right: -3px;
+  bottom: 18px;
+  width: 48px;
+  height: 82px;
+  z-index: 4;
+  transform: scale(.75);
+  transform-origin: bottom right;
+}
+
+.pump-body {
+  position: absolute;
+  bottom: 0;
+  left: 10px;
+  width: 30px;
+  height: 43px;
+  border-radius: 7px 7px 4px 4px;
+  background: linear-gradient(145deg,#60a5fa,#2563eb);
+  border: 2px solid rgba(255,255,255,.5);
+  box-shadow:
+    0 6px 14px rgba(37,99,235,.25),
+    inset 0 0 10px rgba(255,255,255,.2);
+}
+
+.pump-top {
+  position: absolute;
+  bottom: 40px;
+  left: 14px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #dbeafe;
+  border: 2px solid #2563eb;
+}
+
+.pump-handle {
+  position: absolute;
+  top: 5px;
+  left: 14px;
+  width: 5px;
+  height: 43px;
+  border-radius: 10px;
+  background: #374151;
+  transform-origin: bottom center;
+  animation: pumpMove 1.4s ease-in-out infinite;
+}
+
+.pump-handle::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: -8px;
+  width: 23px;
+  height: 7px;
+  border-radius: 10px;
+  background: #374151;
+}
+
+.pump-pipe {
+  position: absolute;
+  left: 0;
+  top: 44px;
+  width: 21px;
+  height: 6px;
+  border-radius: 8px;
+  background: #60a5fa;
+  transform: rotate(-22deg);
+  transform-origin: right center;
+}
+
+.water-stream {
+  position: absolute;
+  left: -1px;
+  top: 53px;
+  width: 4px;
+  height: 29px;
+  border-radius: 10px;
+  background: linear-gradient(
+    to bottom,
+    rgba(96,165,250,.95),
+    rgba(59,130,246,.15)
+  );
+  animation: waterFlow .8s linear infinite;
+}
+
+.pump-water-level {
+  position: absolute;
+  left: 14px;
+  bottom: 6px;
+  width: 22px;
+  height: 32px;
+  border-radius: 3px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.pump-water {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to top,
+    #2563eb,
+    #60a5fa
+  );
+  transition: height .9s ease;
+}
+
+.water-pump.dry .pump-handle,
+.water-pump.dry .water-stream {
+  animation-play-state: paused;
+}
+
+.water-pump.dry .pump-body {
+  filter: grayscale(.8);
+}
+
+@keyframes pumpMove {
+  0%,100% {
+    transform: rotate(-13deg);
+  }
+
+  50% {
+    transform: rotate(18deg);
+  }
+}
+
+@keyframes waterFlow {
+  0% {
+    transform: translateY(-4px);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+}
+
+/* ================================
+   BARRE
+   ================================ */
+
+.scale {
+  width: 100%;
+  max-width: 290px;
+  margin-top: 2px;
+}
+
+.scale-track {
+  position: relative;
+  width: 100%;
+  height: 12px;
+  border-radius: 20px;
+  background: rgba(255,255,255,.12);
+  overflow: hidden;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,.15);
+}
+
+#eco-bar-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0%;
+  border-radius: 20px;
+
+  /* Vert → jaune → orange → rouge */
+  background: linear-gradient(
+    90deg,
+    #22c55e 0%,
+    #22c55e 10%,
+    #eab308 11%,
+    #eab308 15%,
+    #f97316 16%,
+    #f97316 25%,
+    #ef4444 26%,
+    #dc2626 100%
+  );
+
+  transition:
+    width 1s ease,
+    filter .5s ease,
+    box-shadow .5s ease;
+}
+
+#eco-marker {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  border: 3px solid #22c55e;
+  transform: translate(-50%,-50%);
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  transition:
+    left 1s ease,
+    border-color .6s ease;
+  z-index: 3;
+}
+
+.scale-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  font-size: 10px;
+  opacity: .75;
+}
+
+.scale-labels span:nth-child(1)::after {
+  content: "";
+}
+
+.eco-number {
+  margin-top: 8px;
+}
+
+/* ================================
+   RESPONSIVE
+   ================================ */
+
+@media (max-width: 900px) {
+
+  .avocado-wrap {
+    width: 150px;
+    height: 185px;
+  }
+
+  .eco-tree-svg {
+    width: 130px;
+    height: 175px;
+  }
+
+  .water-pump {
+    transform: scale(.65);
+    right: -2px;
+  }
+
+  .scale {
+    max-width: 260px;
+  }
+}
+</style>
+
 
 <aside class="eco-panel">
 
   <div class="eco-head">
 
     <div>
+      <div class="eyebrow">ÉCOGUACATE</div>
 
-      <div class="eyebrow">
-        ÉCOGUACATE
-      </div>
-
-      <h2>
-        🌱 Ton impact
-      </h2>
-
+      <h2>🌱 Ton impact</h2>
     </div>
 
     <div class="eco-live">
@@ -716,13 +1112,18 @@
   </p>
 
 
-  <!-- ARBRE + BARRE SUR LE MÊME NIVEAU -->
+  <!-- ================================
+       ARBRE + POMPE
+       ================================ -->
 
   <div class="eco-visual">
 
     <div class="avocado-wrap">
 
       <div class="avocado-glow"></div>
+
+
+      <!-- ARBRE -->
 
       <svg
         id="eco-tree"
@@ -731,7 +1132,7 @@
         aria-label="Arbre ÉcoGuacate"
       >
 
-        <!-- SOL -->
+        <!-- Sol -->
 
         <ellipse
           class="tree-ground"
@@ -806,9 +1207,6 @@
           <circle cx="126" cy="39" r="36" fill="#16a34a"/>
           <circle cx="164" cy="52" r="31" fill="#22c55e"/>
           <circle cx="101" cy="95" r="42" fill="#15803d"/>
-
-
-          <!-- PETITES FEUILLES -->
 
           <ellipse
             class="leaf"
@@ -960,7 +1358,9 @@
     </div>
 
 
-    <!-- BARRE -->
+    <!-- ================================
+         BARRE DE CONSOMMATION
+         ================================ -->
 
     <div class="scale">
 
@@ -976,9 +1376,9 @@
 
         <span>0 L</span>
         <span>10 L</span>
-        <span>15 L</span>
         <span>25 L</span>
-        <span>40 L+</span>
+        <span>50 L</span>
+        <span>100 L+</span>
 
       </div>
 
@@ -987,21 +1387,19 @@
   </div>
 
 
-  <!-- COMPTEUR -->
+  <!-- ================================
+       COMPTEUR
+       ================================ -->
 
   <div class="eco-number">
 
     <div>
 
-      <span id="eco-litres">
-        0,0
-      </span>
+      <span id="eco-litres">0,0</span>
 
       <small>L</small>
 
-      <p>
-        d'eau consommés
-      </p>
+      <p>d'eau consommés</p>
 
     </div>
 
@@ -1032,15 +1430,379 @@
 
     <span>🟢 Faible</span>
     <span>🟡 Moyen</span>
-    <span>🔴 Élevé</span>
+    <span>🟠 Élevé</span>
+    <span>🔴 Critique</span>
 
   </div>
 
 </aside>
 
-</div>
+
+<!-- =====================================================
+     SCRIPT ÉCOGUACATE
+     ===================================================== -->
+
+<script>
+(function () {
+
+  /*
+   * IMPORTANT :
+   *
+   * La barre va maintenant de 0 à 100 L.
+   *
+   * 0 L   = 0 %
+   * 50 L  = 50 %
+   * 100 L = 100 %
+   *
+   * Au-delà de 100 L, la barre reste à 100 %.
+   */
+
+  const BAR_MAX_LITRES = 100;
 
 
+  function getLitres() {
+
+    const element =
+      document.getElementById('eco-litres');
+
+    if (!element) return 0;
+
+    const value =
+      element.textContent
+        .replace(',', '.')
+        .replace(/[^\d.]/g, '');
+
+    const litres =
+      parseFloat(value);
+
+    return Number.isFinite(litres)
+      ? Math.max(0, litres)
+      : 0;
+  }
+
+
+  function updateEcoGuacate() {
+
+    const litres = getLitres();
+
+    const tree =
+      document.getElementById('eco-tree');
+
+    const pump =
+      document.getElementById('eco-water-pump');
+
+    const water =
+      document.getElementById('pump-water');
+
+    const bar =
+      document.getElementById('eco-bar-fill');
+
+    const marker =
+      document.getElementById('eco-marker');
+
+    const glow =
+      document.querySelector('.avocado-glow');
+
+    const status =
+      document.getElementById('eco-status');
+
+    const percent =
+      document.getElementById('eco-pct');
+
+
+    if (!tree) return;
+
+
+    /* ================================
+       BARRE 0 → 100 L
+       ================================ */
+
+    const progress =
+      Math.min(litres / BAR_MAX_LITRES, 1);
+
+    const percentage =
+      Math.round(progress * 100);
+
+
+    if (bar) {
+
+      bar.style.width =
+        `${percentage}%`;
+
+    }
+
+
+    if (marker) {
+
+      marker.style.left =
+        `${percentage}%`;
+
+    }
+
+
+    if (percent) {
+
+      percent.textContent =
+        `${percentage}%`;
+
+    }
+
+
+    /* ================================
+       EAU RESTANTE DE LA POMPE
+       ================================ */
+
+    if (water) {
+
+      const remaining =
+        Math.max(0, 1 - progress);
+
+      water.style.height =
+        `${remaining * 100}%`;
+
+    }
+
+
+    /* ================================
+       SUPPRESSION DES ANCIENS ÉTATS
+       ================================ */
+
+    tree.classList.remove(
+      'tree-good',
+      'tree-warning',
+      'tree-danger',
+      'tree-dry',
+      'tree-dead'
+    );
+
+
+    /* ================================
+       ÉTAT SELON LA CONSOMMATION
+       ================================ */
+
+    if (litres <= 10) {
+
+      /*
+       * 🟢 0–10 L
+       */
+
+      tree.classList.add('tree-good');
+
+      if (status)
+        status.textContent =
+          'Excellent 🌿';
+
+    }
+
+    else if (litres <= 15) {
+
+      /*
+       * 🟡 11–15 L
+       */
+
+      tree.classList.add('tree-warning');
+
+      if (status)
+        status.textContent =
+          'Attention ⚠️';
+
+    }
+
+    else if (litres <= 25) {
+
+      /*
+       * 🟠 16–25 L
+       */
+
+      tree.classList.add('tree-danger');
+
+      if (status)
+        status.textContent =
+          'Impact élevé 🟠';
+
+    }
+
+    else if (litres <= 50) {
+
+      /*
+       * 🔴 26–50 L
+       */
+
+      tree.classList.add('tree-dry');
+
+      if (status)
+        status.textContent =
+          'Arbre en difficulté 🔴';
+
+    }
+
+    else {
+
+      /*
+       * 🔴 50 L+
+       *
+       * L'arbre finit par perdre
+       * ses feuilles et ses avocats.
+       */
+
+      tree.classList.add('tree-dead');
+
+      if (status)
+        status.textContent =
+          'Arbre desséché 💀🌳';
+
+    }
+
+
+    /* ================================
+       COULEUR DE LA LUMIÈRE
+       ================================ */
+
+    if (glow) {
+
+      if (litres <= 10) {
+
+        glow.style.background =
+          'radial-gradient(circle, rgba(34,197,94,.30), rgba(34,197,94,.06) 45%, transparent 72%)';
+
+        glow.style.opacity = '1';
+
+      }
+
+      else if (litres <= 15) {
+
+        glow.style.background =
+          'radial-gradient(circle, rgba(234,179,8,.27), rgba(234,179,8,.05) 45%, transparent 72%)';
+
+        glow.style.opacity = '.9';
+
+      }
+
+      else if (litres <= 25) {
+
+        glow.style.background =
+          'radial-gradient(circle, rgba(249,115,22,.27), rgba(249,115,22,.05) 45%, transparent 72%)';
+
+        glow.style.opacity = '.8';
+
+      }
+
+      else {
+
+        glow.style.background =
+          'radial-gradient(circle, rgba(239,68,68,.24), rgba(239,68,68,.03) 45%, transparent 72%)';
+
+        glow.style.opacity = '.55';
+
+      }
+
+    }
+
+
+    /* ================================
+       COULEUR DU MARQUEUR
+       ================================ */
+
+    if (marker) {
+
+      if (litres <= 10) {
+
+        marker.style.borderColor =
+          '#22c55e';
+
+      }
+
+      else if (litres <= 15) {
+
+        marker.style.borderColor =
+          '#eab308';
+
+      }
+
+      else if (litres <= 25) {
+
+        marker.style.borderColor =
+          '#f97316';
+
+      }
+
+      else {
+
+        marker.style.borderColor =
+          '#ef4444';
+
+      }
+
+    }
+
+
+    /* ================================
+       POMPE VIDE
+       ================================ */
+
+    if (pump) {
+
+      if (litres >= BAR_MAX_LITRES) {
+
+        pump.classList.add('dry');
+
+      } else {
+
+        pump.classList.remove('dry');
+
+      }
+
+    }
+
+  }
+
+
+  /* ================================
+     SURVEILLANCE DU COMPTEUR
+     ================================ */
+
+  const litresElement =
+    document.getElementById('eco-litres');
+
+
+  if (litresElement) {
+
+    const observer =
+      new MutationObserver(
+        updateEcoGuacate
+      );
+
+    observer.observe(
+      litresElement,
+      {
+        childList: true,
+        characterData: true,
+        subtree: true
+      }
+    );
+
+  }
+
+
+  /*
+   * Vérification régulière.
+   * Cela permet aussi de fonctionner
+   * si app.js modifie le compteur
+   * d'une autre manière.
+   */
+
+  setInterval(
+    updateEcoGuacate,
+    500
+  );
+
+
+  /* Première mise à jour */
+
+  updateEcoGuacate();
+
+})();
+</script>
 <!-- =====================================================
      FICHIER
      ===================================================== -->
