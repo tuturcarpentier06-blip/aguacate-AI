@@ -45,19 +45,21 @@
   />
 
   <!-- chair -->
-  <path
-    id="eco-avocado-fill"
-    d="M50,12
-       C38,12 28,24 24,40
-       C20,60 20,88 30,103
-       C38,115 62,115 70,103
-       C80,88 80,60 76,40
-       C72,24 62,12 50,12 Z"
-    fill="url(#avocado-grad)"
-  />
+function getEcoColor(litres) {
+    if (litres <= 10) {
+        return '#22c55e'; // 🟢 vert
+    }
 
-</g>
+    if (litres <= 16) {
+        return '#eab308'; // 🟡 jaune
+    }
 
+    if (litres <= 20) {
+        return '#f97316'; // 🟠 orange
+    }
+
+    return '#ef4444'; // 🔴 rouge
+}
 <!-- noyau : volontairement NON retourné -->
 <ellipse
   cx="50"
