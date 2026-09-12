@@ -13,21 +13,28 @@
 <link rel="stylesheet" href="avatar.css">
 
 <style>
+
 /* =========================================================
-   ÉCOGUACATE — ARBRE + POMPE
+   ÉCOGUACATE — VERSION COMPACTE
    ========================================================= */
 
 .eco-visual {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 18px;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 245px;
 }
+
+/* Zone arbre + pompe */
 
 .avocado-wrap {
   position: relative;
-  width: 220px;
-  height: 300px;
+  width: 155px;
+  height: 235px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -35,8 +42,8 @@
 
 .avocado-glow {
   position: absolute;
-  width: 190px;
-  height: 190px;
+  width: 130px;
+  height: 130px;
   border-radius: 50%;
   background: radial-gradient(
     circle,
@@ -44,22 +51,23 @@
     rgba(34,197,94,.08) 45%,
     transparent 72%
   );
-  filter: blur(8px);
+  filter: blur(7px);
   transition:
     background .8s ease,
     transform .8s ease,
     opacity .8s ease;
 }
 
+/* ARBRE */
+
 .eco-tree-svg {
-  width: 210px;
-  height: 290px;
+  width: 145px;
+  height: 205px;
   position: relative;
   z-index: 2;
   overflow: visible;
 }
 
-/* Feuilles */
 .tree-leaves {
   transition:
     opacity .9s ease,
@@ -68,7 +76,6 @@
   transform-origin: 50% 70%;
 }
 
-/* Avocats */
 .tree-fruit {
   transition:
     opacity .8s ease,
@@ -76,54 +83,58 @@
   transform-origin: center;
 }
 
-/* Tronc */
 .tree-trunk {
   transition:
     filter .8s ease,
     opacity .8s ease;
 }
 
-/* Petite pompe */
+/* =========================================================
+   POMPE — PETITE
+   ========================================================= */
+
 .water-pump {
   position: absolute;
-  right: -8px;
-  bottom: 28px;
-  width: 68px;
-  height: 115px;
+  right: -2px;
+  bottom: 25px;
+  width: 50px;
+  height: 85px;
   z-index: 4;
+  transform: scale(.78);
+  transform-origin: bottom right;
 }
 
 .pump-body {
   position: absolute;
   bottom: 0;
-  left: 14px;
-  width: 38px;
-  height: 58px;
-  border-radius: 9px 9px 5px 5px;
+  left: 10px;
+  width: 30px;
+  height: 47px;
+  border-radius: 8px 8px 5px 5px;
   background: linear-gradient(145deg,#60a5fa,#2563eb);
-  border: 3px solid rgba(255,255,255,.5);
+  border: 2px solid rgba(255,255,255,.5);
   box-shadow:
-    0 8px 18px rgba(37,99,235,.25),
-    inset 0 0 12px rgba(255,255,255,.2);
+    0 6px 14px rgba(37,99,235,.25),
+    inset 0 0 10px rgba(255,255,255,.2);
 }
 
 .pump-top {
   position: absolute;
-  bottom: 53px;
-  left: 19px;
-  width: 28px;
-  height: 28px;
+  bottom: 42px;
+  left: 14px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: #dbeafe;
-  border: 3px solid #2563eb;
+  border: 2px solid #2563eb;
 }
 
 .pump-handle {
   position: absolute;
-  top: 7px;
-  left: 17px;
-  width: 7px;
-  height: 58px;
+  top: 6px;
+  left: 13px;
+  width: 6px;
+  height: 46px;
   border-radius: 10px;
   background: #374151;
   transform-origin: bottom center;
@@ -133,10 +144,10 @@
 .pump-handle::after {
   content: "";
   position: absolute;
-  top: -7px;
-  left: -11px;
-  width: 29px;
-  height: 9px;
+  top: -6px;
+  left: -9px;
+  width: 25px;
+  height: 8px;
   border-radius: 10px;
   background: #374151;
 }
@@ -144,9 +155,9 @@
 .pump-pipe {
   position: absolute;
   left: 0;
-  top: 61px;
-  width: 27px;
-  height: 8px;
+  top: 48px;
+  width: 22px;
+  height: 6px;
   border-radius: 8px;
   background: #60a5fa;
   transform: rotate(-22deg);
@@ -155,10 +166,10 @@
 
 .water-stream {
   position: absolute;
-  left: -2px;
-  top: 72px;
-  width: 5px;
-  height: 38px;
+  left: -1px;
+  top: 58px;
+  width: 4px;
+  height: 29px;
   border-radius: 10px;
   background: linear-gradient(
     to bottom,
@@ -171,10 +182,10 @@
 
 .pump-water-level {
   position: absolute;
-  left: 19px;
-  bottom: 7px;
-  width: 28px;
-  height: 44px;
+  left: 14px;
+  bottom: 6px;
+  width: 22px;
+  height: 34px;
   border-radius: 4px;
   overflow: hidden;
   pointer-events: none;
@@ -198,6 +209,7 @@
   0%,100% {
     transform: rotate(-13deg);
   }
+
   50% {
     transform: rotate(18deg);
   }
@@ -208,23 +220,31 @@
     transform: translateY(-4px);
     opacity: 0;
   }
+
   20% {
     opacity: 1;
   }
+
   100% {
     transform: translateY(10px);
     opacity: 0;
   }
 }
 
-/* Sol */
+/* =========================================================
+   SOL
+   ========================================================= */
+
 .tree-ground {
   fill: #8b5e34;
   opacity: .35;
   transition: opacity .8s ease;
 }
 
-/* États de l'arbre */
+/* =========================================================
+   ÉTATS DE L'ARBRE
+   ========================================================= */
+
 .eco-tree-svg.tree-good .tree-leaves {
   opacity: 1;
   transform: scale(1);
@@ -258,11 +278,13 @@
   opacity: 0;
 }
 
-.eco-tree-svg.tree-danger .tree-fruit:nth-of-type(n+4) {
+/* Disparition progressive des avocats */
+
+.eco-tree-svg.tree-warning .tree-fruit ellipse:nth-child(n+6) {
   opacity: 0;
 }
 
-.eco-tree-svg.tree-warning .tree-fruit:nth-of-type(n+6) {
+.eco-tree-svg.tree-danger .tree-fruit ellipse:nth-child(n+4) {
   opacity: 0;
 }
 
@@ -270,7 +292,10 @@
   opacity: 0;
 }
 
-/* Animation légère des feuilles */
+/* =========================================================
+   ANIMATION DES FEUILLES
+   ========================================================= */
+
 .leaf {
   transform-box: fill-box;
   transform-origin: center;
@@ -289,27 +314,87 @@
   0%,100% {
     transform: translateY(0) rotate(0deg);
   }
+
   50% {
     transform: translateY(-2px) rotate(1.5deg);
   }
 }
 
 /* =========================================================
-   BARRE ÉCOGUACATE
+   BARRE DE CONSOMMATION
    ========================================================= */
 
+.eco-visual .scale {
+  width: 48px;
+  height: 205px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.eco-visual .scale-track {
+  position: relative;
+  width: 12px;
+  height: 175px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(0,0,0,.08);
+  box-shadow:
+    inset 0 1px 4px rgba(0,0,0,.15),
+    0 2px 8px rgba(0,0,0,.08);
+}
+
 #eco-bar-fill {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 0%;
+  border-radius: 20px;
+  background: #22c55e;
   transition:
-    width 1s ease,
+    height 1s ease,
     background .8s ease,
     box-shadow .8s ease;
 }
 
 #eco-marker {
-  transition: left 1s ease;
+  position: absolute;
+  left: 50%;
+  width: 24px;
+  height: 4px;
+  border-radius: 5px;
+  transform: translate(-50%,50%);
+  background: currentColor;
+  box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  transition:
+    bottom 1s ease,
+    background .8s ease;
 }
 
-/* État de la pompe */
+/* Labels verticaux */
+
+.eco-visual .scale-labels {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 175px;
+  margin-left: 6px;
+  font-size: 8px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.eco-visual .scale-labels span {
+  display: block;
+}
+
+/* =========================================================
+   POMPE VIDE
+   ========================================================= */
+
 .water-pump.dry .pump-handle,
 .water-pump.dry .water-stream {
   animation-play-state: paused;
@@ -319,23 +404,59 @@
   filter: grayscale(.7);
 }
 
-/* Responsive */
-@media (max-width: 900px) {
-  .eco-tree-svg {
-    width: 180px;
-    height: 250px;
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+  .eco-visual {
+    gap: 5px;
   }
 
   .avocado-wrap {
-    width: 190px;
-    height: 270px;
+    width: 140px;
+    height: 220px;
   }
 
-  .water-pump {
-    transform: scale(.85);
-    right: -4px;
+  .eco-tree-svg {
+    width: 130px;
+    height: 190px;
   }
+
+  .eco-visual .scale {
+    width: 42px;
+  }
+
 }
+
+@media (max-width: 900px) {
+
+  .eco-visual {
+    min-height: 220px;
+  }
+
+  .avocado-wrap {
+    width: 130px;
+    height: 205px;
+  }
+
+  .eco-tree-svg {
+    width: 120px;
+    height: 175px;
+  }
+
+  .eco-visual .scale-track {
+    height: 155px;
+  }
+
+  .eco-visual .scale-labels {
+    height: 155px;
+    font-size: 7px;
+  }
+
+}
+
 </style>
 </head>
 
@@ -346,512 +467,489 @@
 
 <div id="app">
 
-  <!-- =====================================================
-       SIDEBAR
-       ===================================================== -->
+<!-- =====================================================
+     SIDEBAR
+     ===================================================== -->
 
-  <aside class="sidebar" id="sidebar">
+<aside class="sidebar" id="sidebar">
 
-    <div class="brand">
-      <div class="brand-icon">🥑</div>
-      <div>
-        <b>Aguacate AI</b>
-        <span>v4.0.0</span>
-      </div>
+  <div class="brand">
+    <div class="brand-icon">🥑</div>
+
+    <div>
+      <b>Aguacate AI</b>
+      <span>v4.0.0</span>
+    </div>
+  </div>
+
+  <div class="mode-box">
+    <label>MODE</label>
+
+    <select id="mode">
+      <option>Kids</option>
+      <option>Collégien</option>
+      <option>Professeur</option>
+      <option>Admin</option>
+    </select>
+  </div>
+
+  <button class="primary-btn" id="new-chat-btn">
+    ＋ Nouvelle conversation
+  </button>
+
+  <div class="side-title">
+    CONVERSATIONS
+  </div>
+
+  <div id="conversation-list" class="conversations"></div>
+
+  <div class="side-title">
+    OUTILS
+  </div>
+
+  <button class="tool-btn" id="rename-btn">
+    ✏️ Renommer
+  </button>
+
+  <button class="tool-btn" id="file-tool-btn">
+    📎 Scanner un fichier
+  </button>
+
+  <div class="user-zone">
+
+    <div class="user-badge" id="user-badge">
+      🥑 Aguacate AI #0000
     </div>
 
-    <div class="mode-box">
-      <label>MODE</label>
-      <select id="mode">
-        <option>Kids</option>
-        <option>Collégien</option>
-        <option>Professeur</option>
-        <option>Admin</option>
-      </select>
+    <div id="role-badge" class="role-badge user">
+      UTILISATEUR
     </div>
 
-    <button class="primary-btn" id="new-chat-btn">
-      ＋ Nouvelle conversation
-    </button>
+    <div class="bottom-buttons">
 
-    <div class="side-title">CONVERSATIONS</div>
-    <div id="conversation-list" class="conversations"></div>
+      <button onclick="toggleLive()">
+        🎤 Live
+      </button>
 
-    <div class="side-title">OUTILS</div>
+      <button onclick="openAdmin()">
+        ⚙️ Admin
+      </button>
 
-    <button class="tool-btn" id="rename-btn">
-      ✏️ Renommer
-    </button>
-
-    <button class="tool-btn" id="file-tool-btn">
-      📎 Scanner un fichier
-    </button>
-
-    <div class="user-zone">
-
-      <div class="user-badge" id="user-badge">
-        🥑 Aguacate AI #0000
-      </div>
-
-      <div id="role-badge" class="role-badge user">
-        UTILISATEUR
-      </div>
-
-      <div class="bottom-buttons">
-        <button onclick="toggleLive()">🎤 Live</button>
-        <button onclick="openAdmin()">⚙️ Admin</button>
-        <button onclick="openUsers()">👥 Utilisateurs</button>
-      </div>
+      <button onclick="openUsers()">
+        👥 Utilisateurs
+      </button>
 
     </div>
 
-  </aside>
+  </div>
+
+</aside>
 
 
-  <!-- =====================================================
-       CHAT
-       ===================================================== -->
+<!-- =====================================================
+     CHAT
+     ===================================================== -->
 
-  <main class="chat-shell">
+<main class="chat-shell">
 
-    <header class="topbar">
+  <header class="topbar">
 
-      <div class="model-pill">
-        ● Modèle : Aguacate AI
-        <span>v4.0.0</span>
+    <div class="model-pill">
+      ● Modèle : Aguacate AI
+      <span>v4.0.0</span>
+    </div>
+
+    <div class="top-actions">
+
+      <div class="online">
+        <i></i>
+        En ligne
       </div>
 
-      <div class="top-actions">
+      <button
+        class="icon-btn"
+        id="theme-btn"
+        title="Changer de thème"
+      >
+        ☾
+      </button>
 
-        <div class="online">
-          <i></i>
-          En ligne
-        </div>
+    </div>
 
-        <button
-          class="icon-btn"
-          id="theme-btn"
-          title="Changer de thème"
-        >
-          ☾
-        </button>
+  </header>
 
+
+  <section class="chat-content">
+
+    <div class="hero">
+
+      <div class="hero-orb">
+        🥑
       </div>
-
-    </header>
-
-
-    <section class="chat-content">
-
-      <div class="hero">
-
-        <div class="hero-orb">🥑</div>
-
-        <div>
-          <div class="eyebrow">
-            ASSISTANT ÉDUCATIF
-          </div>
-
-          <h1>Bonjour 👋</h1>
-
-          <p>
-            Comment puis-je t'aider aujourd'hui ?
-          </p>
-        </div>
-
-      </div>
-
-
-      <div class="suggestions">
-
-        <button data-prompt="Aide-moi à comprendre ce que je n'ai pas compris dans mon devoir.">
-          <b>📚 Aide aux devoirs</b>
-          <span>Explique-moi simplement</span>
-        </button>
-
-        <button data-prompt="Explique-moi un concept simplement avec un exemple.">
-          <b>💡 Expliquer un concept</b>
-          <span>Fais-moi comprendre</span>
-        </button>
-
-        <button data-prompt="Résume le texte que je vais te donner.">
-          <b>📝 Résumé</b>
-          <span>Les idées essentielles</span>
-        </button>
-
-        <button data-prompt="J'ai une question sur un sujet.">
-          <b>❓ Poser une question</b>
-          <span>Demande-moi n'importe quoi</span>
-        </button>
-
-      </div>
-
-
-      <div id="messages" class="messages"></div>
-
-      <div id="file-preview" class="file-preview hidden"></div>
-
-
-      <div class="composer-wrap">
-
-        <div class="composer">
-
-          <button
-            class="attach-btn"
-            id="attach-btn"
-          >
-            📎
-          </button>
-
-          <input
-            id="prompt"
-            autocomplete="off"
-            placeholder="Pose une question à Aguacate AI..."
-          >
-
-          <button
-            class="mic-btn"
-            onclick="toggleLive()"
-          >
-            🎙️
-          </button>
-
-          <button
-            class="send-btn"
-            id="send-btn"
-          >
-            ➤
-          </button>
-
-        </div>
-
-        <div class="composer-note">
-          Aguacate AI peut faire des erreurs.
-          Vérifie les informations importantes.
-        </div>
-
-      </div>
-
-    </section>
-
-  </main>
-
-
-  <!-- =====================================================
-       ÉCOGUACATE
-       ===================================================== -->
-
-  <aside class="eco-panel">
-
-    <div class="eco-head">
 
       <div>
 
         <div class="eyebrow">
-          ÉCOGUACATE
+          ASSISTANT ÉDUCATIF
         </div>
 
-        <h2>
-          🌱 Ton impact
-        </h2>
+        <h1>
+          Bonjour 👋
+        </h1>
 
-      </div>
+        <p>
+          Comment puis-je t'aider aujourd'hui ?
+        </p>
 
-      <div class="eco-live">
-        ● LIVE
       </div>
 
     </div>
 
 
-    <p class="eco-sub">
-      Plus tu consommes d'eau, plus l'arbre se dégrade.
-    </p>
+    <div class="suggestions">
+
+      <button data-prompt="Aide-moi à comprendre ce que je n'ai pas compris dans mon devoir.">
+        <b>📚 Aide aux devoirs</b>
+        <span>Explique-moi simplement</span>
+      </button>
+
+      <button data-prompt="Explique-moi un concept simplement avec un exemple.">
+        <b>💡 Expliquer un concept</b>
+        <span>Fais-moi comprendre</span>
+      </button>
+
+      <button data-prompt="Résume le texte que je vais te donner.">
+        <b>📝 Résumé</b>
+        <span>Les idées essentielles</span>
+      </button>
+
+      <button data-prompt="J'ai une question sur un sujet.">
+        <b>❓ Poser une question</b>
+        <span>Demande-moi n'importe quoi</span>
+      </button>
+
+    </div>
 
 
-    <div class="eco-visual">
+    <div id="messages" class="messages"></div>
 
-      <!-- =================================================
-           ARBRE À AVOCATS
-           ================================================= -->
+    <div
+      id="file-preview"
+      class="file-preview hidden"
+    ></div>
 
-      <div class="avocado-wrap">
 
-        <div class="avocado-glow"></div>
+    <div class="composer-wrap">
 
-        <svg
-          id="eco-tree"
-          class="eco-tree-svg tree-good"
-          viewBox="0 0 220 300"
-          aria-label="Arbre ÉcoGuacate"
+      <div class="composer">
+
+        <button
+          class="attach-btn"
+          id="attach-btn"
+        >
+          📎
+        </button>
+
+        <input
+          id="prompt"
+          autocomplete="off"
+          placeholder="Pose une question à Aguacate AI..."
         >
 
-          <!-- Ombre au sol -->
+        <button
+          class="mic-btn"
+          onclick="toggleLive()"
+        >
+          🎙️
+        </button>
+
+        <button
+          class="send-btn"
+          id="send-btn"
+        >
+          ➤
+        </button>
+
+      </div>
+
+      <div class="composer-note">
+        Aguacate AI peut faire des erreurs.
+        Vérifie les informations importantes.
+      </div>
+
+    </div>
+
+  </section>
+
+</main>
+
+
+<!-- =====================================================
+     ÉCOGUACATE
+     ===================================================== -->
+
+<aside class="eco-panel">
+
+  <div class="eco-head">
+
+    <div>
+
+      <div class="eyebrow">
+        ÉCOGUACATE
+      </div>
+
+      <h2>
+        🌱 Ton impact
+      </h2>
+
+    </div>
+
+    <div class="eco-live">
+      ● LIVE
+    </div>
+
+  </div>
+
+
+  <p class="eco-sub">
+    Plus tu consommes d'eau, plus l'arbre se dégrade.
+  </p>
+
+
+  <!-- ARBRE + BARRE SUR LE MÊME NIVEAU -->
+
+  <div class="eco-visual">
+
+    <div class="avocado-wrap">
+
+      <div class="avocado-glow"></div>
+
+      <svg
+        id="eco-tree"
+        class="eco-tree-svg tree-good"
+        viewBox="0 0 220 300"
+        aria-label="Arbre ÉcoGuacate"
+      >
+
+        <!-- SOL -->
+
+        <ellipse
+          class="tree-ground"
+          cx="105"
+          cy="275"
+          rx="70"
+          ry="12"
+        />
+
+
+        <!-- TRONC -->
+
+        <path
+          class="tree-trunk"
+          d="
+            M93 265
+            C94 235 91 215 88 190
+            C84 165 79 142 78 118
+            C78 103 84 92 96 91
+            C108 90 116 101 114 117
+            C111 142 108 165 108 190
+            C108 215 112 239 116 265
+            Z
+          "
+          fill="#7c4a25"
+        />
+
+
+        <!-- BRANCHES -->
+
+        <path
+          d="M94 150 C72 137 55 120 43 101"
+          stroke="#7c4a25"
+          stroke-width="10"
+          stroke-linecap="round"
+          fill="none"
+        />
+
+        <path
+          d="M105 151 C124 136 139 117 153 94"
+          stroke="#7c4a25"
+          stroke-width="10"
+          stroke-linecap="round"
+          fill="none"
+        />
+
+        <path
+          d="M91 125 C77 108 69 93 66 77"
+          stroke="#7c4a25"
+          stroke-width="8"
+          stroke-linecap="round"
+          fill="none"
+        />
+
+        <path
+          d="M111 124 C126 106 136 90 139 72"
+          stroke="#7c4a25"
+          stroke-width="8"
+          stroke-linecap="round"
+          fill="none"
+        />
+
+
+        <!-- FEUILLAGE -->
+
+        <g class="tree-leaves">
+
+          <circle cx="57" cy="83" r="39" fill="#166534"/>
+          <circle cx="102" cy="62" r="48" fill="#15803d"/>
+          <circle cx="151" cy="83" r="40" fill="#166534"/>
+          <circle cx="73" cy="48" r="32" fill="#22c55e"/>
+          <circle cx="126" cy="39" r="36" fill="#16a34a"/>
+          <circle cx="164" cy="52" r="31" fill="#22c55e"/>
+          <circle cx="101" cy="95" r="42" fill="#15803d"/>
+
+
+          <!-- PETITES FEUILLES -->
+
           <ellipse
-            class="tree-ground"
-            cx="105"
-            cy="275"
-            rx="70"
-            ry="12"
+            class="leaf"
+            cx="39"
+            cy="64"
+            rx="13"
+            ry="7"
+            fill="#4ade80"
+            transform="rotate(-25 39 64)"
           />
 
-
-          <!-- ==============================
-               TRONC
-               ============================== -->
-
-          <path
-            class="tree-trunk"
-            d="
-              M93 265
-              C94 235 91 215 88 190
-              C84 165 79 142 78 118
-              C78 103 84 92 96 91
-              C108 90 116 101 114 117
-              C111 142 108 165 108 190
-              C108 215 112 239 116 265
-              Z
-            "
-            fill="#7c4a25"
+          <ellipse
+            class="leaf"
+            cx="67"
+            cy="30"
+            rx="14"
+            ry="7"
+            fill="#4ade80"
+            transform="rotate(18 67 30)"
           />
 
-          <!-- branches -->
-
-          <path
-            d="M94 150 C72 137 55 120 43 101"
-            stroke="#7c4a25"
-            stroke-width="10"
-            stroke-linecap="round"
-            fill="none"
+          <ellipse
+            class="leaf"
+            cx="110"
+            cy="22"
+            rx="15"
+            ry="7"
+            fill="#4ade80"
+            transform="rotate(-10 110 22)"
           />
 
-          <path
-            d="M105 151 C124 136 139 117 153 94"
-            stroke="#7c4a25"
-            stroke-width="10"
-            stroke-linecap="round"
-            fill="none"
+          <ellipse
+            class="leaf"
+            cx="154"
+            cy="30"
+            rx="14"
+            ry="7"
+            fill="#4ade80"
+            transform="rotate(20 154 30)"
           />
 
-          <path
-            d="M91 125 C77 108 69 93 66 77"
-            stroke="#7c4a25"
-            stroke-width="8"
-            stroke-linecap="round"
-            fill="none"
+          <ellipse
+            class="leaf"
+            cx="183"
+            cy="70"
+            rx="14"
+            ry="7"
+            fill="#4ade80"
+            transform="rotate(-25 183 70)"
           />
 
-          <path
-            d="M111 124 C126 106 136 90 139 72"
-            stroke="#7c4a25"
-            stroke-width="8"
-            stroke-linecap="round"
-            fill="none"
+        </g>
+
+
+        <!-- AVOCATS -->
+
+        <g class="tree-fruit">
+
+          <ellipse
+            cx="55"
+            cy="90"
+            rx="10"
+            ry="15"
+            fill="#65a30d"
+            transform="rotate(-20 55 90)"
           />
 
+          <ellipse
+            cx="83"
+            cy="58"
+            rx="10"
+            ry="15"
+            fill="#84cc16"
+            transform="rotate(15 83 58)"
+          />
 
-          <!-- ==============================
-               FEUILLAGE
-               ============================== -->
+          <ellipse
+            cx="112"
+            cy="77"
+            rx="10"
+            ry="15"
+            fill="#65a30d"
+            transform="rotate(-10 112 77)"
+          />
 
-          <g class="tree-leaves">
+          <ellipse
+            cx="143"
+            cy="56"
+            rx="10"
+            ry="15"
+            fill="#84cc16"
+            transform="rotate(20 143 56)"
+          />
 
-            <circle
-              cx="57"
-              cy="83"
-              r="39"
-              fill="#166534"
-            />
+          <ellipse
+            cx="158"
+            cy="96"
+            rx="10"
+            ry="15"
+            fill="#65a30d"
+            transform="rotate(-15 158 96)"
+          />
 
-            <circle
-              cx="102"
-              cy="62"
-              r="48"
-              fill="#15803d"
-            />
+          <ellipse
+            cx="94"
+            cy="112"
+            rx="10"
+            ry="15"
+            fill="#84cc16"
+            transform="rotate(15 94 112)"
+          />
 
-            <circle
-              cx="151"
-              cy="83"
-              r="40"
-              fill="#166534"
-            />
+        </g>
 
-            <circle
-              cx="73"
-              cy="48"
-              r="32"
-              fill="#22c55e"
-            />
-
-            <circle
-              cx="126"
-              cy="39"
-              r="36"
-              fill="#16a34a"
-            />
-
-            <circle
-              cx="164"
-              cy="52"
-              r="31"
-              fill="#22c55e"
-            />
-
-            <circle
-              cx="101"
-              cy="95"
-              r="42"
-              fill="#15803d"
-            />
+      </svg>
 
 
-            <!-- petites feuilles -->
+      <!-- POMPE -->
 
-            <ellipse
-              class="leaf"
-              cx="39"
-              cy="64"
-              rx="13"
-              ry="7"
-              fill="#4ade80"
-              transform="rotate(-25 39 64)"
-            />
+      <div
+        id="eco-water-pump"
+        class="water-pump"
+        aria-label="Pompe à eau"
+      >
 
-            <ellipse
-              class="leaf"
-              cx="67"
-              cy="30"
-              rx="14"
-              ry="7"
-              fill="#4ade80"
-              transform="rotate(18 67 30)"
-            />
+        <div class="pump-handle"></div>
 
-            <ellipse
-              class="leaf"
-              cx="110"
-              cy="22"
-              rx="15"
-              ry="7"
-              fill="#4ade80"
-              transform="rotate(-10 110 22)"
-            />
+        <div class="pump-pipe"></div>
 
-            <ellipse
-              class="leaf"
-              cx="154"
-              cy="30"
-              rx="14"
-              ry="7"
-              fill="#4ade80"
-              transform="rotate(20 154 30)"
-            />
+        <div class="water-stream"></div>
 
-            <ellipse
-              class="leaf"
-              cx="183"
-              cy="70"
-              rx="14"
-              ry="7"
-              fill="#4ade80"
-              transform="rotate(-25 183 70)"
-            />
+        <div class="pump-top"></div>
 
-          </g>
+        <div class="pump-body">
 
+          <div class="pump-water-level">
 
-          <!-- ==============================
-               AVOCATS
-               ============================== -->
-
-          <g class="tree-fruit">
-
-            <ellipse
-              cx="55"
-              cy="90"
-              rx="10"
-              ry="15"
-              fill="#65a30d"
-              transform="rotate(-20 55 90)"
-            />
-
-            <ellipse
-              cx="83"
-              cy="58"
-              rx="10"
-              ry="15"
-              fill="#84cc16"
-              transform="rotate(15 83 58)"
-            />
-
-            <ellipse
-              cx="112"
-              cy="77"
-              rx="10"
-              ry="15"
-              fill="#65a30d"
-              transform="rotate(-10 112 77)"
-            />
-
-            <ellipse
-              cx="143"
-              cy="56"
-              rx="10"
-              ry="15"
-              fill="#84cc16"
-              transform="rotate(20 143 56)"
-            />
-
-            <ellipse
-              cx="158"
-              cy="96"
-              rx="10"
-              ry="15"
-              fill="#65a30d"
-              transform="rotate(-15 158 96)"
-            />
-
-            <ellipse
-              cx="94"
-              cy="112"
-              rx="10"
-              ry="15"
-              fill="#84cc16"
-              transform="rotate(15 94 112)"
-            />
-
-          </g>
-
-        </svg>
-
-
-        <!-- ==============================
-             POMPE
-             ============================== -->
-
-        <div
-          id="eco-water-pump"
-          class="water-pump"
-          aria-label="Pompe à eau"
-        >
-
-          <div class="pump-handle"></div>
-
-          <div class="pump-pipe"></div>
-
-          <div class="water-stream"></div>
-
-          <div class="pump-top"></div>
-
-          <div class="pump-body">
-
-            <div class="pump-water-level">
-              <div
-                id="pump-water"
-                class="pump-water"
-              ></div>
-            </div>
+            <div
+              id="pump-water"
+              class="pump-water"
+            ></div>
 
           </div>
 
@@ -859,89 +957,86 @@
 
       </div>
 
-
-      <!-- ==============================
-           BARRE
-           ============================== -->
-
-      <div class="scale">
-
-        <div class="scale-track">
-
-          <div id="eco-bar-fill"></div>
-
-          <div id="eco-marker"></div>
-
-        </div>
+    </div>
 
 
-        <div class="scale-labels">
+    <!-- BARRE -->
 
-          <span>0 L</span>
-          <span>≈10 L</span>
-          <span>≈15 L</span>
-          <span>≈20 L</span>
-          <span>24,8 L+</span>
+    <div class="scale">
 
-        </div>
+      <div class="scale-track">
+
+        <div id="eco-bar-fill"></div>
+
+        <div id="eco-marker"></div>
+
+      </div>
+
+      <div class="scale-labels">
+
+        <span>0 L</span>
+        <span>10 L</span>
+        <span>15 L</span>
+        <span>25 L</span>
+        <span>40 L+</span>
 
       </div>
 
     </div>
 
+  </div>
 
-    <!-- ==============================
-         COMPTEUR
-         ============================== -->
 
-    <div class="eco-number">
+  <!-- COMPTEUR -->
 
-      <div>
+  <div class="eco-number">
 
-        <span id="eco-litres">
-          0,0
-        </span>
+    <div>
 
-        <small>L</small>
+      <span id="eco-litres">
+        0,0
+      </span>
 
-        <p>
-          d'eau consommés
-        </p>
+      <small>L</small>
 
-      </div>
-
-      <div
-        class="eco-percent"
-        id="eco-pct"
-      >
-        0%
-      </div>
+      <p>
+        d'eau consommés
+      </p>
 
     </div>
-
 
     <div
-      class="eco-status"
-      id="eco-status"
+      class="eco-percent"
+      id="eco-pct"
     >
-      Excellent 🌿
+      0%
     </div>
 
-
-    <div class="eco-gradient">
-      <i></i>
-    </div>
+  </div>
 
 
-    <div class="eco-legend">
+  <div
+    class="eco-status"
+    id="eco-status"
+  >
+    Excellent 🌿
+  </div>
 
-      <span>🟢 Faible</span>
-      <span>🟡 Moyen</span>
-      <span>🔴 Élevé</span>
 
-    </div>
+  <div class="eco-gradient">
+    <i></i>
+  </div>
 
-  </aside>
+
+  <div class="eco-legend">
+
+    <span>🟢 Faible</span>
+    <span>🟡 Moyen</span>
+    <span>🔴 Élevé</span>
+
+  </div>
+
+</aside>
 
 </div>
 
@@ -956,7 +1051,6 @@
   hidden
   accept=".pdf,.docx,.txt,.md,.csv,.json,.xml,.xlsx,.xls"
 >
-
 
 <div
   id="toast"
@@ -995,12 +1089,10 @@
 
     </div>
 
-
     <div
       id="admin-summary"
       class="admin-summary"
     ></div>
-
 
     <div class="admin-tabs">
 
@@ -1022,14 +1114,12 @@
 
     </div>
 
-
     <section
       id="admin-tab-online"
       class="admin-tab"
     >
       <div id="online-list"></div>
     </section>
-
 
     <section
       id="admin-tab-recent"
@@ -1038,14 +1128,12 @@
       <div id="recent-list"></div>
     </section>
 
-
     <section
       id="admin-tab-all"
       class="admin-tab hidden"
     >
       <div id="all-users-list"></div>
     </section>
-
 
     <section
       id="admin-tab-conversations"
@@ -1060,7 +1148,6 @@
       ></div>
 
     </section>
-
 
     <div class="admin-footer">
 
@@ -1150,25 +1237,35 @@
 
 
 <!-- =====================================================
-     ÉCOGUACATE : SYNCHRONISATION ARBRE + POMPE
+     ÉCOGUACATE — SYNCHRONISATION
      ===================================================== -->
 
 <script>
+
 (function () {
+
+  /*
+   * Au-delà de 40 L :
+   * l'arbre est considéré comme complètement sec.
+   */
 
   const MAX_LITRES = 40;
 
+
   function getLitres() {
 
-    const element = document.getElementById('eco-litres');
+    const element =
+      document.getElementById('eco-litres');
 
     if (!element) return 0;
 
-    let value = element.textContent
-      .replace(',', '.')
-      .replace(/[^\d.]/g, '');
+    const value =
+      element.textContent
+        .replace(',', '.')
+        .replace(/[^\d.]/g, '');
 
-    const litres = parseFloat(value);
+    const litres =
+      parseFloat(value);
 
     return Number.isFinite(litres)
       ? Math.max(0, litres)
@@ -1178,7 +1275,8 @@
 
   function updateEcoTree() {
 
-    const litres = getLitres();
+    const litres =
+      getLitres();
 
     const tree =
       document.getElementById('eco-tree');
@@ -1192,21 +1290,29 @@
     const glow =
       document.querySelector('.avocado-glow');
 
+    const bar =
+      document.getElementById('eco-bar-fill');
+
+    const marker =
+      document.getElementById('eco-marker');
+
     if (!tree) return;
 
 
-    /* -----------------------------------------
-       POURCENTAGE
-       ----------------------------------------- */
+    /* =====================================================
+       PROGRESSION
+       ===================================================== */
 
     const progress =
       Math.min(litres / MAX_LITRES, 1);
 
 
     /*
-      0 L      = 100 % d'eau
-      24,8 L   = 0 % d'eau
-    */
+     * Eau restante dans la pompe.
+     *
+     * 0 L  = 100 %
+     * 40 L = 0 %
+     */
 
     const waterRemaining =
       Math.max(0, 1 - progress);
@@ -1220,9 +1326,29 @@
     }
 
 
-    /* -----------------------------------------
+    /* =====================================================
+       BARRE
+       ===================================================== */
+
+    if (bar) {
+
+      bar.style.height =
+        `${progress * 100}%`;
+
+    }
+
+
+    if (marker) {
+
+      marker.style.bottom =
+        `${progress * 100}%`;
+
+    }
+
+
+    /* =====================================================
        ÉTAT DE L'ARBRE
-       ----------------------------------------- */
+       ===================================================== */
 
     tree.classList.remove(
       'tree-good',
@@ -1233,83 +1359,168 @@
     );
 
 
-if (litres <= 10) {
+    if (litres <= 10) {
 
-  // 🟢 0 à 10 L : arbre en pleine forme
-  tree.classList.add('tree-good');
+      /*
+       * 🟢 0–10 L
+       */
 
-} else if (litres <= 15) {
+      tree.classList.add('tree-good');
 
-  // 🟡 11 à 15 L : début de dégradation
-  tree.classList.add('tree-warning');
+    }
 
-} else if (litres <= 25) {
+    else if (litres <= 15) {
 
-  // 🟠 16 à 25 L : arbre fortement dégradé
-  tree.classList.add('tree-danger');
+      /*
+       * 🟡 11–15 L
+       */
 
-} else {
+      tree.classList.add('tree-warning');
 
-  // 🔴 26 L et plus : arbre presque/sec
-  tree.classList.add('tree-dead');
+    }
 
-}
+    else if (litres <= 25) {
 
-    /* -----------------------------------------
+      /*
+       * 🟠 16–25 L
+       */
+
+      tree.classList.add('tree-danger');
+
+    }
+
+    else {
+
+      /*
+       * 🔴 26 L+
+       */
+
+      tree.classList.add('tree-dead');
+
+    }
+
+
+    /* =====================================================
+       COULEUR DE LA BARRE
+       ===================================================== */
+
+    let color;
+
+    if (litres <= 10) {
+
+      color = '#22c55e';
+
+    }
+
+    else if (litres <= 15) {
+
+      color = '#eab308';
+
+    }
+
+    else if (litres <= 25) {
+
+      color = '#f97316';
+
+    }
+
+    else {
+
+      color = '#ef4444';
+
+    }
+
+
+    if (bar) {
+
+      bar.style.background =
+        color;
+
+      bar.style.boxShadow =
+        `0 0 12px ${color}66`;
+
+    }
+
+
+    if (marker) {
+
+      marker.style.background =
+        color;
+
+    }
+
+
+    /* =====================================================
        POMPE
-       ----------------------------------------- */
+       ===================================================== */
 
     if (pump) {
 
       if (litres >= MAX_LITRES) {
+
         pump.classList.add('dry');
-      } else {
+
+      }
+
+      else {
+
         pump.classList.remove('dry');
+
       }
 
     }
 
 
-    /* -----------------------------------------
-       LUMIÈRE AUTOUR DE L'ARBRE
-       ----------------------------------------- */
+    /* =====================================================
+       LUMIÈRE
+       ===================================================== */
 
-if (litres <= 10) {
+    if (glow) {
 
-  glow.style.background =
-    'radial-gradient(circle, rgba(34,197,94,.28), rgba(34,197,94,.08) 45%, transparent 72%)';
+      if (litres <= 10) {
 
-  glow.style.opacity = '1';
+        glow.style.background =
+          'radial-gradient(circle, rgba(34,197,94,.28), rgba(34,197,94,.08) 45%, transparent 72%)';
 
-} else if (litres <= 15) {
+        glow.style.opacity = '1';
 
-  glow.style.background =
-    'radial-gradient(circle, rgba(234,179,8,.25), rgba(234,179,8,.06) 45%, transparent 72%)';
+      }
 
-  glow.style.opacity = '.9';
+      else if (litres <= 15) {
 
-} else if (litres <= 25) {
+        glow.style.background =
+          'radial-gradient(circle, rgba(234,179,8,.25), rgba(234,179,8,.06) 45%, transparent 72%)';
 
-  glow.style.background =
-    'radial-gradient(circle, rgba(249,115,22,.25), rgba(249,115,22,.06) 45%, transparent 72%)';
+        glow.style.opacity = '.9';
 
-  glow.style.opacity = '.8';
+      }
 
-} else {
+      else if (litres <= 25) {
 
-  glow.style.background =
-    'radial-gradient(circle, rgba(239,68,68,.22), rgba(239,68,68,.04) 45%, transparent 72%)';
+        glow.style.background =
+          'radial-gradient(circle, rgba(249,115,22,.25), rgba(249,115,22,.06) 45%, transparent 72%)';
 
-  glow.style.opacity = '.5';
+        glow.style.opacity = '.8';
 
-}
-  /*
-    L'application Aguacate AI met à jour
-    #eco-litres après chaque question.
+      }
 
-    On surveille donc ce compteur automatiquement
-    sans modifier app.js.
-  */
+      else {
+
+        glow.style.background =
+          'radial-gradient(circle, rgba(239,68,68,.22), rgba(239,68,68,.04) 45%, transparent 72%)';
+
+        glow.style.opacity = '.5';
+
+      }
+
+    }
+
+  }
+
+
+  /* =====================================================
+     SURVEILLANCE DU COMPTEUR
+     ===================================================== */
 
   const litresElement =
     document.getElementById('eco-litres');
@@ -1333,17 +1544,23 @@ if (litres <= 10) {
 
 
   /*
-    Sécurité :
-    on vérifie également régulièrement
-    au cas où le compteur est modifié
-    autrement que par du texte DOM.
-  */
+   * Vérification régulière.
+   */
 
-  setInterval(updateEcoTree, 500);
+  setInterval(
+    updateEcoTree,
+    500
+  );
+
+
+  /*
+   * Initialisation.
+   */
 
   updateEcoTree();
 
 })();
+
 </script>
 
 
