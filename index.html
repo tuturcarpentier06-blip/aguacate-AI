@@ -30,7 +30,42 @@
       <div class="composer-wrap"><div class="composer"><button class="attach-btn" id="attach-btn">📎</button><input id="prompt" autocomplete="off" placeholder="Pose une question à Aguacate AI..."><button class="mic-btn" onclick="toggleLive()">🎙️</button><button class="send-btn" id="send-btn">➤</button></div><div class="composer-note">Aguacate AI peut faire des erreurs. Vérifie les informations importantes.</div></div>
     </section>
   </main>
-  <aside class="eco-panel"><div class="eco-head"><div><div class="eyebrow">ÉCOGUACATE</div><h2>🌱 Ton impact</h2></div><div class="eco-live">● LIVE</div></div><p class="eco-sub">Plus tu consommes d'eau, plus l'avocat se dégrade.</p><div class="eco-visual"><div class="avocado-wrap"><div class="avocado-glow"></div><svg class="avocado" viewBox="0 0 180 240" aria-label="Avocat ÉcoGuacate"><path class="skin" d="M90 10C48 10 18 48 17 99c-1 51 20 111 73 125 53-14 74-74 73-125C162 48 132 10 90 10Z"/><path id="eco-avocado-fill" d="M90 20C54 20 29 53 29 99c0 43 17 95 61 110 44-15 61-67 61-110 0-46-25-79-61-79Z"/><ellipse cx="90" cy="137" rx="31" ry="38" fill="#8b5a2b"/><ellipse cx="80" cy="126" rx="8" ry="10" fill="rgba(255,255,255,.12)"/></svg></div><div class="scale"><div class="scale-track"><div id="eco-bar-fill"></div><div id="eco-marker"></div></div><div class="scale-labels"><span>0 L</span><span>≈10 L</span><span>≈15 L</span><span>≈20 L</span><span>24,8 L+</span></div></div></div><div class="eco-number"><div><span id="eco-litres">0,0</span><small>L</small><p>d'eau consommés</p></div><div class="eco-percent" id="eco-pct">0%</div></div><div class="eco-status" id="eco-status">Excellent 🌿</div><div class="eco-gradient"><i></i></div><div class="eco-legend"><span>🟢 Faible</span><span>🟡 Moyen</span><span>🔴 Élevé</span></div></aside>
+  <aside class="eco-panel"><div class="eco-head"><div><div class="eyebrow">ÉCOGUACATE</div><h2>🌱 Ton impact</h2></div><div class="eco-live">● LIVE</div></div><p class="eco-sub">Plus tu consommes d'eau, plus l'avocat se dégrade.</p><div class="eco-visual"><div class="avocado-wrap"><div class="avocado-glow"></div><svg class="avocado" viewBox="0 0 180 240" aria-label="Avocat ÉcoGuacate"><!-- Avocat retourné horizontalement, sans retourner le noyau -->
+<g transform="translate(100 0) scale(-1 1)">
+
+  <!-- peau -->
+  <path
+    d="M50,5
+       C35,5 20,20 15,40
+       C10,60 10,90 25,110
+       C35,125 65,125 75,110
+       C90,90 90,60 85,40
+       C80,20 65,5 50,5 Z"
+    fill="#1f2937"
+  />
+
+  <!-- chair -->
+  <path
+    id="eco-avocado-fill"
+    d="M50,12
+       C38,12 28,24 24,40
+       C20,60 20,88 30,103
+       C38,115 62,115 70,103
+       C80,88 80,60 76,40
+       C72,24 62,12 50,12 Z"
+    fill="url(#avocado-grad)"
+  />
+
+</g>
+
+<!-- noyau : volontairement NON retourné -->
+<ellipse
+  cx="50"
+  cy="78"
+  rx="16"
+  ry="20"
+  fill="#8b5a2b"
+/><ellipse cx="80" cy="126" rx="8" ry="10" fill="rgba(255,255,255,.12)"/></svg></div><div class="scale"><div class="scale-track"><div id="eco-bar-fill"></div><div id="eco-marker"></div></div><div class="scale-labels"><span>0 L</span><span>≈10 L</span><span>≈15 L</span><span>≈20 L</span><span>24,8 L+</span></div></div></div><div class="eco-number"><div><span id="eco-litres">0,0</span><small>L</small><p>d'eau consommés</p></div><div class="eco-percent" id="eco-pct">0%</div></div><div class="eco-status" id="eco-status">Excellent 🌿</div><div class="eco-gradient"><i></i></div><div class="eco-legend"><span>🟢 Faible</span><span>🟡 Moyen</span><span>🔴 Élevé</span></div></aside>
 </div>
 <input type="file" id="file-input" hidden accept=".pdf,.docx,.txt,.md,.csv,.json,.xml,.xlsx,.xls">
 <div id="toast" class="toast"></div>
