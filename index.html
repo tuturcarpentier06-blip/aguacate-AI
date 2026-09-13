@@ -684,26 +684,37 @@
 </main>
 
 <!-- =====================================================
-     ÉCOGUACATE — ARBRE + POMPE + BARRE
+     ÉCOGUACATE — ZONE COMPACTE
      ===================================================== -->
 
+<aside class="eco-panel">
+
 <style>
-/* ================================
-   ZONE ÉCOGUACATE COMPACTE
-   ================================ */
+/* =====================================================
+   CONTENEUR ÉCOGUACATE
+   ===================================================== */
+
+.eco-panel {
+  overflow: hidden;
+}
 
 .eco-visual {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  width: 100%;
+  justify-content: center;
+  gap: 10px;
+  margin: 8px 0;
 }
+
+/* =====================================================
+   ARBRE + POMPE
+   ===================================================== */
 
 .avocado-wrap {
   position: relative;
-  width: 170px;
+  width: 145px;
   height: 205px;
+  flex: 0 0 145px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -716,7 +727,7 @@
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    rgba(34,197,94,.25),
+    rgba(34,197,94,.22),
     rgba(34,197,94,.06) 45%,
     transparent 72%
   );
@@ -725,16 +736,16 @@
 }
 
 .eco-tree-svg {
-  width: 145px;
-  height: 195px;
   position: relative;
   z-index: 2;
+  width: 140px;
+  height: 195px;
   overflow: visible;
 }
 
-/* ================================
-   ARBRE
-   ================================ */
+/* =====================================================
+   FEUILLAGE
+   ===================================================== */
 
 .tree-leaves {
   transition:
@@ -744,12 +755,19 @@
   transform-origin: 50% 70%;
 }
 
+/* =====================================================
+   AVOCATS
+   ===================================================== */
+
 .tree-fruit {
   transition:
     opacity .8s ease,
     transform .8s ease;
-  transform-origin: center;
 }
+
+/* =====================================================
+   TRONC
+   ===================================================== */
 
 .tree-trunk {
   transition:
@@ -757,57 +775,63 @@
     opacity .8s ease;
 }
 
-/* Arbre vert */
+/* =====================================================
+   ÉTATS DE L'ARBRE
+   ===================================================== */
+
 .eco-tree-svg.tree-good .tree-leaves {
   opacity: 1;
   transform: scale(1);
   filter: saturate(1.15);
 }
 
-/* Jaune */
+.eco-tree-svg.tree-good .tree-fruit {
+  opacity: 1;
+}
+
 .eco-tree-svg.tree-warning .tree-leaves {
   opacity: .82;
-  transform: scale(.97);
+  transform: scale(.96);
   filter: saturate(.9);
 }
 
-/* Orange */
+.eco-tree-svg.tree-warning .tree-fruit:nth-of-type(n+5) {
+  opacity: 0;
+}
+
 .eco-tree-svg.tree-danger .tree-leaves {
-  opacity: .42;
-  transform: scale(.91);
+  opacity: .45;
+  transform: scale(.90);
   filter: saturate(.55);
 }
 
-/* Rouge */
+.eco-tree-svg.tree-danger .tree-fruit:nth-of-type(n+3) {
+  opacity: 0;
+}
+
 .eco-tree-svg.tree-dry .tree-leaves {
-  opacity: .08;
-  transform: scale(.82);
-  filter: grayscale(1);
-}
-
-/* Tronc uniquement */
-.eco-tree-svg.tree-dead .tree-leaves {
-  opacity: 0;
-  transform: scale(.65);
-}
-
-.eco-tree-svg.tree-dead .tree-fruit {
-  opacity: 0;
-}
-
-.eco-tree-svg.tree-danger .tree-fruit:nth-of-type(n+4) {
-  opacity: 0;
-}
-
-.eco-tree-svg.tree-warning .tree-fruit:nth-of-type(n+6) {
-  opacity: 0;
+  opacity: .12;
+  transform: scale(.78);
+  filter: grayscale(.8);
 }
 
 .eco-tree-svg.tree-dry .tree-fruit {
   opacity: 0;
 }
 
-/* Animation des feuilles */
+.eco-tree-svg.tree-dead .tree-leaves {
+  opacity: 0;
+  transform: scale(.55);
+}
+
+.eco-tree-svg.tree-dead .tree-fruit {
+  opacity: 0;
+}
+
+/* =====================================================
+   FEUILLES ANIMÉES
+   ===================================================== */
+
 .leaf {
   transform-box: fill-box;
   transform-origin: center;
@@ -832,18 +856,18 @@
   }
 }
 
-/* ================================
-   POMPE COMPACTE
-   ================================ */
+/* =====================================================
+   POMPE
+   ===================================================== */
 
 .water-pump {
   position: absolute;
   right: -3px;
-  bottom: 18px;
-  width: 48px;
-  height: 82px;
-  z-index: 4;
-  transform: scale(.75);
+  bottom: 20px;
+  width: 46px;
+  height: 78px;
+  z-index: 5;
+  transform: scale(.65);
   transform-origin: bottom right;
 }
 
@@ -852,18 +876,22 @@
   bottom: 0;
   left: 10px;
   width: 30px;
-  height: 43px;
+  height: 46px;
   border-radius: 7px 7px 4px 4px;
-  background: linear-gradient(145deg,#60a5fa,#2563eb);
+  background: linear-gradient(
+    145deg,
+    #60a5fa,
+    #2563eb
+  );
   border: 2px solid rgba(255,255,255,.5);
   box-shadow:
     0 6px 14px rgba(37,99,235,.25),
-    inset 0 0 10px rgba(255,255,255,.2);
+    inset 0 0 9px rgba(255,255,255,.2);
 }
 
 .pump-top {
   position: absolute;
-  bottom: 40px;
+  bottom: 42px;
   left: 14px;
   width: 22px;
   height: 22px;
@@ -874,11 +902,11 @@
 
 .pump-handle {
   position: absolute;
-  top: 5px;
-  left: 14px;
+  top: 4px;
+  left: 13px;
   width: 5px;
-  height: 43px;
-  border-radius: 10px;
+  height: 48px;
+  border-radius: 8px;
   background: #374151;
   transform-origin: bottom center;
   animation: pumpMove 1.4s ease-in-out infinite;
@@ -889,19 +917,19 @@
   position: absolute;
   top: -5px;
   left: -8px;
-  width: 23px;
+  width: 24px;
   height: 7px;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #374151;
 }
 
 .pump-pipe {
   position: absolute;
   left: 0;
-  top: 44px;
-  width: 21px;
+  top: 49px;
+  width: 22px;
   height: 6px;
-  border-radius: 8px;
+  border-radius: 7px;
   background: #60a5fa;
   transform: rotate(-22deg);
   transform-origin: right center;
@@ -910,14 +938,14 @@
 .water-stream {
   position: absolute;
   left: -1px;
-  top: 53px;
+  top: 59px;
   width: 4px;
-  height: 29px;
-  border-radius: 10px;
+  height: 28px;
+  border-radius: 8px;
   background: linear-gradient(
     to bottom,
     rgba(96,165,250,.95),
-    rgba(59,130,246,.15)
+    rgba(59,130,246,.1)
   );
   animation: waterFlow .8s linear infinite;
 }
@@ -925,12 +953,11 @@
 .pump-water-level {
   position: absolute;
   left: 14px;
-  bottom: 6px;
+  bottom: 5px;
   width: 22px;
-  height: 32px;
+  height: 34px;
   border-radius: 3px;
   overflow: hidden;
-  pointer-events: none;
 }
 
 .pump-water {
@@ -944,7 +971,7 @@
     #2563eb,
     #60a5fa
   );
-  transition: height .9s ease;
+  transition: height .8s ease;
 }
 
 .water-pump.dry .pump-handle,
@@ -953,7 +980,7 @@
 }
 
 .water-pump.dry .pump-body {
-  filter: grayscale(.8);
+  filter: grayscale(.7);
 }
 
 @keyframes pumpMove {
@@ -968,7 +995,7 @@
 
 @keyframes waterFlow {
   0% {
-    transform: translateY(-4px);
+    transform: translateY(-3px);
     opacity: 0;
   }
 
@@ -977,379 +1004,418 @@
   }
 
   100% {
-    transform: translateY(10px);
+    transform: translateY(9px);
     opacity: 0;
   }
 }
 
-/* ================================
-   BARRE
-   ================================ */
+/* =====================================================
+   BARRE DE CONSOMMATION
+   ===================================================== */
 
 .scale {
-  width: 100%;
-  max-width: 290px;
-  margin-top: 2px;
+  width: 34px;
+  height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .scale-track {
   position: relative;
-  width: 100%;
-  height: 12px;
-  border-radius: 20px;
-  background: rgba(255,255,255,.12);
-  overflow: hidden;
-  box-shadow: inset 0 1px 4px rgba(0,0,0,.15);
+  width: 9px;
+  height: 155px;
+  border-radius: 10px;
+  background: linear-gradient(
+    to bottom,
+    #ef4444 0%,
+    #f97316 25%,
+    #eab308 38%,
+    #22c55e 100%
+  );
+  box-shadow:
+    inset 0 0 4px rgba(0,0,0,.18);
+  overflow: visible;
 }
+
+/*
+   La consommation monte du bas vers le haut.
+   0 L = tout en bas / vert
+   100 L = tout en haut / rouge
+*/
 
 #eco-bar-fill {
   position: absolute;
   left: 0;
-  top: 0;
-  height: 100%;
-  width: 0%;
-  border-radius: 20px;
-
-  /* Vert → jaune → orange → rouge */
-  background: linear-gradient(
-    90deg,
-    #22c55e 0%,
-    #22c55e 10%,
-    #eab308 11%,
-    #eab308 15%,
-    #f97316 16%,
-    #f97316 25%,
-    #ef4444 26%,
-    #dc2626 100%
-  );
-
+  bottom: 0;
+  width: 100%;
+  height: 0%;
+  border-radius: 10px;
+  background: rgba(255,255,255,.18);
   transition:
-    width 1s ease,
-    filter .5s ease,
-    box-shadow .5s ease;
+    height .8s ease,
+    background .8s ease;
 }
+
+/* Curseur très petit */
 
 #eco-marker {
   position: absolute;
-  top: 50%;
-  left: 0%;
+  left: 50%;
+  top: 100%;
   width: 18px;
-  height: 18px;
-  border-radius: 50%;
+  height: 4px;
+  border-radius: 5px;
   background: white;
-  border: 3px solid #22c55e;
+  border: 1px solid rgba(0,0,0,.25);
+  box-shadow: 0 1px 4px rgba(0,0,0,.3);
   transform: translate(-50%,-50%);
-  box-shadow: 0 2px 8px rgba(0,0,0,.3);
-  transition:
-    left 1s ease,
-    border-color .6s ease;
-  z-index: 3;
+  transition: top .8s ease;
+  z-index: 4;
 }
 
 .scale-labels {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  margin-top: 5px;
-  font-size: 10px;
-  opacity: .75;
+  height: 170px;
+  margin-left: 12px;
+  font-size: 8px;
+  white-space: nowrap;
 }
 
-.scale-labels span:nth-child(1)::after {
-  content: "";
-}
+/* =====================================================
+   COMPTEUR
+   ===================================================== */
 
 .eco-number {
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
-/* ================================
-   RESPONSIVE
-   ================================ */
+.eco-status {
+  transition:
+    background .6s ease,
+    color .6s ease;
+}
 
-@media (max-width: 900px) {
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+
+@media (max-width: 1100px) {
+
+  .eco-visual {
+    gap: 5px;
+  }
 
   .avocado-wrap {
-    width: 150px;
+    width: 125px;
     height: 185px;
+    flex-basis: 125px;
   }
 
   .eco-tree-svg {
-    width: 130px;
+    width: 120px;
     height: 175px;
   }
 
-  .water-pump {
-    transform: scale(.65);
-    right: -2px;
+  .scale {
+    width: 30px;
+    height: 175px;
   }
 
-  .scale {
-    max-width: 260px;
+  .scale-track {
+    height: 140px;
+  }
+
+  .scale-labels {
+    height: 155px;
+    font-size: 7px;
   }
 }
 </style>
 
 
-<aside class="eco-panel">
+<!-- =====================================================
+     EN-TÊTE
+     ===================================================== -->
 
-  <div class="eco-head">
+<div class="eco-head">
 
-    <div>
-      <div class="eyebrow">ÉCOGUACATE</div>
+  <div>
 
-      <h2>🌱 Ton impact</h2>
+    <div class="eyebrow">
+      ÉCOGUACATE
     </div>
 
-    <div class="eco-live">
-      ● LIVE
-    </div>
+    <h2>
+      🌱 Ton impact
+    </h2>
 
   </div>
 
+  <div class="eco-live">
+    ● LIVE
+  </div>
 
-  <p class="eco-sub">
-    Plus tu consommes d'eau, plus l'arbre se dégrade.
-  </p>
-
-
-  <!-- ================================
-       ARBRE + POMPE
-       ================================ -->
-
-  <div class="eco-visual">
-
-    <div class="avocado-wrap">
-
-      <div class="avocado-glow"></div>
+</div>
 
 
-      <!-- ARBRE -->
+<p class="eco-sub">
+  Plus tu poses de questions, plus la pompe consomme l'eau de l'arbre.
+</p>
 
-      <svg
-        id="eco-tree"
-        class="eco-tree-svg tree-good"
-        viewBox="0 0 220 300"
-        aria-label="Arbre ÉcoGuacate"
-      >
 
-        <!-- Sol -->
+<!-- =====================================================
+     ARBRE + POMPE + BARRE
+     ===================================================== -->
+
+<div class="eco-visual">
+
+  <div class="avocado-wrap">
+
+    <div class="avocado-glow"></div>
+
+
+    <!-- ==============================
+         ARBRE
+         ============================== -->
+
+    <svg
+      id="eco-tree"
+      class="eco-tree-svg tree-good"
+      viewBox="0 0 220 300"
+      aria-label="Arbre ÉcoGuacate"
+    >
+
+      <!-- sol -->
+
+      <ellipse
+        class="tree-ground"
+        cx="105"
+        cy="275"
+        rx="70"
+        ry="12"
+      />
+
+
+      <!-- tronc -->
+
+      <path
+        class="tree-trunk"
+        d="
+          M93 265
+          C94 235 91 215 88 190
+          C84 165 79 142 78 118
+          C78 103 84 92 96 91
+          C108 90 116 101 114 117
+          C111 142 108 165 108 190
+          C108 215 112 239 116 265
+          Z
+        "
+        fill="#7c4a25"
+      />
+
+
+      <!-- branches -->
+
+      <path
+        d="M94 150 C72 137 55 120 43 101"
+        stroke="#7c4a25"
+        stroke-width="10"
+        stroke-linecap="round"
+        fill="none"
+      />
+
+      <path
+        d="M105 151 C124 136 139 117 153 94"
+        stroke="#7c4a25"
+        stroke-width="10"
+        stroke-linecap="round"
+        fill="none"
+      />
+
+      <path
+        d="M91 125 C77 108 69 93 66 77"
+        stroke="#7c4a25"
+        stroke-width="8"
+        stroke-linecap="round"
+        fill="none"
+      />
+
+      <path
+        d="M111 124 C126 106 136 90 139 72"
+        stroke="#7c4a25"
+        stroke-width="8"
+        stroke-linecap="round"
+        fill="none"
+      />
+
+
+      <!-- ==============================
+           FEUILLAGE
+           ============================== -->
+
+      <g class="tree-leaves">
+
+        <circle cx="57" cy="83" r="39" fill="#166534"/>
+        <circle cx="102" cy="62" r="48" fill="#15803d"/>
+        <circle cx="151" cy="83" r="40" fill="#166534"/>
+
+        <circle cx="73" cy="48" r="32" fill="#22c55e"/>
+        <circle cx="126" cy="39" r="36" fill="#16a34a"/>
+        <circle cx="164" cy="52" r="31" fill="#22c55e"/>
+
+        <circle cx="101" cy="95" r="42" fill="#15803d"/>
+
+
+        <!-- feuilles -->
 
         <ellipse
-          class="tree-ground"
-          cx="105"
-          cy="275"
-          rx="70"
-          ry="12"
+          class="leaf"
+          cx="39"
+          cy="64"
+          rx="13"
+          ry="7"
+          fill="#4ade80"
+          transform="rotate(-25 39 64)"
         />
 
-
-        <!-- TRONC -->
-
-        <path
-          class="tree-trunk"
-          d="
-            M93 265
-            C94 235 91 215 88 190
-            C84 165 79 142 78 118
-            C78 103 84 92 96 91
-            C108 90 116 101 114 117
-            C111 142 108 165 108 190
-            C108 215 112 239 116 265
-            Z
-          "
-          fill="#7c4a25"
+        <ellipse
+          class="leaf"
+          cx="67"
+          cy="30"
+          rx="14"
+          ry="7"
+          fill="#4ade80"
+          transform="rotate(18 67 30)"
         />
 
-
-        <!-- BRANCHES -->
-
-        <path
-          d="M94 150 C72 137 55 120 43 101"
-          stroke="#7c4a25"
-          stroke-width="10"
-          stroke-linecap="round"
-          fill="none"
+        <ellipse
+          class="leaf"
+          cx="110"
+          cy="22"
+          rx="15"
+          ry="7"
+          fill="#4ade80"
+          transform="rotate(-10 110 22)"
         />
 
-        <path
-          d="M105 151 C124 136 139 117 153 94"
-          stroke="#7c4a25"
-          stroke-width="10"
-          stroke-linecap="round"
-          fill="none"
+        <ellipse
+          class="leaf"
+          cx="154"
+          cy="30"
+          rx="14"
+          ry="7"
+          fill="#4ade80"
+          transform="rotate(20 154 30)"
         />
 
-        <path
-          d="M91 125 C77 108 69 93 66 77"
-          stroke="#7c4a25"
-          stroke-width="8"
-          stroke-linecap="round"
-          fill="none"
+        <ellipse
+          class="leaf"
+          cx="183"
+          cy="70"
+          rx="14"
+          ry="7"
+          fill="#4ade80"
+          transform="rotate(-25 183 70)"
         />
 
-        <path
-          d="M111 124 C126 106 136 90 139 72"
-          stroke="#7c4a25"
-          stroke-width="8"
-          stroke-linecap="round"
-          fill="none"
+      </g>
+
+
+      <!-- ==============================
+           AVOCATS
+           ============================== -->
+
+      <g class="tree-fruit">
+
+        <ellipse
+          cx="55"
+          cy="90"
+          rx="10"
+          ry="15"
+          fill="#65a30d"
+          transform="rotate(-20 55 90)"
         />
 
+        <ellipse
+          cx="83"
+          cy="58"
+          rx="10"
+          ry="15"
+          fill="#84cc16"
+          transform="rotate(15 83 58)"
+        />
 
-        <!-- FEUILLAGE -->
+        <ellipse
+          cx="112"
+          cy="77"
+          rx="10"
+          ry="15"
+          fill="#65a30d"
+          transform="rotate(-10 112 77)"
+        />
 
-        <g class="tree-leaves">
+        <ellipse
+          cx="143"
+          cy="56"
+          rx="10"
+          ry="15"
+          fill="#84cc16"
+          transform="rotate(20 143 56)"
+        />
 
-          <circle cx="57" cy="83" r="39" fill="#166534"/>
-          <circle cx="102" cy="62" r="48" fill="#15803d"/>
-          <circle cx="151" cy="83" r="40" fill="#166534"/>
-          <circle cx="73" cy="48" r="32" fill="#22c55e"/>
-          <circle cx="126" cy="39" r="36" fill="#16a34a"/>
-          <circle cx="164" cy="52" r="31" fill="#22c55e"/>
-          <circle cx="101" cy="95" r="42" fill="#15803d"/>
+        <ellipse
+          cx="158"
+          cy="96"
+          rx="10"
+          ry="15"
+          fill="#65a30d"
+          transform="rotate(-15 158 96)"
+        />
 
-          <ellipse
-            class="leaf"
-            cx="39"
-            cy="64"
-            rx="13"
-            ry="7"
-            fill="#4ade80"
-            transform="rotate(-25 39 64)"
-          />
+        <ellipse
+          cx="94"
+          cy="112"
+          rx="10"
+          ry="15"
+          fill="#84cc16"
+          transform="rotate(15 94 112)"
+        />
 
-          <ellipse
-            class="leaf"
-            cx="67"
-            cy="30"
-            rx="14"
-            ry="7"
-            fill="#4ade80"
-            transform="rotate(18 67 30)"
-          />
+      </g>
 
-          <ellipse
-            class="leaf"
-            cx="110"
-            cy="22"
-            rx="15"
-            ry="7"
-            fill="#4ade80"
-            transform="rotate(-10 110 22)"
-          />
-
-          <ellipse
-            class="leaf"
-            cx="154"
-            cy="30"
-            rx="14"
-            ry="7"
-            fill="#4ade80"
-            transform="rotate(20 154 30)"
-          />
-
-          <ellipse
-            class="leaf"
-            cx="183"
-            cy="70"
-            rx="14"
-            ry="7"
-            fill="#4ade80"
-            transform="rotate(-25 183 70)"
-          />
-
-        </g>
+    </svg>
 
 
-        <!-- AVOCATS -->
+    <!-- ==============================
+         POMPE
+         ============================== -->
 
-        <g class="tree-fruit">
+    <div
+      id="eco-water-pump"
+      class="water-pump"
+      aria-label="Pompe à eau"
+    >
 
-          <ellipse
-            cx="55"
-            cy="90"
-            rx="10"
-            ry="15"
-            fill="#65a30d"
-            transform="rotate(-20 55 90)"
-          />
+      <div class="pump-handle"></div>
 
-          <ellipse
-            cx="83"
-            cy="58"
-            rx="10"
-            ry="15"
-            fill="#84cc16"
-            transform="rotate(15 83 58)"
-          />
+      <div class="pump-pipe"></div>
 
-          <ellipse
-            cx="112"
-            cy="77"
-            rx="10"
-            ry="15"
-            fill="#65a30d"
-            transform="rotate(-10 112 77)"
-          />
+      <div class="water-stream"></div>
 
-          <ellipse
-            cx="143"
-            cy="56"
-            rx="10"
-            ry="15"
-            fill="#84cc16"
-            transform="rotate(20 143 56)"
-          />
+      <div class="pump-top"></div>
 
-          <ellipse
-            cx="158"
-            cy="96"
-            rx="10"
-            ry="15"
-            fill="#65a30d"
-            transform="rotate(-15 158 96)"
-          />
+      <div class="pump-body">
 
-          <ellipse
-            cx="94"
-            cy="112"
-            rx="10"
-            ry="15"
-            fill="#84cc16"
-            transform="rotate(15 94 112)"
-          />
+        <div class="pump-water-level">
 
-        </g>
-
-      </svg>
-
-
-      <!-- POMPE -->
-
-      <div
-        id="eco-water-pump"
-        class="water-pump"
-        aria-label="Pompe à eau"
-      >
-
-        <div class="pump-handle"></div>
-
-        <div class="pump-pipe"></div>
-
-        <div class="water-stream"></div>
-
-        <div class="pump-top"></div>
-
-        <div class="pump-body">
-
-          <div class="pump-water-level">
-
-            <div
-              id="pump-water"
-              class="pump-water"
-            ></div>
-
-          </div>
+          <div
+            id="pump-water"
+            class="pump-water"
+          ></div>
 
         </div>
 
@@ -1357,87 +1423,469 @@
 
     </div>
 
+  </div>
 
-    <!-- ================================
-         BARRE DE CONSOMMATION
-         ================================ -->
 
-    <div class="scale">
+  <!-- ==================================================
+       BARRE
+       ================================================== -->
 
-      <div class="scale-track">
+  <div class="scale">
 
-        <div id="eco-bar-fill"></div>
+    <div class="scale-track">
 
-        <div id="eco-marker"></div>
+      <div id="eco-bar-fill"></div>
 
-      </div>
+      <div id="eco-marker"></div>
 
-      <div class="scale-labels">
+    </div>
 
-        <span>0 L</span>
-        <span>10 L</span>
-        <span>25 L</span>
-        <span>50 L</span>
-        <span>100 L+</span>
 
-      </div>
+    <div class="scale-labels">
+
+      <span>100 L+</span>
+      <span>75 L</span>
+      <span>50 L</span>
+      <span>25 L</span>
+      <span>0 L</span>
 
     </div>
 
   </div>
 
+</div>
 
-  <!-- ================================
-       COMPTEUR
-       ================================ -->
 
-  <div class="eco-number">
+<!-- =====================================================
+     COMPTEUR
+     ===================================================== -->
 
-    <div>
+<div class="eco-number">
 
-      <span id="eco-litres">0,0</span>
+  <div>
 
-      <small>L</small>
+    <span id="eco-litres">
+      0,0
+    </span>
 
-      <p>d'eau consommés</p>
+    <small>L</small>
 
-    </div>
-
-    <div
-      class="eco-percent"
-      id="eco-pct"
-    >
-      0%
-    </div>
+    <p>
+      d'eau consommés
+    </p>
 
   </div>
-
 
   <div
-    class="eco-status"
-    id="eco-status"
+    class="eco-percent"
+    id="eco-pct"
   >
-    Excellent 🌿
+    0%
   </div>
 
-
-  <div class="eco-gradient">
-    <i></i>
-  </div>
+</div>
 
 
-  <div class="eco-legend">
+<div
+  class="eco-status"
+  id="eco-status"
+>
+  Excellent 🌿
+</div>
 
-    <span>🟢 Faible</span>
-    <span>🟡 Moyen</span>
-    <span>🟠 Élevé</span>
-    <span>🔴 Critique</span>
 
-  </div>
+<div class="eco-gradient">
+  <i></i>
+</div>
+
+
+<div class="eco-legend">
+  <span>🟢 Faible</span>
+  <span>🟡 Moyen</span>
+  <span>🟠 Élevé</span>
+  <span>🔴 Critique</span>
+</div>
+
+
+<!-- =====================================================
+     SYNCHRONISATION ÉCOGUACATE
+     ===================================================== -->
+
+<script>
+(function () {
+
+  /*
+   * Échelle maximale visuelle :
+   * 0 L  = vert
+   * 10 L = vert
+   * 15 L = jaune
+   * 25 L = orange
+   * 26 L+ = rouge
+   *
+   * La barre continue jusqu'à 100 L.
+   */
+
+  const MAX_LITRES = 100;
+
+
+  function getLitres() {
+
+    const element =
+      document.getElementById('eco-litres');
+
+    if (!element) return 0;
+
+    const value =
+      element.textContent
+        .replace(',', '.')
+        .replace(/[^\d.]/g, '');
+
+    const litres =
+      parseFloat(value);
+
+    return Number.isFinite(litres)
+      ? Math.max(0, litres)
+      : 0;
+  }
+
+
+  function updateEco() {
+
+    const litres = getLitres();
+
+    const tree =
+      document.getElementById('eco-tree');
+
+    const pump =
+      document.getElementById('eco-water-pump');
+
+    const water =
+      document.getElementById('pump-water');
+
+    const marker =
+      document.getElementById('eco-marker');
+
+    const fill =
+      document.getElementById('eco-bar-fill');
+
+    const glow =
+      document.querySelector('.avocado-glow');
+
+    const status =
+      document.getElementById('eco-status');
+
+    const percent =
+      document.getElementById('eco-pct');
+
+
+    if (!tree) return;
+
+
+    /* ==========================================
+       BARRE 0 → 100 L
+       ========================================== */
+
+    const progress =
+      Math.min(litres / MAX_LITRES, 1);
+
+    const percentValue =
+      Math.round(progress * 100);
+
+
+    /*
+     * La barre monte depuis le bas.
+     */
+
+    if (fill) {
+
+      fill.style.height =
+        `${percentValue}%`;
+
+    }
+
+
+    /*
+     * Le petit curseur monte avec la consommation.
+     */
+
+    if (marker) {
+
+      marker.style.top =
+        `${100 - percentValue}%`;
+
+    }
+
+
+    if (percent) {
+
+      percent.textContent =
+        `${percentValue}%`;
+
+    }
+
+
+    /* ==========================================
+       EAU RESTANTE
+       ========================================== */
+
+    const waterRemaining =
+      Math.max(
+        0,
+        1 - progress
+      );
+
+
+    if (water) {
+
+      water.style.height =
+        `${waterRemaining * 100}%`;
+
+    }
+
+
+    /* ==========================================
+       ÉTAT DE L'ARBRE
+       ========================================== */
+
+    tree.classList.remove(
+      'tree-good',
+      'tree-warning',
+      'tree-danger',
+      'tree-dry',
+      'tree-dead'
+    );
+
+
+    /*
+     * 🟢 0 à 10 L
+     */
+
+    if (litres <= 10) {
+
+      tree.classList.add(
+        'tree-good'
+      );
+
+    }
+
+
+    /*
+     * 🟡 11 à 15 L
+     */
+
+    else if (litres <= 15) {
+
+      tree.classList.add(
+        'tree-warning'
+      );
+
+    }
+
+
+    /*
+     * 🟠 16 à 25 L
+     */
+
+    else if (litres <= 25) {
+
+      tree.classList.add(
+        'tree-danger'
+      );
+
+    }
+
+
+    /*
+     * 🔴 26 L et +
+     *
+     * On garde plusieurs étapes
+     * pour que l'arbre se dessèche
+     * progressivement.
+     */
+
+    else if (litres < 50) {
+
+      tree.classList.add(
+        'tree-dry'
+      );
+
+    }
+
+    else {
+
+      tree.classList.add(
+        'tree-dead'
+      );
+
+    }
+
+
+    /* ==========================================
+       COULEUR DE LA LUMIÈRE
+       ========================================== */
+
+    if (glow) {
+
+      if (litres <= 10) {
+
+        glow.style.background =
+          'radial-gradient(circle, rgba(34,197,94,.28), rgba(34,197,94,.06) 45%, transparent 72%)';
+
+        glow.style.opacity = '1';
+
+      }
+
+      else if (litres <= 15) {
+
+        glow.style.background =
+          'radial-gradient(circle, rgba(234,179,8,.25), rgba(234,179,8,.05) 45%, transparent 72%)';
+
+        glow.style.opacity = '.9';
+
+      }
+
+      else if (litres <= 25) {
+
+        glow.style.background =
+          'radial-gradient(circle, rgba(249,115,22,.25), rgba(249,115,22,.05) 45%, transparent 72%)';
+
+        glow.style.opacity = '.8';
+
+      }
+
+      else {
+
+        glow.style.background =
+          'radial-gradient(circle, rgba(239,68,68,.22), rgba(239,68,68,.03) 45%, transparent 72%)';
+
+        glow.style.opacity = '.5';
+
+      }
+
+    }
+
+
+    /* ==========================================
+       TEXTE DE STATUT
+       ========================================== */
+
+    if (status) {
+
+      if (litres <= 10) {
+
+        status.textContent =
+          'Excellent 🌿';
+
+      }
+
+      else if (litres <= 15) {
+
+        status.textContent =
+          'Attention 🍂';
+
+      }
+
+      else if (litres <= 25) {
+
+        status.textContent =
+          'Impact élevé 🟠';
+
+      }
+
+      else if (litres < 50) {
+
+        status.textContent =
+          'Arbre en train de sécher 🥀';
+
+      }
+
+      else if (litres < 75) {
+
+        status.textContent =
+          'Arbre très sec 🪵';
+
+      }
+
+      else {
+
+        status.textContent =
+          'Arbre complètement desséché 🔴';
+
+      }
+
+    }
+
+
+    /* ==========================================
+       POMPE
+       ========================================== */
+
+    if (pump) {
+
+      if (litres >= MAX_LITRES) {
+
+        pump.classList.add(
+          'dry'
+        );
+
+      }
+
+      else {
+
+        pump.classList.remove(
+          'dry'
+        );
+
+      }
+
+    }
+
+  }
+
+
+  /* ==========================================
+     SURVEILLER LE COMPTEUR
+     ========================================== */
+
+  const litresElement =
+    document.getElementById('eco-litres');
+
+
+  if (litresElement) {
+
+    const observer =
+      new MutationObserver(
+        updateEco
+      );
+
+    observer.observe(
+      litresElement,
+      {
+        childList: true,
+        characterData: true,
+        subtree: true
+      }
+    );
+
+  }
+
+
+  /*
+   * Vérification de sécurité.
+   */
+
+  setInterval(
+    updateEco,
+    500
+  );
+
+
+  updateEco();
+
+})();
+</script>
 
 </aside>
-
-
 <!-- =====================================================
      SCRIPT ÉCOGUACATE
      ===================================================== -->
