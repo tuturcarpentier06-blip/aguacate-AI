@@ -1,106 +1,1826 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const $ = id => document.getElementById(id);
-  const state = { token:null, id:null, role:'user', conversations:[], activeId:null, litres:0 };
-  const mode = $('mode');
-  const messages = $('messages');
-  const api = async (url, opt={}) => {
-    opt.headers = { ...(opt.headers||{}), Authorization:`Bearer ${state.token}` };
-    const r = await fetch(url,opt); let j={}; try{j=await r.json()}catch{}
-    if(!r.ok) { if(r.status===403 && ['banned','unauthenticated'].includes(j.error)) handleSessionError(j); throw new Error(j.message||j.error||`HTTP ${r.status}`); }
-    return j;
+/* =========================================================
+   AGUACATE AI v4.0.0
+   APP.JS
+   ========================================================= */
+
+(() => {
+
+'use strict';
+
+
+/* =========================================================
+   ÉTAT CENTRAL
+   ========================================================= */
+
+const state = {
+
+  token: localStorage.getItem('aguacate_token') || '',
+
+  userId: localStorage.getItem('aguacate_user_id') || '',
+
+  role: localStorage.getItem('aguacate_role') || 'user',
+
+  consumptionLitres: 0,
+
+  conversations: [],
+
+  currentConversationId: null,
+
+  selectedFile: null,
+
+  sending: false
+
+};
+
+
+/*
+   IMPORTANT :
+
+   Une seule valeur est utilisée pour l'ÉcoGuacate.
+
+   state.consumptionLitres
+
+   Le compteur, le %, la barre,
+   l'arbre et la pompe utilisent TOUS cette valeur.
+*/
+
+
+/* =========================================================
+   UTILITAIRES
+   ========================================================= */
+
+const $ = id => document.getElementById(id);
+
+
+function escapeHTML(value) {
+
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+
+}
+
+
+function showToast(message) {
+
+  const toast = $('toast');
+
+  if (!toast) return;
+
+  toast.textContent = message;
+
+  toast.classList.add('show');
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2800);
+
+}
+
+
+async function api(url, options = {}) {
+
+  const headers = {
+    ...(options.headers || {})
   };
-  const toast = t => { const e=$('toast'); e.textContent=t; e.classList.add('show'); clearTimeout(window.__toast); window.__toast=setTimeout(()=>e.classList.remove('show'),2800); };
-  function deviceId(){ let id=localStorage.getItem('aguacate-id'); if(!id){ id=''; localStorage.setItem('aguacate-id',id); } return id; }
-  function handleSessionError(j){ if(j.error==='banned'){ localStorage.removeItem('aguacate-token'); toast('⛔ Accès suspendu pendant 24 heures.'); } }
-  function updateEco(l){
-    state.litres=Math.max(0,Number(l)||0); const max=24.8, p=Math.min(100,state.litres/max*100); let color;
-    if(p<=40){const t=p/40;color=`rgb(${Math.round(46+100*t)},${Math.round(204+4*t)},${Math.round(113-33*t)})`}
-    else if(p<=60){const t=(p-40)/20;color=`rgb(${Math.round(146+95*t)},${Math.round(208-12*t)},${Math.round(80-65*t)})`}
-    else if(p<=80){const t=(p-60)/20;color=`rgb(${Math.round(241+14*t)},${Math.round(196-37*t)},${Math.round(15+52*t)})`}
-    else {const t=(p-80)/20;color=`rgb(${Math.round(255-24*t)},${Math.round(159-83*t)},${Math.round(67-7*t)})`}
-    $('eco-litres').textContent=state.litres.toFixed(1).replace('.',','); $('eco-pct').textContent=Math.round(p)+'%';
-    $('eco-avocado-fill').style.fill=color; $('eco-bar-fill').style.height=p+'%'; $('eco-bar-fill').style.background=color; $('eco-marker').style.bottom=p+'%'; $('eco-marker').style.boxShadow=`0 0 18px ${color}`;
-    const status=state.litres<=10?'Excellent 🌿':state.litres<=15?'Bon équilibre 🌱':state.litres<=20?'À surveiller ⚠️':'Consommation élevée 🔴'; $('eco-status').textContent=status; $('eco-status').style.color=color; $('avocado-glow').style.background=color;
+
+  if (state.token) {
+
+    headers.Authorization =
+      `Bearer ${state.token}`;
+
   }
-  function renderConversations(){
-    const box=$('conversation-list'); box.innerHTML='';
-    state.conversations.forEach(c=>{
-      const row=document.createElement('div'); row.className='conversation-row'+(c.id===state.activeId?' active':'');
-      const b=document.createElement('button'); b.className='conversation-item'; b.type='button'; b.textContent=c.title;
-      b.onclick=()=>{state.activeId=c.id;renderConversations();renderMessages(c.messages)};
-      const del=document.createElement('button'); del.className='conversation-delete'; del.type='button'; del.title='Supprimer la conversation'; del.setAttribute('aria-label','Supprimer la conversation'); del.textContent='🗑️';
-      del.onclick=(e)=>{e.stopPropagation();deleteConversation(c.id,c.title)};
-      row.append(b,del); box.appendChild(row);
+
+  const response = await fetch(url, {
+    ...options,
+    headers
+  });
+
+  let data = {};
+
+  try {
+    data = await response.json();
+  } catch {
+    data = {};
+  }
+
+  if (!response.ok) {
+
+    const error = new Error(
+      data.message ||
+      data.error ||
+      `Erreur HTTP ${response.status}`
+    );
+
+    error.status = response.status;
+    error.data = data;
+
+    throw error;
+  }
+
+  return data;
+}
+
+
+/* =========================================================
+   ÉCOGUACATE
+   ========================================================= */
+
+/*
+   Échelle :
+
+   0 - 20     vert
+   20 - 50    jaune
+   50 - 85    orange
+   85 - 100+  rouge
+
+   Le pourcentage représente directement
+   la consommation sur une base de 100 L.
+
+   Exemple :
+
+   3 L  = 3 %
+   25 L = 25 %
+   50 L = 50 %
+   85 L = 85 %
+   100 L = 100 %
+   150 L = 100 % visuellement
+*/
+
+const ECO_MAX = 100;
+
+
+function getEcoState(litres) {
+
+  const value = Math.max(
+    0,
+    Number(litres) || 0
+  );
+
+  const percentage =
+    Math.min(
+      100,
+      Math.max(
+        0,
+        value
+      )
+    );
+
+
+  let level;
+  let color;
+  let status;
+
+
+  if (value <= 20) {
+
+    level = 'good';
+    color = '#22c55e';
+    status = 'Excellent 🌿';
+
+  }
+
+  else if (value <= 50) {
+
+    level = 'warning';
+    color = '#eab308';
+    status = 'Attention 🌱';
+
+  }
+
+  else if (value < 85) {
+
+    level = 'danger';
+    color = '#f97316';
+    status = 'Impact élevé 🍂';
+
+  }
+
+  else {
+
+    level = 'dead';
+    color = '#ef4444';
+    status = 'Très forte consommation 🔴';
+
+  }
+
+
+  return {
+    litres: value,
+    percentage,
+    level,
+    color,
+    status
+  };
+
+}
+
+
+function updateEcoGuacate(litres) {
+
+  /*
+     SOURCE UNIQUE
+
+     Toutes les parties reçoivent exactement
+     la même valeur.
+  */
+
+  const eco = getEcoState(litres);
+
+
+  state.consumptionLitres =
+    eco.litres;
+
+
+  /* -------------------------------------------------------
+     COMPTEUR
+     ------------------------------------------------------- */
+
+  const litresElement =
+    $('eco-litres');
+
+  if (litresElement) {
+
+    litresElement.textContent =
+      eco.litres.toFixed(1).replace('.', ',');
+
+  }
+
+
+  /* -------------------------------------------------------
+     POURCENTAGE
+     ------------------------------------------------------- */
+
+  const percentageElement =
+    $('eco-pct');
+
+  if (percentageElement) {
+
+    percentageElement.textContent =
+      `${Math.round(eco.percentage)}%`;
+
+    percentageElement.style.color =
+      eco.color;
+
+  }
+
+
+  /* -------------------------------------------------------
+     BARRE
+     ------------------------------------------------------- */
+
+  const bar =
+    $('eco-bar-fill');
+
+  if (bar) {
+
+    bar.style.width =
+      `${eco.percentage}%`;
+
+    bar.style.background =
+      eco.color;
+
+    bar.style.boxShadow =
+      `0 0 10px ${eco.color}55`;
+
+  }
+
+
+  /* -------------------------------------------------------
+     CURSEUR
+     ------------------------------------------------------- */
+
+  const marker =
+    $('eco-marker');
+
+  if (marker) {
+
+    marker.style.left =
+      `${eco.percentage}%`;
+
+    marker.style.borderColor =
+      eco.color;
+
+  }
+
+
+  /* -------------------------------------------------------
+     ARBRE
+     ------------------------------------------------------- */
+
+  const tree =
+    $('eco-tree');
+
+  if (tree) {
+
+    tree.classList.remove(
+      'tree-good',
+      'tree-warning',
+      'tree-danger',
+      'tree-dry',
+      'tree-dead'
+    );
+
+
+    if (eco.litres <= 20) {
+
+      tree.classList.add(
+        'tree-good'
+      );
+
+    }
+
+    else if (eco.litres <= 50) {
+
+      tree.classList.add(
+        'tree-warning'
+      );
+
+    }
+
+    else if (eco.litres < 85) {
+
+      tree.classList.add(
+        'tree-danger'
+      );
+
+    }
+
+    else if (eco.litres < 100) {
+
+      tree.classList.add(
+        'tree-dry'
+      );
+
+    }
+
+    else {
+
+      tree.classList.add(
+        'tree-dead'
+      );
+
+    }
+
+  }
+
+
+  /* -------------------------------------------------------
+     POMPE
+     ------------------------------------------------------- */
+
+  const pump =
+    $('eco-water-pump');
+
+  const pumpWater =
+    $('pump-water');
+
+  if (pumpWater) {
+
+    const remaining =
+      Math.max(
+        0,
+        1 - eco.percentage / 100
+      );
+
+    pumpWater.style.height =
+      `${remaining * 100}%`;
+
+  }
+
+
+  if (pump) {
+
+    if (eco.percentage >= 100) {
+
+      pump.classList.add('dry');
+
+    } else {
+
+      pump.classList.remove('dry');
+
+    }
+
+  }
+
+
+  /* -------------------------------------------------------
+     LUMIÈRE
+     ------------------------------------------------------- */
+
+  const glow =
+    $('eco-glow');
+
+  if (glow) {
+
+    glow.style.opacity =
+      eco.level === 'dead'
+        ? '.35'
+        : '1';
+
+
+    glow.style.background =
+      `radial-gradient(
+        circle,
+        ${eco.color}44,
+        ${eco.color}0d 50%,
+        transparent 72%
+      )`;
+
+  }
+
+
+  /* -------------------------------------------------------
+     STATUT
+     ------------------------------------------------------- */
+
+  const status =
+    $('eco-status');
+
+  if (status) {
+
+    status.textContent =
+      eco.status;
+
+    status.style.color =
+      eco.color;
+
+  }
+
+}
+
+
+/* =========================================================
+   CONNEXION
+   ========================================================= */
+
+async function login() {
+
+  try {
+
+    const deviceId =
+      localStorage.getItem(
+        'aguacate_device_id'
+      ) || '';
+
+
+    const result =
+      await api('/login', {
+
+        method: 'POST',
+
+        headers: {
+          'Content-Type':
+            'application/json'
+        },
+
+        body: JSON.stringify({
+          deviceId
+        })
+
+      });
+
+
+    state.token =
+      result.token;
+
+    state.userId =
+      result.id;
+
+    state.role =
+      result.role || 'user';
+
+
+    localStorage.setItem(
+      'aguacate_token',
+      state.token
+    );
+
+    localStorage.setItem(
+      'aguacate_user_id',
+      state.userId
+    );
+
+    localStorage.setItem(
+      'aguacate_role',
+      state.role
+    );
+
+
+    updateUserInterface();
+
+
+    /*
+       IMPORTANT :
+       on prend la valeur du serveur
+       et on ne la recalcule pas.
+    */
+
+    updateEcoGuacate(
+      Number(result.consumptionLitres || 0)
+    );
+
+
+    await loadConversations();
+
+
+    startHeartbeat();
+
+  }
+
+  catch (error) {
+
+    if (
+      error.status === 403 &&
+      error.data?.error === 'banned'
+    ) {
+
+      const until =
+        error.data.bannedUntil
+          ? new Date(
+              error.data.bannedUntil
+            ).toLocaleString('fr-FR')
+          : 'plus tard';
+
+      showToast(
+        `🚫 Accès suspendu jusqu'au ${until}`
+      );
+
+      return;
+
+    }
+
+
+    console.error(
+      '[login]',
+      error
+    );
+
+    showToast(
+      'Impossible de se connecter à Aguacate AI.'
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   INTERFACE UTILISATEUR
+   ========================================================= */
+
+function updateUserInterface() {
+
+  const badge =
+    $('user-badge');
+
+  if (badge) {
+
+    badge.textContent =
+      `🥑 Aguacate AI #${state.userId || '0000'}`;
+
+  }
+
+
+  const role =
+    $('role-badge');
+
+  if (role) {
+
+    const labels = {
+
+      admin: 'ADMINISTRATEUR',
+
+      professeur: 'PROFESSEUR',
+
+      user: 'UTILISATEUR'
+
+    };
+
+    role.textContent =
+      labels[state.role] ||
+      'UTILISATEUR';
+
+
+    role.className =
+      `role-badge ${state.role}`;
+
+  }
+
+}
+
+
+/* =========================================================
+   HEARTBEAT
+   ========================================================= */
+
+let heartbeatTimer = null;
+
+
+function startHeartbeat() {
+
+  if (heartbeatTimer) {
+
+    clearInterval(
+      heartbeatTimer
+    );
+
+  }
+
+
+  heartbeatTimer =
+    setInterval(async () => {
+
+      if (!state.token) return;
+
+      try {
+
+        await api('/heartbeat');
+
+      }
+
+      catch (error) {
+
+        if (
+          error.status === 401 ||
+          error.status === 403
+        ) {
+
+          console.warn(
+            'Session expirée.'
+          );
+
+        }
+
+      }
+
+    }, 30000);
+
+}
+
+
+/* =========================================================
+   CONVERSATIONS
+   ========================================================= */
+
+async function loadConversations() {
+
+  try {
+
+    const result =
+      await api('/conversations');
+
+
+    state.conversations =
+      Array.isArray(result)
+        ? result
+        : [];
+
+
+    renderConversationList();
+
+
+    if (
+      state.conversations.length &&
+      !state.currentConversationId
+    ) {
+
+      openConversation(
+        state.conversations[
+          state.conversations.length - 1
+        ].id
+      );
+
+    }
+
+  }
+
+  catch (error) {
+
+    console.error(
+      '[conversations]',
+      error
+    );
+
+  }
+
+}
+
+
+function renderConversationList() {
+
+  const list =
+    $('conversation-list');
+
+  if (!list) return;
+
+
+  list.innerHTML = '';
+
+
+  state.conversations
+    .forEach(conversation => {
+
+      const item =
+        document.createElement('div');
+
+      item.className =
+        'conversation-item';
+
+
+      if (
+        conversation.id ===
+        state.currentConversationId
+      ) {
+
+        item.classList.add(
+          'active'
+        );
+
+      }
+
+
+      item.innerHTML = `
+
+        <button
+          class="conversation-open"
+          type="button"
+        >
+          💬
+          <span>
+            ${escapeHTML(
+              conversation.title ||
+              'Conversation'
+            )}
+          </span>
+        </button>
+
+        <button
+          class="conversation-delete"
+          type="button"
+          title="Supprimer"
+        >
+          🗑️
+        </button>
+
+      `;
+
+
+      item
+        .querySelector(
+          '.conversation-open'
+        )
+        .addEventListener(
+          'click',
+          () => {
+
+            openConversation(
+              conversation.id
+            );
+
+          }
+        );
+
+
+      item
+        .querySelector(
+          '.conversation-delete'
+        )
+        .addEventListener(
+          'click',
+          event => {
+
+            event.stopPropagation();
+
+            deleteConversation(
+              conversation.id
+            );
+
+          }
+        );
+
+
+      list.appendChild(
+        item
+      );
+
     });
-  }
-  async function deleteConversation(id,title){
-    if(!confirm(`Voulez-vous supprimer cette conversation ?\n\n« ${title||'Conversation'} »`)) return;
-    try{
-      const j=await api('/deleteConversation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({conversationId:id})});
-      state.conversations=j.conversations||[];
-      if(state.activeId===id){ state.activeId=state.conversations.at(-1)?.id||null; }
-      renderConversations();
-      const c=state.conversations.find(x=>x.id===state.activeId);
-      renderMessages(c?.messages||[]);
-      toast('Conversation supprimée 🗑️');
-    }catch(e){toast('Impossible de supprimer la conversation : '+e.message)}
-  }
-  function renderMessages(ms=[]){messages.innerHTML='';ms.forEach(m=>addMessage(m.role==='user'?'user':'ai',m.content));messages.scrollTop=messages.scrollHeight;}
-  function addMessage(type,text){const e=document.createElement('div');e.className=`bubble ${type}`;e.textContent=text;messages.appendChild(e);return e;}
-  async function login(){
-    const old=localStorage.getItem('aguacate-token');
-    let j;
-    if(old){ state.token=old; try { j=await api('/heartbeat'); } catch { state.token=null; } }
-    if(!state.token){ const r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deviceId:deviceId()})}); j=await r.json(); if(!r.ok) throw new Error(j.message||j.error||'Connexion impossible'); state.token=j.token; localStorage.setItem('aguacate-token',state.token); }
-    if(!j?.id){ const r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deviceId:deviceId()})}); j=await r.json(); state.token=j.token; localStorage.setItem('aguacate-token',state.token); }
-    localStorage.setItem('aguacate-id',j.id); state.id=j.id; state.role=j.role||'user'; state.litres=j.consumptionLitres||0; $('user-badge').textContent='🥑 Aguacate AI #'+j.id; updateEco(state.litres); updateRoleUI(); await loadConversations();
-  }
-  function updateRoleUI(){ $('role-badge').textContent=state.role==='admin'?'ADMIN':state.role==='professeur'?'PROFESSEUR':'UTILISATEUR'; $('role-badge').className='role-badge '+state.role; }
-  async function loadConversations(){ const j=await api('/conversations'); state.conversations=j; state.activeId=state.activeId||j.at(-1)?.id; renderConversations(); if(state.activeId){const c=j.find(x=>x.id===state.activeId);renderMessages(c?.messages||[]);} }
-  async function send(text){
-    const input=$('prompt'), msg=(text||input.value).trim(); if(!msg)return; addMessage('user',msg);input.value='';messages.scrollTop=messages.scrollHeight;const loading=addMessage('ai','🥑 Aguacate réfléchit…');loading.classList.add('typing');document.body.classList.add('ai-thinking');
-    try{const j=await api('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,mode:mode.value})});loading.remove();addMessage('ai',j.reply);updateEco(j.consumptionLitres);await loadConversations();}catch(e){loading.textContent='🥑 '+e.message;toast(e.message)}finally{document.body.classList.remove('ai-thinking')}
-  }
-  $('send-btn').onclick=()=>send(); $('prompt').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}; document.querySelectorAll('[data-prompt]').forEach(b=>b.onclick=()=>send(b.dataset.prompt));
-  async function newConversation(){try{const j=await api('/newConversation',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});state.conversations=j.conversations;state.activeId=j.id;renderConversations();renderMessages([]);toast('Nouvelle conversation créée ✨')}catch(e){toast(e.message)}}
-  async function renameConversation(){if(!state.activeId)return toast('Aucune conversation sélectionnée');const c=state.conversations.find(x=>x.id===state.activeId);const title=prompt('Nouveau nom :',c?.title||'');if(!title)return;try{await api('/renameConversation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({conversationId:state.activeId,title})});await loadConversations();toast('Conversation renommée ✨')}catch(e){toast(e.message)}}
-  $('new-chat-btn').onclick=newConversation; $('rename-btn').onclick=renameConversation;
-  async function scan(file){if(!file)return;const fd=new FormData();fd.append('file',file);fd.append('question',$('prompt').value.trim()||'Résume ce fichier et donne-moi les informations importantes.');$('file-preview').classList.remove('hidden');$('file-preview').textContent='📄 '+file.name+' — analyse en cours…';try{const j=await api('/scan-and-ask',{method:'POST',body:fd});$('file-preview').textContent='📄 '+j.fileName+' — '+j.characters+' caractères extraits';addMessage('ai',j.reply);await loadConversations();toast('Fichier analysé ✨')}catch(e){$('file-preview').textContent='❌ '+e.message;toast(e.message)}}
-  $('attach-btn').onclick=()=>$('file-input').click();$('file-tool-btn').onclick=()=>$('file-input').click();$('file-input').onchange=e=>scan(e.target.files[0]);
-  $('theme-btn').onclick=()=>{document.body.classList.toggle('light');localStorage.setItem('aguacate-theme',document.body.classList.contains('light')?'light':'dark')};if(localStorage.getItem('aguacate-theme')==='light')document.body.classList.add('light');
 
-  async function verifyMode(target){
-    if(target==='Kids'||target==='Collégien'){mode.value=target;return;}
-    const password=prompt(`Mot de passe ${target} :`); if(password===null){mode.value=state.role==='admin'?'Admin':state.role==='professeur'?'Professeur':'Collégien';return;}
-    try{const j=await api('/modes/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:target,password})});if(!j.ok)throw new Error('Mot de passe incorrect');state.role=j.role;updateRoleUI();mode.value=target;toast(`Accès ${target} activé 🔐`);if(target==='Admin')openUsers();}catch(e){mode.value=state.role==='admin'?'Admin':state.role==='professeur'?'Professeur':'Collégien';toast('🔒 '+e.message)}}
-  mode.onchange=()=>verifyMode(mode.value);
+}
 
-  function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
-  async function requireAdmin(){if(state.role==='admin')return true;const p=prompt('Mot de passe administrateur :');if(p===null)return false;try{const j=await api('/modes/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'Admin',password:p})});if(!j.ok)throw new Error('Mot de passe incorrect');state.role='admin';mode.value='Admin';updateRoleUI();return true}catch(e){toast('🔒 '+e.message);return false}}
-  async function loadAdmin(){
-    if(!await requireAdmin())return;
-    try{
-      const [users,online,recent,convs]=await Promise.all([api('/users'),api('/users/online'),api('/users/recent'),api('/admin/conversations')]);
-      $('admin-summary').innerHTML=`<div><b>${online.length}</b><small>en ligne</small></div><div><b>${recent.length}</b><small>vus en 24 h</small></div><div><b>${users.length}</b><small>utilisateurs</small></div>`;
-      $('online-list').innerHTML=online.map(u=>userCard(u)).join('')||'<p>Aucun utilisateur en ligne.</p>';
-      $('recent-list').innerHTML=recent.map(u=>userCard(u)).join('')||'<p>Aucun utilisateur récent.</p>';
-      $('all-users-list').innerHTML=users.map(u=>userCard(u)).join('')||'<p>Aucun utilisateur.</p>';
-      $('conversation-admin-list').innerHTML=convs.map(x=>`<div class="admin-conv-user"><b>🥑 #${esc(x.userId)}</b>${x.conversations.map(c=>`<button onclick="viewAdminConversation('${esc(x.userId)}','${esc(c.id)}')">${esc(c.title)}</button>`).join('')}</div>`).join('')||'<p>Aucune conversation.</p>';
-      $('admin-panel').style.display='flex';
-    }catch(e){toast('Administration : '+e.message)}
+
+function openConversation(id) {
+
+  const conversation =
+    state.conversations.find(
+      c => c.id === id
+    );
+
+  if (!conversation) return;
+
+
+  state.currentConversationId =
+    id;
+
+
+  renderConversationList();
+
+
+  renderMessages(
+    conversation.messages || []
+  );
+
+}
+
+
+function renderMessages(messages) {
+
+  const container =
+    $('messages');
+
+  if (!container) return;
+
+
+  container.innerHTML = '';
+
+
+  messages.forEach(message => {
+
+    addMessageToUI(
+      message.role,
+      message.content,
+      false
+    );
+
+  });
+
+
+  container.scrollTop =
+    container.scrollHeight;
+
+}
+
+
+function addMessageToUI(
+  role,
+  content,
+  scroll = true
+) {
+
+  const container =
+    $('messages');
+
+  if (!container) return;
+
+
+  const message =
+    document.createElement('div');
+
+  message.className =
+    `message ${role}`;
+
+
+  message.innerHTML = `
+    <div class="message-bubble">
+      ${escapeHTML(content)
+        .replace(/\n/g, '<br>')}
+    </div>
+  `;
+
+
+  container.appendChild(
+    message
+  );
+
+
+  if (scroll) {
+
+    container.scrollTop =
+      container.scrollHeight;
+
   }
-  function userCard(u){const last=u.lastSeen?new Date(u.lastSeen).toLocaleString('fr-FR'):'jamais';const banned=u.bannedUntil&&u.bannedUntil>Date.now();return `<div class="admin-user-row"><div><b>🥑 #${esc(u.id)}</b><span>${esc(u.role)}</span><small>${u.online?'🟢 En ligne':'⚪ Hors ligne'} · dernière connexion : ${last} · ${u.warnings?.length||0} avertissement(s)}${banned?' · ⛔ BANNI':''}</small></div><div class="admin-user-actions"><button onclick="addWarning('${esc(u.id)}')">⚠️ + avert.</button><button onclick="removeLastWarning('${esc(u.id)}')">➖ avert.</button>${banned?`<button onclick="unbanUser('${esc(u.id)}')">♻️ Débannir</button>`:`<button onclick="banUser('${esc(u.id)}')">⛔ 24 h</button>`}<button onclick="disconnectUser('${esc(u.id)}')">🔌 Déconnecter</button></div></div>`}
-  window.showAdminTab=(name)=>{document.querySelectorAll('.admin-tab').forEach(x=>x.classList.add('hidden'));const el=$('admin-tab-'+name);if(el)el.classList.remove('hidden');};
-  window.openUsers=loadAdmin; window.openAdmin=loadAdmin; window.closeUsers=()=>{$('users-panel').style.display='none'}; window.closeAdmin=()=>{$('admin-panel').style.display='none'}; window.closeMailbox=()=>{$('mailbox-panel').style.display='none'};
-  window.addWarning=async id=>{const reason=prompt('Motif de l’avertissement :');if(!reason)return;try{const j=await api(`/users/${id}/warnings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reason})});toast(j.bannedUntil?'⛔ 3 avertissements ou plus : bannissement 24 h.':'⚠️ Avertissement ajouté.');loadAdmin()}catch(e){toast(e.message)}};
-  window.removeLastWarning=async id=>{try{const users=await api('/users');const u=users.find(x=>x.id===id);const w=u?.warnings?.at(-1);if(!w)return toast('Aucun avertissement à retirer.');await api(`/users/${id}/warnings/${w.id}`,{method:'DELETE'});toast('Avertissement retiré.');loadAdmin()}catch(e){toast(e.message)}};
-  window.banUser=async id=>{if(!confirm('Bannir cet utilisateur pendant 24 heures ?'))return;try{await api(`/users/${id}/ban`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reason:'Bannissement manuel'})});toast('Utilisateur banni 24 h.');loadAdmin()}catch(e){toast(e.message)}};
-  window.unbanUser=async id=>{try{await api(`/users/${id}/unban`,{method:'POST'});toast('Utilisateur débanni.');loadAdmin()}catch(e){toast(e.message)}};
-  window.disconnectUser=async id=>{if(!confirm('Déconnecter cet utilisateur maintenant ?'))return;try{await api(`/users/${id}/disconnect`,{method:'POST'});toast('Utilisateur déconnecté.');loadAdmin()}catch(e){toast(e.message)}};
-  window.viewAdminConversation=async(userId,convId)=>{try{const arr=await api(`/admin/conversations/${userId}`);const c=arr.find(x=>x.id===convId);$('admin-conversation-view').innerHTML=`<h3>🥑 #${esc(userId)} — ${esc(c?.title||'Conversation')}</h3>`+(c?.messages||[]).map(m=>`<div class="admin-msg ${m.role}"><b>${m.role==='user'?'Utilisateur':'Aguacate AI'}</b><p>${esc(m.content)}</p></div>`).join('');$('admin-conversation-view').classList.remove('hidden');$('admin-conversation-view').style.display='block'}catch(e){toast(e.message)}};
-  $('admin-refresh').onclick=loadAdmin;
-  window.openMailbox=async()=>{if(!await requireAdmin())return;try{const logs=await api('/adminlogs');$('mailbox-list').innerHTML=logs.map(l=>`<div class="log-row"><b>${esc(l.type)}</b><span>${l.user?'#'+esc(l.user):''}</span><small>${new Date(l.date).toLocaleString('fr-FR')}${l.reason?' · '+esc(l.reason):''}</small></div>`).join('')||'📭 Aucun événement.';$('mailbox-panel').style.display='flex'}catch(e){toast(e.message)}};
 
-  setInterval(()=>{if(state.token)api('/heartbeat').catch(()=>{});},30000);
-  login().catch(e=>toast('Connexion impossible : '+e.message));
-});
+}
+
+
+/* =========================================================
+   NOUVELLE CONVERSATION
+   ========================================================= */
+
+async function newConversation() {
+
+  try {
+
+    const result =
+      await api('/newConversation', {
+
+        method: 'POST',
+
+        headers: {
+          'Content-Type':
+            'application/json'
+        },
+
+        body: '{}'
+
+      });
+
+
+    state.conversations =
+      result.conversations || [];
+
+
+    state.currentConversationId =
+      result.id;
+
+
+    renderConversationList();
+
+
+    renderMessages([]);
+
+
+    showToast(
+      '✨ Nouvelle conversation créée.'
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      '[new conversation]',
+      error
+    );
+
+    showToast(
+      'Impossible de créer la conversation.'
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   SUPPRESSION
+   ========================================================= */
+
+async function deleteConversation(id) {
+
+  const conversation =
+    state.conversations.find(
+      c => c.id === id
+    );
+
+
+  const name =
+    conversation?.title ||
+    'cette conversation';
+
+
+  const confirmed =
+    window.confirm(
+      `Voulez-vous vraiment supprimer "${name}" ?`
+    );
+
+
+  if (!confirmed) return;
+
+
+  try {
+
+    const result =
+      await api(
+        '/deleteConversation',
+        {
+
+          method: 'POST',
+
+          headers: {
+            'Content-Type':
+              'application/json'
+          },
+
+          body: JSON.stringify({
+            conversationId: id
+          })
+
+        }
+      );
+
+
+    state.conversations =
+      result.conversations || [];
+
+
+    if (
+      state.currentConversationId === id
+    ) {
+
+      state.currentConversationId =
+        state.conversations[0]?.id ||
+        null;
+
+
+      if (
+        state.currentConversationId
+      ) {
+
+        openConversation(
+          state.currentConversationId
+        );
+
+      }
+
+      else {
+
+        renderMessages([]);
+
+      }
+
+    }
+
+
+    renderConversationList();
+
+
+    showToast(
+      '🗑️ Conversation supprimée.'
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      '[delete conversation]',
+      error
+    );
+
+    showToast(
+      'Impossible de supprimer la conversation.'
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   RENOMMER
+   ========================================================= */
+
+async function renameConversation() {
+
+  if (
+    !state.currentConversationId
+  ) {
+
+    showToast(
+      'Sélectionne une conversation.'
+    );
+
+    return;
+
+  }
+
+
+  const conversation =
+    state.conversations.find(
+      c =>
+        c.id ===
+        state.currentConversationId
+    );
+
+
+  const title =
+    window.prompt(
+      'Nouveau nom de la conversation :',
+      conversation?.title ||
+      'Conversation'
+    );
+
+
+  if (
+    title === null ||
+    !title.trim()
+  ) return;
+
+
+  try {
+
+    const result =
+      await api(
+        '/renameConversation',
+        {
+
+          method: 'POST',
+
+          headers: {
+            'Content-Type':
+              'application/json'
+          },
+
+          body: JSON.stringify({
+
+            conversationId:
+              state.currentConversationId,
+
+            title:
+              title.trim()
+
+          })
+
+        }
+      );
+
+
+    const index =
+      state.conversations.findIndex(
+        c =>
+          c.id ===
+          state.currentConversationId
+      );
+
+
+    if (index !== -1) {
+
+      state.conversations[index] =
+        result.conversation;
+
+    }
+
+
+    renderConversationList();
+
+
+    showToast(
+      '✏️ Conversation renommée.'
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      '[rename]',
+      error
+    );
+
+    showToast(
+      'Impossible de renommer la conversation.'
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   CHAT
+   ========================================================= */
+
+async function sendMessage(text) {
+
+  const message =
+    String(text || '').trim();
+
+
+  if (!message) return;
+
+
+  if (state.sending) return;
+
+
+  state.sending = true;
+
+
+  const prompt =
+    $('prompt');
+
+  if (prompt) {
+
+    prompt.value = '';
+
+  }
+
+
+  addMessageToUI(
+    'user',
+    message
+  );
+
+
+  try {
+
+    const mode =
+      $('mode')?.value ||
+      'Kids';
+
+
+    const result =
+      await api('/chat', {
+
+        method: 'POST',
+
+        headers: {
+          'Content-Type':
+            'application/json'
+        },
+
+        body: JSON.stringify({
+
+          message,
+
+          mode
+
+        })
+
+      });
+
+
+    addMessageToUI(
+      'assistant',
+      result.reply || ''
+    );
+
+
+    /*
+       C'est LA SEULE valeur utilisée
+       pour mettre à jour l'ÉcoGuacate.
+    */
+
+    if (
+      typeof result.consumptionLitres ===
+      'number'
+    ) {
+
+      updateEcoGuacate(
+        result.consumptionLitres
+      );
+
+    }
+
+
+    await loadConversations();
+
+  }
+
+  catch (error) {
+
+    console.error(
+      '[chat]',
+      error
+    );
+
+
+    if (
+      error.status === 403 &&
+      error.data?.error === 'auto-banned'
+    ) {
+
+      showToast(
+        '⚠️ Avertissement : langage interdit détecté.'
+      );
+
+    }
+
+    else if (
+      error.status === 403 &&
+      error.data?.error === 'banned'
+    ) {
+
+      showToast(
+        '🚫 Ton compte est temporairement suspendu.'
+      );
+
+    }
+
+    else {
+
+      addMessageToUI(
+        'assistant',
+        '🥑 Désolé, je n’ai pas réussi à répondre.'
+      );
+
+    }
+
+  }
+
+  finally {
+
+    state.sending = false;
+
+  }
+
+}
+
+
+/* =========================================================
+   MODE PROFESSEUR / ADMIN
+   ========================================================= */
+
+async function verifyMode(mode) {
+
+  const password =
+    window.prompt(
+      `Mot de passe ${mode} :`
+    );
+
+
+  if (password === null) {
+
+    return false;
+
+  }
+
+
+  try {
+
+    const result =
+      await api('/modes/verify', {
+
+        method: 'POST',
+
+        headers: {
+          'Content-Type':
+            'application/json'
+        },
+
+        body: JSON.stringify({
+
+          mode,
+
+          password
+
+        })
+
+      });
+
+
+    state.role =
+      result.role;
+
+
+    localStorage.setItem(
+      'aguacate_role',
+      state.role
+    );
+
+
+    updateUserInterface();
+
+
+    showToast(
+      `🔓 Mode ${mode} activé.`
+    );
+
+
+    return true;
+
+  }
+
+  catch {
+
+    showToast(
+      '❌ Mot de passe incorrect.'
+    );
+
+
+    return false;
+
+  }
+
+}
+
+
+/* =========================================================
+   FICHIERS
+   ========================================================= */
+
+function openFilePicker() {
+
+  const input =
+    $('file-input');
+
+  if (input) {
+
+    input.click();
+
+  }
+
+}
+
+
+async function handleFile(file) {
+
+  if (!file) return;
+
+
+  state.selectedFile =
+    file;
+
+
+  const preview =
+    $('file-preview');
+
+
+  if (preview) {
+
+    preview.classList.remove(
+      'hidden'
+    );
+
+
+    preview.innerHTML = `
+
+      <div>
+        📎
+        <b>
+          ${escapeHTML(file.name)}
+        </b>
+
+        <small>
+          ${(file.size / 1024).toFixed(1)}
+          Ko
+        </small>
+      </div>
+
+      <button
+        id="file-analyse-btn"
+        type="button"
+      >
+        🤖 Analyser
+      </button>
+
+    `;
+
+
+    $('file-analyse-btn')
+      ?.addEventListener(
+        'click',
+        () => scanAndAsk(file)
+      );
+
+  }
+
+}
+
+
+async function scanAndAsk(file) {
+
+  if (!file) return;
+
+
+  const question =
+    window.prompt(
+      'Que veux-tu demander à Aguacate AI sur ce fichier ?',
+      'Analyse ce fichier et résume les points importants.'
+    );
+
+
+  if (question === null) return;
+
+
+  const form =
+    new FormData();
+
+
+  form.append(
+    'file',
+    file
+  );
+
+
+  form.append(
+    'question',
+    question
+  );
+
+
+  try {
+
+    showToast(
+      '📄 Lecture du fichier...'
+    );
+
+
+    const result =
+      await api(
+        '/scan-and-ask',
+        {
+
+          method: 'POST',
+
+          body: form
+
+        }
+      );
+
+
+    addMessageToUI(
+      'user',
+      `📎 ${file.name}\n${question}`
+    );
+
+
+    addMessageToUI(
+      'assistant',
+      result.reply || ''
+    );
+
+
+    if (
+      result.consumptionLitres !==
+      undefined
+    ) {
+
+      updateEcoGuacate(
+        result.consumptionLitres
+      );
+
+    }
+
+
+    const preview =
+      $('file-preview');
+
+
+    if (preview) {
+
+      preview.classList.add(
+        'hidden'
+      );
+
+      preview.innerHTML = '';
+
+    }
+
+
+    state.selectedFile =
+      null;
+
+
+    showToast(
+      '✅ Fichier analysé.'
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      '[scan]',
+      error
+    );
+
+
+    showToast(
+      '❌ Impossible d’analyser ce fichier.'
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   THÈME
+   ========================================================= */
+
+function toggleTheme() {
+
+  document.body.classList.toggle(
+    'dark'
+  );
+
+
+  localStorage.setItem(
+    'aguacate_dark',
+    document.body.classList.contains(
+      'dark'
+    )
+  );
+
+}
+
+
+/* =========================================================
+   INITIALISATION
+   ========================================================= */
+
+function setupEvents() {
+
+  $('send-btn')
+    ?.addEventListener(
+      'click',
+      () => {
+
+        sendMessage(
+          $('prompt')?.value
+        );
+
+      }
+    );
+
+
+  $('prompt')
+    ?.addEventListener(
+      'keydown',
+      event => {
+
+        if (
+          event.key === 'Enter' &&
+          !event.shiftKey
+        ) {
+
+          event.preventDefault();
+
+          sendMessage(
+            event.target.value
+          );
+
+        }
+
+      }
+    );
+
+
+  document
+    .querySelectorAll(
+      '[data-prompt]'
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        'click',
+        () => {
+
+          const prompt =
+            $('prompt');
+
+          if (prompt) {
+
+            prompt.value =
+              button.dataset.prompt;
+
+            prompt.focus();
+
+          }
+
+        }
+      );
+
+    });
+
+
+  $('new-chat-btn')
+    ?.addEventListener(
+      'click',
+      newConversation
+    );
+
+
+  $('rename-btn')
+    ?.addEventListener(
+      'click',
+      renameConversation
+    );
+
+
+  $('attach-btn')
+    ?.addEventListener(
+      'click',
+      openFilePicker
+    );
+
+
+  $('file-tool-btn')
+    ?.addEventListener(
+      'click',
+      openFilePicker
+    );
+
+
+  $('file-input')
+    ?.addEventListener(
+      'change',
+      event => {
+
+        handleFile(
+          event.target.files?.[0]
+        );
+
+      }
+    );
+
+
+  $('theme-btn')
+    ?.addEventListener(
+      'click',
+      toggleTheme
+    );
+
+
+  $('mode')
+    ?.addEventListener(
+      'change',
+      async event => {
+
+        const mode =
+          event.target.value;
+
+
+        if (
+          mode === 'Professeur' ||
+          mode === 'Admin'
+        ) {
+
+          const success =
+            await verifyMode(
+              mode
+            );
+
+
+          if (!success) {
+
+            event.target.value =
+              state.role === 'admin'
+                ? 'Admin'
+                : state.role === 'professeur'
+                  ? 'Professeur'
+                  : 'Kids';
+
+          }
+
+        }
+
+      }
+    );
+
+
+  if (
+    localStorage.getItem(
+      'aguacate_dark'
+    ) === 'true'
+  ) {
+
+    document.body.classList.add(
+      'dark'
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   DÉMARRAGE
+   ========================================================= */
+
+document.addEventListener(
+  'DOMContentLoaded',
+  async () => {
+
+    setupEvents();
+
+    /*
+       Valeur initiale unique.
+    */
+
+    updateEcoGuacate(0);
+
+
+    await login();
+
+  }
+);
+
+
+/* =========================================================
+   EXPORT GLOBAL
+   ========================================================= */
+
+window.AguacateState =
+  state;
+
+window.updateEcoGuacate =
+  updateEcoGuacate;
+
+window.sendMessage =
+  sendMessage;
+
+window.newConversation =
+  newConversation;
+
+window.deleteConversation =
+  deleteConversation;
+
+window.renameConversation =
+  renameConversation;
+
+})();
