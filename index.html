@@ -18,7 +18,130 @@
 <link rel="stylesheet" href="avatar.css">
 
 <style>
+/* =========================================================
+   ÉCOGUACATE — BARRE HORIZONTALE + VALEURS SOUS LA BARRE
+   ========================================================= */
 
+.eco-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Zone contenant la barre */
+.scale {
+  width: 100%;
+  max-width: 270px;
+  margin: 4px auto 0;
+}
+
+/* Barre horizontale */
+.scale-track {
+  position: relative;
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  overflow: visible;
+  background: linear-gradient(
+    to right,
+    #22c55e 0%,
+    #22c55e 20%,
+    #eab308 20%,
+    #eab308 50%,
+    #f97316 50%,
+    #f97316 85%,
+    #ef4444 85%,
+    #ef4444 100%
+  );
+}
+
+/* Remplissage de la consommation */
+#eco-bar-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  transition:
+    width .7s ease,
+    background .5s ease,
+    box-shadow .5s ease;
+}
+
+/* Curseur */
+#eco-marker {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border: 3px solid #22c55e;
+  box-shadow: 0 2px 8px rgba(0,0,0,.35);
+  transition:
+    left .7s ease,
+    border-color .5s ease;
+  z-index: 5;
+}
+
+/* =========================================================
+   VALEURS SOUS LA BARRE
+   ========================================================= */
+
+.scale-labels {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+
+  width: 100%;
+  margin-top: 9px;
+
+  white-space: nowrap;
+  writing-mode: horizontal-tb !important;
+}
+
+/* Chaque valeur */
+.scale-labels span {
+  display: block !important;
+  position: static !important;
+
+  font-size: 9px;
+  line-height: 1;
+  color: rgba(255,255,255,.55);
+
+  white-space: nowrap;
+  writing-mode: horizontal-tb !important;
+}
+
+/* Première et dernière valeurs */
+.scale-labels span:first-child {
+  text-align: left;
+}
+
+.scale-labels span:last-child {
+  text-align: right;
+}
+
+/* =========================================================
+   PETITS ÉCRANS
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+  .scale {
+    max-width: 250px;
+  }
+
+  .scale-labels span {
+    font-size: 8px;
+  }
+
+}
 /* =========================================================
    ÉCOGUACATE
    ========================================================= */
