@@ -25,3 +25,143 @@
 .admin-user-row{display:flex;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.025);margin:7px 0}.admin-user-row>div:first-child{min-width:0}.admin-user-row b{display:block}.admin-user-row span{display:inline-block;color:var(--green);font-size:9px;margin:3px 0}.admin-user-row small{display:block;color:var(--muted);font-size:9px}.admin-user-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap}.admin-user-actions button{border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--text);padding:7px 8px;border-radius:9px;font-size:9px;cursor:pointer}.admin-user-actions button:hover{background:rgba(85,227,154,.1)}
 .admin-conv-user{border-bottom:1px solid var(--line);padding:10px 0}.admin-conv-user>b{display:block;margin-bottom:7px}.admin-conv-user button{display:block;width:100%;text-align:left;border:0;background:rgba(255,255,255,.04);color:var(--text);padding:9px;border-radius:9px;margin:4px 0;cursor:pointer}.admin-conversation-view{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.12)}.admin-msg{padding:9px;border-radius:10px;margin:6px 0;background:rgba(255,255,255,.035)}.admin-msg.user{border-left:3px solid #5ae6a0}.admin-msg.assistant{border-left:3px solid #7b9cff}.admin-msg p{white-space:pre-wrap;margin:5px 0;font-size:11px}.admin-footer{display:flex;gap:8px;margin-top:12px}.admin-footer .modal-action{margin:0}.log-row{padding:9px;border-bottom:1px solid var(--line);font-size:10px}.log-row b{margin-right:7px}.log-row small{display:block;color:var(--muted);margin-top:3px}
 @media(max-width:650px){.admin-user-row{display:block}.admin-user-actions{justify-content:flex-start;margin-top:8px}.admin-summary{grid-template-columns:1fr 1fr 1fr}.admin-summary b{font-size:18px}}
+/* =====================================================
+   RÈGLES & INFORMATIONS
+   ===================================================== */
+
+.info-card {
+  max-width: 760px;
+  width: min(92vw, 760px);
+  max-height: 88vh;
+  overflow: hidden;
+}
+
+.info-content {
+  max-height: 68vh;
+  overflow-y: auto;
+  padding: 4px 6px 10px;
+}
+
+.info-section {
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(127,127,127,.15);
+}
+
+.info-section:last-child {
+  border-bottom: none;
+}
+
+.info-section h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.info-section p {
+  margin: 7px 0;
+  line-height: 1.6;
+}
+
+.ecoguacate-info {
+  background: rgba(34,197,94,.06);
+  border-radius: 16px;
+  padding: 18px;
+  margin: 10px 0;
+}
+
+.eco-info-box {
+  margin-top: 14px;
+  padding: 13px 15px;
+  border-radius: 12px;
+  background: rgba(34,197,94,.10);
+}
+
+.eco-info-box p {
+  margin-bottom: 0;
+}
+
+.eco-levels {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.eco-levels div {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(127,127,127,.08);
+}
+
+.rules-list {
+  margin: 0;
+  padding-left: 24px;
+}
+
+.rules-list li {
+  margin: 9px 0;
+  line-height: 1.5;
+}
+
+.moderation-info {
+  background: rgba(239,68,68,.05);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.warning-level {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 11px 14px;
+  margin: 7px 0;
+  border-radius: 10px;
+  background: rgba(127,127,127,.08);
+}
+
+.warning-level.danger {
+  background: rgba(239,68,68,.09);
+}
+
+.small-info {
+  font-size: 13px;
+  opacity: .75;
+  margin-top: 14px !important;
+}
+
+.info-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(127,127,127,.15);
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+
+  .info-card {
+    width: 94vw;
+    max-height: 90vh;
+  }
+
+  .info-content {
+    max-height: 72vh;
+  }
+
+  .eco-levels {
+    grid-template-columns: 1fr;
+  }
+
+  .warning-level {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .info-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
