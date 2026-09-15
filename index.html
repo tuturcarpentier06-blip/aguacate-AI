@@ -16,144 +16,7 @@
 
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="avatar.css">
-<!-- =====================================================
-     RÈGLES & INFORMATIONS AGUACATE AI
-     ===================================================== -->
 
-<div id="info-rules-panel" class="modal">
-  <div class="modal-card info-card">
-
-    <div class="menu-header">
-      <div>
-        <h2>ℹ️ Règles & informations</h2>
-        <small>Bienvenue sur Aguacate AI v4.0.0 🥑</small>
-      </div>
-
-      <button id="close-info-rules">✕</button>
-    </div>
-
-    <div class="info-content">
-
-      <section class="info-section">
-        <h3>🥑 Qu'est-ce qu'Aguacate AI ?</h3>
-        <p>
-          Aguacate AI est un assistant éducatif conçu pour aider à comprendre,
-          apprendre, réfléchir et poser des questions.
-        </p>
-        <p>
-          L'objectif est de fournir des réponses claires et adaptées,
-          notamment pour les élèves.
-        </p>
-      </section>
-
-      <section class="info-section ecoguacate-info">
-        <h3>🌱 ÉcoGuacate</h3>
-
-        <p>
-          ÉcoGuacate est un système ludique qui permet de visualiser
-          l'impact de l'utilisation d'Aguacate AI sur la consommation
-          d'eau.
-        </p>
-
-        <p>
-          💧 Plus tu poses de questions, plus ton compteur augmente.
-          L'objectif est de prendre conscience que les services numériques
-          peuvent avoir un impact environnemental.
-        </p>
-
-        <div class="eco-info-box">
-          <strong>🎯 Le but</strong>
-          <p>
-            Essayer d'être plus économe et de réfléchir à l'utilité
-            de chaque demande avant de l'envoyer.
-          </p>
-        </div>
-
-        <div class="eco-levels">
-          <div>🟢 <strong>0 – 20 L</strong> : faible</div>
-          <div>🟡 <strong>21 – 50 L</strong> : modéré</div>
-          <div>🟠 <strong>51 – 85 L</strong> : élevé</div>
-          <div>🔴 <strong>86 – 100 L+</strong> : très élevé</div>
-        </div>
-      </section>
-
-      <section class="info-section">
-        <h3>📜 Règles d'utilisation</h3>
-
-        <ul class="rules-list">
-          <li>🤝 Respecter les autres utilisateurs.</li>
-          <li>🚫 Ne pas utiliser Aguacate AI pour envoyer volontairement des messages insultants ou interdits.</li>
-          <li>🧠 Utiliser l'IA de manière responsable et réfléchie.</li>
-          <li>📚 Pour les devoirs, privilégier la compréhension plutôt que la simple copie.</li>
-          <li>🔐 Ne jamais partager d'informations personnelles ou confidentielles.</li>
-          <li>⚠️ Vérifier les informations importantes données par l'IA.</li>
-        </ul>
-      </section>
-
-      <section class="info-section moderation-info">
-        <h3>⚠️ Avertissements et bannissement</h3>
-
-        <p>
-          Aguacate AI possède un système automatique permettant de
-          sanctionner certains comportements interdits.
-        </p>
-
-        <div class="warning-level">
-          <span>1er message interdit</span>
-          <strong>⚠️ Premier avertissement</strong>
-        </div>
-
-        <div class="warning-level">
-          <span>2e message interdit</span>
-          <strong>⚠️ Deuxième avertissement</strong>
-        </div>
-
-        <div class="warning-level danger">
-          <span>3e message interdit</span>
-          <strong>🚫 Bannissement de 24 h</strong>
-        </div>
-
-        <div class="warning-level danger">
-          <span>4e, 5e, 6e...</span>
-          <strong>🚫 Bannissement de 24 h</strong>
-        </div>
-
-        <p class="small-info">
-          Les avertissements et les bannissements sont enregistrés
-          par le serveur et restent associés au compte.
-        </p>
-      </section>
-
-      <section class="info-section">
-        <h3>🤖 À propos des réponses de l'IA</h3>
-        <p>
-          Aguacate AI peut parfois se tromper ou fournir une information
-          incomplète. Pour les informations importantes, il faut toujours
-          vérifier la réponse auprès d'une source fiable ou d'un adulte
-          lorsque c'est nécessaire.
-        </p>
-      </section>
-
-      <section class="info-section">
-        <h3>🔒 Respect de la vie privée</h3>
-        <p>
-          Ne donne jamais à l'IA ton mot de passe, ton adresse complète,
-          tes informations bancaires ou toute autre information
-          personnelle sensible.
-        </p>
-      </section>
-
-    </div>
-
-    <div class="info-footer">
-      <span>🥑 Aguacate AI v4.0.0</span>
-      <button id="close-info-rules-bottom" class="modal-action">
-        J'ai compris 👍
-      </button>
-    </div>
-
-  </div>
-</div>
 <style>
 
 /* =========================================================
@@ -712,6 +575,27 @@
 }
 
 </style>
+<style>
+
+/* =========================================================
+   RÈGLES & INFORMATIONS
+   ========================================================= */
+.info-card { max-width: 820px; width: min(820px, 92vw); max-height: 86vh; display:flex; flex-direction:column; }
+.info-content { overflow-y:auto; padding-right:8px; }
+.info-section { margin: 0 0 18px; padding: 16px; border:1px solid rgba(255,255,255,.08); border-radius:16px; background:rgba(255,255,255,.035); }
+.info-section h3 { margin:0 0 8px; }
+.info-section p { margin:7px 0; line-height:1.55; }
+.rules-list { margin:8px 0 0; padding-left:22px; line-height:1.7; }
+.eco-info-box { margin-top:12px; padding:12px; border-radius:12px; background:rgba(34,197,94,.08); }
+.eco-levels { display:grid; gap:8px; margin-top:12px; }
+.warning-level { display:flex; justify-content:space-between; gap:14px; padding:10px 12px; margin-top:8px; border-radius:12px; background:rgba(255,255,255,.04); }
+.warning-level.danger { background:rgba(239,68,68,.09); }
+.small-info { font-size:12px; opacity:.7; }
+.info-footer { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,.08); }
+#info-rules-panel.show { display:flex; }
+@media (max-width:700px) { .warning-level,.info-footer { flex-direction:column; align-items:stretch; } }
+
+</style>
 </head>
 
 <body>
@@ -782,6 +666,14 @@
   >
     📎 Scanner un fichier
   </button>
+  <button
+    class="tool-btn"
+    id="rules-btn"
+    type="button"
+  >
+    ℹ️ Règles & informations
+  </button>
+
 
   <div class="user-zone">
 
@@ -818,10 +710,7 @@
   </div>
 
 </aside>
-  
-<button class="tool-btn" id="info-rules-btn">
-  ℹ️ Règles & informations
-</button>
+
 
 <!-- =====================================================
      CHAT
@@ -1403,6 +1292,85 @@
   class="toast"
 ></div>
 
+
+
+
+<!-- =====================================================
+     RÈGLES & INFORMATIONS
+     ===================================================== -->
+<div id="info-rules-panel" class="modal" aria-hidden="true">
+  <div class="modal-card info-card" role="dialog" aria-modal="true" aria-labelledby="info-rules-title">
+    <div class="menu-header">
+      <div>
+        <h2 id="info-rules-title">ℹ️ Règles & informations</h2>
+        <small>Bienvenue sur Aguacate AI v4.0.0 🥑</small>
+      </div>
+      <button id="close-info-rules" type="button" aria-label="Fermer">✕</button>
+    </div>
+
+    <div class="info-content">
+      <section class="info-section">
+        <h3>🥑 Qu'est-ce qu'Aguacate AI ?</h3>
+        <p>Aguacate AI est un assistant éducatif conçu pour aider à comprendre, apprendre, réfléchir et poser des questions.</p>
+        <p>Son objectif est de fournir des réponses claires et adaptées, notamment pour les élèves.</p>
+      </section>
+
+      <section class="info-section ecoguacate-info">
+        <h3>🌱 ÉcoGuacate</h3>
+        <p>ÉcoGuacate est un système ludique qui permet de visualiser l'impact estimé de l'utilisation d'Aguacate AI sur la consommation d'eau.</p>
+        <p>💧 Le compteur augmente avec l'utilisation de l'IA. Le but est de sensibiliser à l'impact environnemental du numérique et d'encourager des demandes utiles et réfléchies.</p>
+        <div class="eco-info-box">
+          <strong>🎯 Le but</strong>
+          <p>Essayer d'être plus économe : regrouper ses questions, éviter les demandes inutiles et réfléchir à ce dont on a réellement besoin avant d'envoyer un message.</p>
+        </div>
+        <div class="eco-levels">
+          <div>🟢 <strong>0 – 20 L</strong> : faible</div>
+          <div>🟡 <strong>21 – 50 L</strong> : modéré</div>
+          <div>🟠 <strong>51 – 84 L</strong> : élevé</div>
+          <div>🔴 <strong>85 – 100 L+</strong> : très élevé</div>
+        </div>
+      </section>
+
+      <section class="info-section">
+        <h3>📜 Règles d'utilisation</h3>
+        <ul class="rules-list">
+          <li>🤝 Respecter les autres utilisateurs.</li>
+          <li>🚫 Ne pas utiliser Aguacate AI pour envoyer volontairement des messages insultants ou interdits.</li>
+          <li>🧠 Utiliser l'IA de manière responsable et réfléchie.</li>
+          <li>📚 Pour les devoirs, privilégier la compréhension plutôt que la simple copie.</li>
+          <li>🔐 Ne jamais partager de mot de passe, d'informations bancaires ou d'autres informations personnelles sensibles.</li>
+          <li>⚠️ Vérifier les informations importantes données par l'IA.</li>
+        </ul>
+      </section>
+
+      <section class="info-section moderation-info">
+        <h3>⚠️ Avertissements et bannissement</h3>
+        <p>Aguacate AI dispose d'un système de modération pouvant appliquer des sanctions en cas de comportement interdit.</p>
+        <div class="warning-level"><span>1er message interdit</span><strong>⚠️ Premier avertissement</strong></div>
+        <div class="warning-level"><span>2e message interdit</span><strong>⚠️ Deuxième avertissement</strong></div>
+        <div class="warning-level danger"><span>3e message interdit</span><strong>🚫 Bannissement de 24 h</strong></div>
+        <div class="warning-level danger"><span>4e, 5e, 6e...</span><strong>🚫 Bannissement de 24 h</strong></div>
+        <p class="small-info">Les avertissements et les bannissements sont gérés par le serveur et restent associés au compte selon les règles de modération.</p>
+      </section>
+
+      <section class="info-section">
+        <h3>🤖 À propos des réponses de l'IA</h3>
+        <p>Aguacate AI peut parfois se tromper ou fournir une information incomplète. Pour les informations importantes, vérifie la réponse auprès d'une source fiable ou demande l'aide d'un adulte si nécessaire.</p>
+      </section>
+
+      <section class="info-section">
+        <h3>🔒 Respect de la vie privée</h3>
+        <p>Ne donne jamais à l'IA ton mot de passe, ton adresse complète, tes informations bancaires ou toute autre information personnelle sensible.</p>
+      </section>
+    </div>
+
+    <div class="info-footer">
+      <span>🥑 Aguacate AI v4.0.0</span>
+      <button id="close-info-rules-bottom" class="modal-action" type="button">J'ai compris 👍</button>
+    </div>
+  </div>
+</div>
+
 <!-- =====================================================
      ADMIN
      ===================================================== -->
@@ -1530,9 +1498,6 @@
 </div>
 
 
-<button class="tool-btn" id="info-rules-btn">
-  ℹ️ Règles & informations
-</button>
 <!-- =====================================================
      UTILISATEURS
      ===================================================== -->
@@ -1969,44 +1934,37 @@
 })();
 
 </script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
 
-  const openBtn = document.getElementById('info-rules-btn');
+
+
+<script>
+/* =========================================================
+   OUVERTURE / FERMETURE RÈGLES & INFORMATIONS
+   ========================================================= */
+document.addEventListener('DOMContentLoaded', () => {
+  const openBtn = document.getElementById('rules-btn');
   const panel = document.getElementById('info-rules-panel');
   const closeBtn = document.getElementById('close-info-rules');
   const closeBottom = document.getElementById('close-info-rules-bottom');
 
-  function openInfoRules() {
-    if (panel) panel.classList.add('show');
-  }
+  const open = () => {
+    if (!panel) return;
+    panel.classList.add('show');
+    panel.setAttribute('aria-hidden', 'false');
+  };
+  const close = () => {
+    if (!panel) return;
+    panel.classList.remove('show');
+    panel.setAttribute('aria-hidden', 'true');
+  };
 
-  function closeInfoRules() {
-    if (panel) panel.classList.remove('show');
-  }
-
-  if (openBtn) {
-    openBtn.addEventListener('click', openInfoRules);
-  }
-
-  if (closeBtn) {
-    closeBtn.addEventListener('click', closeInfoRules);
-  }
-
-  if (closeBottom) {
-    closeBottom.addEventListener('click', closeInfoRules);
-  }
-
-  if (panel) {
-    panel.addEventListener('click', (event) => {
-      if (event.target === panel) {
-        closeInfoRules();
-      }
-    });
-  }
-
+  openBtn?.addEventListener('click', open);
+  closeBtn?.addEventListener('click', close);
+  closeBottom?.addEventListener('click', close);
+  panel?.addEventListener('click', e => { if (e.target === panel) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
 });
 </script>
+
 </body>
 </html>
-<script>
