@@ -1,81 +1,64 @@
 /* =========================================================
    AGUACATE AI v4.0.0
-   APP.JS
+   APP.JS — VERSION PROPRE
    ========================================================= */
 
 (() => {
-
   'use strict';
-
 
   /* =========================================================
      ÉTAT CENTRAL
      ========================================================= */
 
   const state = {
+    token: localStorage.getItem('aguacate_token') || '',
+    userId: localStorage.getItem('aguacate_user_id') || '',
+    role: localStorage.getItem('aguacate_role') || 'user',
 
-    token:
-      localStorage.getItem('aguacate_token') || '',
-
-    userId:
-      localStorage.getItem('aguacate_user_id') || '',
-
-    role:
-      localStorage.getItem('aguacate_role') || 'user',
-
+    /*
+      UNE SEULE valeur ÉcoGuacate.
+      Elle vient du serveur.
+    */
     consumptionLitres: 0,
 
     conversations: [],
-
     currentConversationId: null,
 
     selectedFile: null,
-
     sending: false
-
   };
 
 
   /* =========================================================
-     UTILITAIRE DOM
+     UTILITAIRES
      ========================================================= */
 
-  const $ = id =>
-    document.getElementById(id);
+  const $ = id => document.getElementById(id);
 
 
   function escapeHTML(value) {
-
     return String(value ?? '')
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
-
   }
 
 
-  /* =========================================================
-     TOAST
-     ========================================================= */
-
   function showToast(message) {
-
     const toast = $('toast');
 
     if (!toast) return;
 
     toast.textContent = message;
-
     toast.classList.add('show');
 
-    setTimeout(() => {
+    clearTimeout(showToast.timer);
 
+    showToast.timer = setTimeout(() => {
       toast.classList.remove('show');
-
-    }, 2800);
-
+    }, 3000);
   }
 
 
@@ -90,85 +73,53 @@
     };
 
     if (state.token) {
-
-      headers.Authorization =
-        `Bearer ${state.token}`;
-
+      headers.Authorization = `Bearer ${state.token}`;
     }
 
-    const response =
-      await fetch(url, {
-
-        ...options,
-
-        headers
-
-      });
-
+    const response = await fetch(url, {
+      ...options,
+      headers
+    });
 
     let data = {};
 
     try {
-
-      data =
-        await response.json();
-
+      data = await response.json();
     } catch {
-
       data = {};
-
     }
-
 
     if (!response.ok) {
 
-      const error =
-        new Error(
-          data.message ||
-          data.error ||
-          `Erreur HTTP ${response.status}`
-        );
+      const error = new Error(
+        data.message ||
+        data.error ||
+        `Erreur HTTP ${response.status}`
+      );
 
-      error.status =
-        response.status;
-
-      error.data =
-        data;
+      error.status = response.status;
+      error.data = data;
 
       throw error;
-
     }
 
-
     return data;
-
   }
 
 
   /* =========================================================
-     STYLE DES BULLES DE DISCUSSION
-     
-     Le CSS est injecté ici pour que l'affichage fonctionne
-     même si style.css possède un ancien style de messages.
+     STYLE DES MESSAGES
      ========================================================= */
 
   function installChatStyles() {
 
-    if (document.getElementById(
-      'aguacate-chat-styles'
-    )) return;
+    if ($('aguacate-chat-styles')) return;
 
+    const style = document.createElement('style');
 
-    const style =
-      document.createElement('style');
-
-    style.id =
-      'aguacate-chat-styles';
-
+    style.id = 'aguacate-chat-styles';
 
     style.textContent = `
-
-      /* Conteneur général */
 
       #messages {
         display: flex;
@@ -180,9 +131,6 @@
         scroll-behavior: smooth;
       }
 
-
-      /* Message */
-
       #messages .message {
         display: flex;
         width: 100%;
@@ -192,30 +140,18 @@
         animation: aguacateMessageIn .25s ease-out;
       }
 
-
-      /* IA à gauche */
-
       #messages .message.assistant {
         justify-content: flex-start;
       }
-
-
-      /* Utilisateur à droite */
 
       #messages .message.user {
         justify-content: flex-end;
       }
 
-
-      /* Petite icône IA */
-
       .aguacate-message-avatar {
-
         width: 34px;
         height: 34px;
-
         min-width: 34px;
-
         border-radius: 11px;
 
         display: flex;
@@ -229,75 +165,45 @@
             rgba(16,185,129,.10)
           );
 
-        border:
-          1px solid
-          rgba(74,222,128,.22);
+        border: 1px solid rgba(74,222,128,.22);
 
         box-shadow:
-          0 5px 15px
-          rgba(0,0,0,.15);
+          0 5px 15px rgba(0,0,0,.15);
 
         font-size: 18px;
-
       }
-
-
-      /* Bulles */
 
       #messages .message-bubble {
-
         max-width: min(78%, 720px);
 
-        padding:
-          11px 15px;
+        padding: 11px 15px;
 
-        border-radius:
-          17px;
+        border-radius: 17px;
 
-        line-height:
-          1.55;
+        line-height: 1.55;
+        font-size: 14px;
 
-        font-size:
-          14px;
+        word-wrap: break-word;
+        overflow-wrap: anywhere;
 
-        word-wrap:
-          break-word;
-
-        white-space:
-          normal;
-
-        box-sizing:
-          border-box;
-
+        box-sizing: border-box;
       }
 
+      /* IA — gauche */
 
-      /* Bulle IA */
-
-      #messages .message.assistant
-      .message-bubble {
-
-        background:
-          rgba(255,255,255,.055);
+      #messages .message.assistant .message-bubble {
+        background: rgba(255,255,255,.055);
 
         border:
           1px solid
           rgba(255,255,255,.09);
 
-        border-bottom-left-radius:
-          5px;
-
-        color:
-          inherit;
-
+        border-bottom-left-radius: 5px;
       }
 
+      /* UTILISATEUR — droite */
 
-      /* Bulle utilisateur */
-
-      #messages .message.user
-      .message-bubble {
-
+      #messages .message.user .message-bubble {
         background:
           linear-gradient(
             135deg,
@@ -305,27 +211,20 @@
             #10b981
           );
 
-        color:
-          #06251a;
+        color: #06251a;
 
         border:
           1px solid
           rgba(255,255,255,.14);
 
-        border-bottom-right-radius:
-          5px;
+        border-bottom-right-radius: 5px;
 
-        font-weight:
-          500;
+        font-weight: 500;
 
         box-shadow:
           0 7px 20px
           rgba(16,185,129,.16);
-
       }
-
-
-      /* Animation apparition */
 
       @keyframes aguacateMessageIn {
 
@@ -342,162 +241,103 @@
             translateY(0)
             scale(1);
         }
-
       }
 
-
-      /* =========================================
-         INDICATEUR "AGUACATE RÉFLÉCHIT"
-         ========================================= */
+      /* =====================================================
+         RÉFLEXION
+         ===================================================== */
 
       .aguacate-thinking {
-
-        display:
-          flex;
-
-        align-items:
-          center;
-
-        gap:
-          9px;
-
+        display: flex;
+        align-items: center;
+        gap: 9px;
       }
-
 
       .aguacate-thinking-bubble {
+        min-width: 64px;
 
-        min-width:
-          64px;
+        padding: 12px 15px !important;
 
-        padding:
-          12px 15px !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
-        display:
-          flex;
-
-        align-items:
-          center;
-
-        justify-content:
-          center;
-
-        gap:
-          4px;
-
+        gap: 4px;
       }
 
-
       .aguacate-thinking-bubble span {
+        width: 7px;
+        height: 7px;
 
-        width:
-          7px;
+        border-radius: 50%;
 
-        height:
-          7px;
+        background: #4ade80;
 
-        border-radius:
-          50%;
-
-        background:
-          #4ade80;
-
-        display:
-          block;
+        display: block;
 
         animation:
           aguacateThinking
-          1.2s infinite ease-in-out;
-
+          1.2s
+          infinite
+          ease-in-out;
       }
-
 
       .aguacate-thinking-bubble
       span:nth-child(2) {
-
-        animation-delay:
-          .15s;
-
+        animation-delay: .15s;
       }
-
 
       .aguacate-thinking-bubble
       span:nth-child(3) {
-
-        animation-delay:
-          .30s;
-
+        animation-delay: .30s;
       }
-
 
       @keyframes aguacateThinking {
 
-        0%, 60%, 100% {
-          transform:
-            translateY(0);
-          opacity:
-            .35;
+        0%,
+        60%,
+        100% {
+          transform: translateY(0);
+          opacity: .35;
         }
 
         30% {
-          transform:
-            translateY(-4px);
-          opacity:
-            1;
+          transform: translateY(-4px);
+          opacity: 1;
         }
-
       }
-
-
-      /* Petit texte "réfléchit" */
 
       .aguacate-thinking-label {
-
-        font-size:
-          11px;
-
-        opacity:
-          .55;
-
-        margin-left:
-          2px;
-
+        font-size: 11px;
+        opacity: .55;
       }
-
-
-      /* Sur petits écrans */
 
       @media (max-width: 700px) {
 
         #messages .message-bubble {
-
-          max-width:
-            86%;
-
+          max-width: 86%;
         }
 
       }
 
     `;
 
-
     document.head.appendChild(style);
-
   }
 
 
   /* =========================================================
      ÉCOGUACATE
      
-     0 - 20 L  = vert
-     20 - 50 L = jaune
-     50 - 85 L = orange
-     85 L+     = rouge
+     0 → 20 L       VERT
+     21 → 50 L      JAUNE
+     51 → 85 L      ORANGE
+     86 → 100 L+    ROUGE
 
-     100 L = 100 %
-
-     Au-delà de 100 L :
-     la valeur réelle continue d'être affichée,
-     mais la barre reste à 100 %.
+     IMPORTANT :
+     La consommation réelle peut dépasser 100 L.
+     Le compteur affiche la vraie valeur.
+     La jauge est simplement limitée visuellement à 100 %.
      ========================================================= */
 
   const ECO_MAX = 100;
@@ -505,112 +345,82 @@
 
   function getEcoState(litres) {
 
-    const value =
-      Math.max(
-        0,
-        Number(litres) || 0
-      );
+    const value = Math.max(
+      0,
+      Number(litres) || 0
+    );
 
-
-    const percentage =
-      Math.min(
-        100,
-        value
-      );
-
+    const percentage = Math.min(
+      100,
+      value
+    );
 
     let level;
     let color;
     let status;
 
-
     if (value <= 20) {
 
       level = 'good';
-
       color = '#22c55e';
-
-      status =
-        'Excellent 🌿';
+      status = 'Excellent 🌿';
 
     }
 
     else if (value <= 50) {
 
       level = 'warning';
-
       color = '#eab308';
-
-      status =
-        'Attention 🌱';
+      status = 'Attention 🌱';
 
     }
 
-    else if (value < 85) {
+    else if (value <= 85) {
 
       level = 'danger';
-
       color = '#f97316';
-
-      status =
-        'Impact élevé 🍂';
+      status = 'Impact élevé 🍂';
 
     }
 
     else {
 
       level = 'dead';
-
       color = '#ef4444';
-
-      status =
-        'Très forte consommation 🔴';
+      status = 'Très forte consommation 🔴';
 
     }
 
-
     return {
-
       litres: value,
-
       percentage,
-
       level,
-
       color,
-
       status
-
     };
-
   }
 
 
   /* =========================================================
-     MISE À JOUR UNIQUE DE L'ÉCOGUACATE
+     MISE À JOUR UNIQUE ÉCOGUACATE
      ========================================================= */
 
   function updateEcoGuacate(litres) {
 
-    const eco =
-      getEcoState(litres);
-
+    const eco = getEcoState(litres);
 
     /*
-      UNE SEULE SOURCE DE VÉRITÉ
+      SOURCE DE VÉRITÉ UNIQUE
     */
 
-    state.consumptionLitres =
-      eco.litres;
+    state.consumptionLitres = eco.litres;
 
 
-    /* -----------------------------------------
+    /* =====================================================
        COMPTEUR
-       ----------------------------------------- */
+       ===================================================== */
 
-    const litresElement =
-      $('eco-litres');
-
+    const litresElement = $('eco-litres');
 
     if (litresElement) {
 
@@ -618,38 +428,30 @@
         eco.litres
           .toFixed(1)
           .replace('.', ',');
-
     }
 
 
-    /* -----------------------------------------
+    /* =====================================================
        POURCENTAGE
-       ----------------------------------------- */
+       ===================================================== */
 
-    const percentageElement =
-      $('eco-pct');
+    const percentElement = $('eco-pct');
 
+    if (percentElement) {
 
-    if (percentageElement) {
+      percentElement.textContent =
+        `${Math.round(eco.percentage)}%`;
 
-      percentageElement.textContent =
-        `${Math.round(
-          eco.percentage
-        )}%`;
-
-      percentageElement.style.color =
+      percentElement.style.color =
         eco.color;
-
     }
 
 
-    /* -----------------------------------------
+    /* =====================================================
        BARRE
-       ----------------------------------------- */
+       ===================================================== */
 
-    const bar =
-      $('eco-bar-fill');
-
+    const bar = $('eco-bar-fill');
 
     if (bar) {
 
@@ -661,17 +463,14 @@
 
       bar.style.boxShadow =
         `0 0 10px ${eco.color}55`;
-
     }
 
 
-    /* -----------------------------------------
+    /* =====================================================
        CURSEUR
-       ----------------------------------------- */
+       ===================================================== */
 
-    const marker =
-      $('eco-marker');
-
+    const marker = $('eco-marker');
 
     if (marker) {
 
@@ -680,17 +479,14 @@
 
       marker.style.borderColor =
         eco.color;
-
     }
 
 
-    /* -----------------------------------------
+    /* =====================================================
        ARBRE
-       ----------------------------------------- */
+       ===================================================== */
 
-    const tree =
-      $('eco-tree');
-
+    const tree = $('eco-tree');
 
     if (tree) {
 
@@ -701,7 +497,6 @@
         'tree-dry',
         'tree-dead'
       );
-
 
       if (eco.litres <= 20) {
 
@@ -719,7 +514,7 @@
 
       }
 
-      else if (eco.litres < 85) {
+      else if (eco.litres <= 85) {
 
         tree.classList.add(
           'tree-danger'
@@ -740,15 +535,13 @@
         tree.classList.add(
           'tree-dead'
         );
-
       }
-
     }
 
 
-    /* -----------------------------------------
+    /* =====================================================
        POMPE
-       ----------------------------------------- */
+       ===================================================== */
 
     const pump =
       $('eco-water-pump');
@@ -756,20 +549,22 @@
     const pumpWater =
       $('pump-water');
 
-
     if (pumpWater) {
+
+      /*
+        0 L = 100 % d'eau
+        50 L = 50 %
+        100 L = 0 %
+      */
 
       const remaining =
         Math.max(
           0,
-          1 -
-          eco.percentage / 100
+          1 - eco.percentage / 100
         );
-
 
       pumpWater.style.height =
         `${remaining * 100}%`;
-
     }
 
 
@@ -777,33 +572,24 @@
 
       if (eco.percentage >= 100) {
 
-        pump.classList.add(
-          'dry'
-        );
+        pump.classList.add('dry');
 
+      } else {
+
+        pump.classList.remove('dry');
       }
-
-      else {
-
-        pump.classList.remove(
-          'dry'
-        );
-
-      }
-
     }
 
 
-    /* -----------------------------------------
+    /* =====================================================
        LUMIÈRE
-       ----------------------------------------- */
+       ===================================================== */
 
     const glow =
       $('eco-glow') ||
       document.querySelector(
         '.avocado-glow'
       );
-
 
     if (glow) {
 
@@ -812,7 +598,6 @@
           ? '.35'
           : '1';
 
-
       glow.style.background =
         `radial-gradient(
           circle,
@@ -820,17 +605,15 @@
           ${eco.color}0d 50%,
           transparent 72%
         )`;
-
     }
 
 
-    /* -----------------------------------------
+    /* =====================================================
        STATUT
-       ----------------------------------------- */
+       ===================================================== */
 
     const status =
       $('eco-status');
-
 
     if (status) {
 
@@ -839,9 +622,7 @@
 
       status.style.color =
         eco.color;
-
     }
-
   }
 
 
@@ -863,7 +644,6 @@
         await api(
           '/login',
           {
-
             method: 'POST',
 
             headers: {
@@ -875,10 +655,14 @@
               JSON.stringify({
                 deviceId
               })
-
           }
         );
 
+
+      /*
+        Le serveur reste maître
+        de l'identité et de la consommation.
+      */
 
       state.token =
         result.token;
@@ -910,25 +694,31 @@
 
 
       /*
-        IMPORTANT :
-        on utilise uniquement
-        la valeur renvoyée par le serveur.
+        ÉCOGUACATE :
+        on récupère la valeur persistée
+        sur le serveur.
+
+        Aucun calcul local.
       */
 
-      updateEcoGuacate(
-        Number(
-          result.consumptionLitres || 0
-        )
-      );
+      if (
+        result.consumptionLitres !==
+        undefined
+      ) {
+
+        updateEcoGuacate(
+          Number(
+            result.consumptionLitres
+          )
+        );
+      }
 
 
       await loadConversations();
 
-
       startHeartbeat();
 
     }
-
 
     catch (error) {
 
@@ -946,13 +736,11 @@
               )
             : 'plus tard';
 
-
         showToast(
           `🚫 Accès suspendu jusqu'au ${until}`
         );
 
         return;
-
       }
 
 
@@ -961,13 +749,10 @@
         error
       );
 
-
       showToast(
         'Impossible de se connecter à Aguacate AI.'
       );
-
     }
-
   }
 
 
@@ -980,20 +765,17 @@
     const badge =
       $('user-badge');
 
-
     if (badge) {
 
       badge.textContent =
         `🥑 Aguacate AI #${
           state.userId || '0000'
         }`;
-
     }
 
 
     const role =
       $('role-badge');
-
 
     if (role) {
 
@@ -1007,7 +789,6 @@
 
         user:
           'UTILISATEUR'
-
       };
 
 
@@ -1018,9 +799,7 @@
 
       role.className =
         `role-badge ${state.role}`;
-
     }
-
   }
 
 
@@ -1028,8 +807,7 @@
      HEARTBEAT
      ========================================================= */
 
-  let heartbeatTimer =
-    null;
+  let heartbeatTimer = null;
 
 
   function startHeartbeat() {
@@ -1039,7 +817,6 @@
       clearInterval(
         heartbeatTimer
       );
-
     }
 
 
@@ -1061,23 +838,15 @@
 
           catch (error) {
 
-            if (
-              error.status === 401 ||
-              error.status === 403
-            ) {
-
-              console.warn(
-                'Session expirée.'
-              );
-
-            }
-
+            console.warn(
+              '[heartbeat]',
+              error
+            );
           }
 
         },
         30000
       );
-
   }
 
 
@@ -1114,7 +883,6 @@
             state.conversations.length - 1
           ].id
         );
-
       }
 
     }
@@ -1125,9 +893,7 @@
         '[conversations]',
         error
       );
-
     }
-
   }
 
 
@@ -1136,110 +902,100 @@
     const list =
       $('conversation-list');
 
-
     if (!list) return;
-
 
     list.innerHTML = '';
 
 
-    state.conversations
-      .forEach(
-        conversation => {
+    state.conversations.forEach(
+      conversation => {
 
-          const item =
-            document.createElement(
-              'div'
-            );
-
-
-          item.className =
-            'conversation-item';
-
-
-          if (
-            conversation.id ===
-            state.currentConversationId
-          ) {
-
-            item.classList.add(
-              'active'
-            );
-
-          }
-
-
-          item.innerHTML = `
-
-            <button
-              class="conversation-open"
-              type="button"
-            >
-
-              💬
-
-              <span>
-                ${escapeHTML(
-                  conversation.title ||
-                  'Conversation'
-                )}
-              </span>
-
-            </button>
-
-
-            <button
-              class="conversation-delete"
-              type="button"
-              title="Supprimer"
-            >
-              🗑️
-            </button>
-
-          `;
-
-
-          item
-            .querySelector(
-              '.conversation-open'
-            )
-            ?.addEventListener(
-              'click',
-              () => {
-
-                openConversation(
-                  conversation.id
-                );
-
-              }
-            );
-
-
-          item
-            .querySelector(
-              '.conversation-delete'
-            )
-            ?.addEventListener(
-              'click',
-              event => {
-
-                event.stopPropagation();
-
-                deleteConversation(
-                  conversation.id
-                );
-
-              }
-            );
-
-
-          list.appendChild(
-            item
+        const item =
+          document.createElement(
+            'div'
           );
 
-        }
-      );
 
+        item.className =
+          'conversation-item';
+
+
+        if (
+          conversation.id ===
+          state.currentConversationId
+        ) {
+
+          item.classList.add(
+            'active'
+          );
+        }
+
+
+        item.innerHTML = `
+
+          <button
+            class="conversation-open"
+            type="button"
+          >
+
+            💬
+
+            <span>
+              ${escapeHTML(
+                conversation.title ||
+                'Conversation'
+              )}
+            </span>
+
+          </button>
+
+
+          <button
+            class="conversation-delete"
+            type="button"
+            title="Supprimer"
+          >
+            🗑️
+          </button>
+
+        `;
+
+
+        item
+          .querySelector(
+            '.conversation-open'
+          )
+          ?.addEventListener(
+            'click',
+            () => {
+
+              openConversation(
+                conversation.id
+              );
+            }
+          );
+
+
+        item
+          .querySelector(
+            '.conversation-delete'
+          )
+          ?.addEventListener(
+            'click',
+            event => {
+
+              event.stopPropagation();
+
+              deleteConversation(
+                conversation.id
+              );
+            }
+          );
+
+
+        list.appendChild(item);
+      }
+    );
   }
 
 
@@ -1249,7 +1005,6 @@
       state.conversations.find(
         c => c.id === id
       );
-
 
     if (!conversation)
       return;
@@ -1265,7 +1020,6 @@
     renderMessages(
       conversation.messages || []
     );
-
   }
 
 
@@ -1277,7 +1031,6 @@
 
     const container =
       $('messages');
-
 
     if (!container)
       return;
@@ -1294,13 +1047,11 @@
           message.content,
           false
         );
-
       }
     );
 
 
     scrollMessages();
-
   }
 
 
@@ -1312,7 +1063,6 @@
 
     const container =
       $('messages');
-
 
     if (!container)
       return null;
@@ -1334,6 +1084,15 @@
       `message ${normalizedRole}`;
 
 
+    const safeContent =
+      escapeHTML(
+        content
+      ).replace(
+        /\n/g,
+        '<br>'
+      );
+
+
     if (
       normalizedRole ===
       'assistant'
@@ -1351,12 +1110,7 @@
         <div
           class="message-bubble"
         >
-          ${escapeHTML(
-            content
-          ).replace(
-            /\n/g,
-            '<br>'
-          )}
+          ${safeContent}
         </div>
 
       `;
@@ -1370,16 +1124,10 @@
         <div
           class="message-bubble"
         >
-          ${escapeHTML(
-            content
-          ).replace(
-            /\n/g,
-            '<br>'
-          )}
+          ${safeContent}
         </div>
 
       `;
-
     }
 
 
@@ -1391,17 +1139,15 @@
     if (scroll) {
 
       scrollMessages();
-
     }
 
 
     return message;
-
   }
 
 
   /* =========================================================
-     ANIMATION DE RÉFLEXION
+     AGUACATE RÉFLÉCHIT
      ========================================================= */
 
   function showThinking() {
@@ -1409,19 +1155,15 @@
     const container =
       $('messages');
 
-
     if (!container)
       return null;
 
 
-    const existing =
-      document.getElementById(
-        'aguacate-thinking'
-      );
+    const old =
+      $('aguacate-thinking');
 
-
-    if (existing)
-      return existing;
+    if (old)
+      old.remove();
 
 
     const message =
@@ -1447,7 +1189,6 @@
         🥑
       </div>
 
-
       <div
         class="message-bubble aguacate-thinking-bubble"
         aria-label="Aguacate AI réfléchit"
@@ -1471,24 +1212,18 @@
 
 
     return message;
-
   }
 
 
   function hideThinking() {
 
     const thinking =
-      document.getElementById(
-        'aguacate-thinking'
-      );
-
+      $('aguacate-thinking');
 
     if (thinking) {
 
       thinking.remove();
-
     }
-
   }
 
 
@@ -1496,7 +1231,6 @@
 
     const container =
       $('messages');
-
 
     if (!container)
       return;
@@ -1507,10 +1241,8 @@
 
         container.scrollTop =
           container.scrollHeight;
-
       }
     );
-
   }
 
 
@@ -1526,7 +1258,6 @@
         await api(
           '/newConversation',
           {
-
             method: 'POST',
 
             headers: {
@@ -1535,7 +1266,6 @@
             },
 
             body: '{}'
-
           }
         );
 
@@ -1550,7 +1280,6 @@
 
 
       renderConversationList();
-
 
       renderMessages([]);
 
@@ -1568,18 +1297,15 @@
         error
       );
 
-
       showToast(
         'Impossible de créer la conversation.'
       );
-
     }
-
   }
 
 
   /* =========================================================
-     SUPPRESSION CONVERSATION
+     SUPPRESSION
      ========================================================= */
 
   async function deleteConversation(id) {
@@ -1595,14 +1321,13 @@
       'cette conversation';
 
 
-    const confirmed =
-      window.confirm(
+    if (
+      !window.confirm(
         `Voulez-vous vraiment supprimer "${name}" ?`
-      );
-
-
-    if (!confirmed)
+      )
+    ) {
       return;
+    }
 
 
     try {
@@ -1611,7 +1336,6 @@
         await api(
           '/deleteConversation',
           {
-
             method: 'POST',
 
             headers: {
@@ -1621,10 +1345,8 @@
 
             body:
               JSON.stringify({
-                conversationId:
-                  id
+                conversationId: id
               })
-
           }
         );
 
@@ -1657,9 +1379,7 @@
         else {
 
           renderMessages([]);
-
         }
-
       }
 
 
@@ -1679,13 +1399,10 @@
         error
       );
 
-
       showToast(
         'Impossible de supprimer la conversation.'
       );
-
     }
-
   }
 
 
@@ -1704,7 +1421,6 @@
       );
 
       return;
-
     }
 
 
@@ -1727,8 +1443,9 @@
     if (
       title === null ||
       !title.trim()
-    )
+    ) {
       return;
+    }
 
 
     try {
@@ -1737,7 +1454,6 @@
         await api(
           '/renameConversation',
           {
-
             method: 'POST',
 
             headers: {
@@ -1747,15 +1463,12 @@
 
             body:
               JSON.stringify({
-
                 conversationId:
                   state.currentConversationId,
 
                 title:
                   title.trim()
-
               })
-
           }
         );
 
@@ -1772,7 +1485,6 @@
 
         state.conversations[index] =
           result.conversation;
-
       }
 
 
@@ -1792,13 +1504,10 @@
         error
       );
 
-
       showToast(
         'Impossible de renommer la conversation.'
       );
-
     }
-
   }
 
 
@@ -1830,13 +1539,12 @@
     if (prompt) {
 
       prompt.value = '';
-
     }
 
 
     /*
-      Le message utilisateur
-      apparaît immédiatement à droite.
+      Message utilisateur immédiatement
+      à droite.
     */
 
     addMessageToUI(
@@ -1846,17 +1554,11 @@
 
 
     /*
-      Aguacate commence à réfléchir.
+      Aguacate réfléchit.
     */
 
     showThinking();
 
-
-    /*
-      Petite durée minimale pour que
-      l'animation soit réellement visible,
-      même si l'API répond très vite.
-    */
 
     const thinkingStart =
       Date.now();
@@ -1873,7 +1575,6 @@
         await api(
           '/chat',
           {
-
             method: 'POST',
 
             headers: {
@@ -1883,20 +1584,16 @@
 
             body:
               JSON.stringify({
-
                 message,
-
                 mode
-
               })
-
           }
         );
 
 
       /*
-        On garde l'animation au minimum
-        quelques centaines de millisecondes.
+        L'animation reste visible
+        au moins 500 ms.
       */
 
       const elapsed =
@@ -1921,61 +1618,72 @@
               elapsed
             )
         );
-
       }
 
-
-      /*
-        L'IA a terminé.
-      */
 
       hideThinking();
 
 
       /*
-        Réponse IA à gauche.
+        VRAIE réponse de l'IA.
       */
 
       addMessageToUI(
         'assistant',
-        result.reply || ''
+        result.reply ||
+        'Je n’ai pas reçu de réponse.'
       );
 
 
       /*
-        ÉCOGUACATE :
-        on utilise UNIQUEMENT
-        la valeur envoyée par le serveur.
+        =====================================================
+        ÉCOGUACATE
+
+        TRÈS IMPORTANT :
+
+        on ne fait PAS :
+
+        + 3 L
+        + 1 L
+        + calcul local
+        + observation du DOM
+        + setInterval
+
+        On utilise uniquement la valeur
+        finale envoyée par le serveur.
+        =====================================================
       */
 
       if (
         result.consumptionLitres !==
-        undefined &&
-        Number.isFinite(
-          Number(
-            result.consumptionLitres
-          )
-        )
+        undefined
       ) {
 
-        updateEcoGuacate(
+        const litres =
           Number(
             result.consumptionLitres
-          )
-        );
+          );
 
+
+        if (
+          Number.isFinite(litres)
+        ) {
+
+          updateEcoGuacate(
+            litres
+          );
+        }
       }
 
 
       /*
-        On recharge les conversations
-        pour conserver l'historique.
+        Recharge les conversations
+        sauvegardées par le serveur.
       */
 
       await loadConversations();
 
     }
-
 
     catch (error) {
 
@@ -1988,6 +1696,12 @@
       hideThinking();
 
 
+      /*
+        Système de modération :
+        le serveur reste responsable
+        des avertissements et bannissements.
+      */
+
       if (
         error.status === 403 &&
         error.data?.error ===
@@ -1995,9 +1709,9 @@
       ) {
 
         showToast(
-          '⚠️ Avertissement : langage interdit détecté.'
+          error.data?.message ||
+          '⚠️ Langage interdit détecté.'
         );
-
       }
 
 
@@ -2007,10 +1721,19 @@
           'banned'
       ) {
 
-        showToast(
-          '🚫 Ton compte est temporairement suspendu.'
-        );
+        const until =
+          error.data.bannedUntil
+            ? new Date(
+                error.data.bannedUntil
+              ).toLocaleString(
+                'fr-FR'
+              )
+            : 'plus tard';
 
+
+        showToast(
+          `🚫 Compte suspendu jusqu'au ${until}`
+        );
       }
 
 
@@ -2020,9 +1743,7 @@
           'assistant',
           '🥑 Désolé, je n’ai pas réussi à répondre.'
         );
-
       }
-
     }
 
 
@@ -2032,9 +1753,7 @@
 
       state.sending =
         false;
-
     }
-
   }
 
 
@@ -2060,7 +1779,6 @@
         await api(
           '/modes/verify',
           {
-
             method: 'POST',
 
             headers: {
@@ -2070,13 +1788,9 @@
 
             body:
               JSON.stringify({
-
                 mode,
-
                 password
-
               })
-
           }
         );
 
@@ -2103,18 +1817,19 @@
 
     }
 
+    catch (error) {
 
-    catch {
+      console.error(
+        '[mode]',
+        error
+      );
 
       showToast(
         '❌ Mot de passe incorrect.'
       );
 
-
       return false;
-
     }
-
   }
 
 
@@ -2127,13 +1842,10 @@
     const input =
       $('file-input');
 
-
     if (input) {
 
       input.click();
-
     }
-
   }
 
 
@@ -2173,13 +1885,11 @@
         </b>
 
         <small>
-          ${(file.size / 1024)
-            .toFixed(1)}
+          ${(file.size / 1024).toFixed(1)}
           Ko
         </small>
 
       </div>
-
 
       <button
         id="file-analyse-btn"
@@ -2194,10 +1904,8 @@
     $('file-analyse-btn')
       ?.addEventListener(
         'click',
-        () =>
-          scanAndAsk(file)
+        () => scanAndAsk(file)
       );
-
   }
 
 
@@ -2209,11 +1917,8 @@
 
     const question =
       window.prompt(
-
         'Que veux-tu demander à Aguacate AI sur ce fichier ?',
-
         'Analyse ce fichier et résume les points importants.'
-
       );
 
 
@@ -2244,19 +1949,15 @@
       );
 
 
-      const thinking =
-        showThinking();
+      showThinking();
 
 
       const result =
         await api(
           '/scan-and-ask',
           {
-
             method: 'POST',
-
             body: form
-
           }
         );
 
@@ -2272,40 +1973,52 @@
 
       addMessageToUI(
         'assistant',
-        result.reply || ''
+        result.reply ||
+        'Aucune réponse.'
       );
 
+
+      /*
+        Même système ÉcoGuacate :
+        une seule valeur serveur.
+      */
 
       if (
         result.consumptionLitres !==
         undefined
       ) {
 
-        updateEcoGuacate(
+        const litres =
           Number(
             result.consumptionLitres
-          )
-        );
+          );
 
+
+        if (
+          Number.isFinite(litres)
+        ) {
+
+          updateEcoGuacate(
+            litres
+          );
+        }
       }
 
 
-      if (thinking)
-        thinking.remove();
+      await loadConversations();
 
 
-      if (previewExists()) {
+      const preview =
+        $('file-preview');
 
-        const preview =
-          $('file-preview');
+
+      if (preview) {
 
         preview.classList.add(
           'hidden'
         );
 
-        preview.innerHTML =
-          '';
-
+        preview.innerHTML = '';
       }
 
 
@@ -2319,7 +2032,6 @@
 
     }
 
-
     catch (error) {
 
       hideThinking();
@@ -2331,19 +2043,25 @@
       );
 
 
-      showToast(
-        '❌ Impossible d’analyser ce fichier.'
-      );
+      if (
+        error.status === 403 &&
+        error.data?.error ===
+          'banned'
+      ) {
 
+        showToast(
+          '🚫 Ton compte est temporairement suspendu.'
+        );
+
+      }
+
+      else {
+
+        showToast(
+          '❌ Impossible d’analyser ce fichier.'
+        );
+      }
     }
-
-  }
-
-
-  function previewExists() {
-
-    return !!$('file-preview');
-
   }
 
 
@@ -2359,34 +2077,26 @@
 
 
     localStorage.setItem(
-
       'aguacate_dark',
-
       document.body.classList.contains(
         'dark'
       )
-
     );
-
   }
 
 
   /* =========================================================
-     INITIALISATION DES ÉVÉNEMENTS
+     ÉVÉNEMENTS
      ========================================================= */
 
   function setupEvents() {
 
-    /*
-      Style des bulles
-    */
-
     installChatStyles();
 
 
-    /* -----------------------------------------
+    /* -------------------------------------------------------
        ENVOI
-       ----------------------------------------- */
+       ------------------------------------------------------- */
 
     $('send-btn')
       ?.addEventListener(
@@ -2396,14 +2106,13 @@
           sendMessage(
             $('prompt')?.value
           );
-
         }
       );
 
 
-    /* -----------------------------------------
-       ENTRÉE CLAVIER
-       ----------------------------------------- */
+    /* -------------------------------------------------------
+       ENTRÉE
+       ------------------------------------------------------- */
 
     $('prompt')
       ?.addEventListener(
@@ -2421,16 +2130,14 @@
             sendMessage(
               event.target.value
             );
-
           }
-
         }
       );
 
 
-    /* -----------------------------------------
+    /* -------------------------------------------------------
        SUGGESTIONS
-       ----------------------------------------- */
+       ------------------------------------------------------- */
 
     document
       .querySelectorAll(
@@ -2453,19 +2160,16 @@
                   button.dataset.prompt;
 
                 prompt.focus();
-
               }
-
             }
           );
-
         }
       );
 
 
-    /* -----------------------------------------
+    /* -------------------------------------------------------
        NOUVELLE CONVERSATION
-       ----------------------------------------- */
+       ------------------------------------------------------- */
 
     $('new-chat-btn')
       ?.addEventListener(
@@ -2474,9 +2178,9 @@
       );
 
 
-    /* -----------------------------------------
+    /* -------------------------------------------------------
        RENOMMER
-       ----------------------------------------- */
+       ------------------------------------------------------- */
 
     $('rename-btn')
       ?.addEventListener(
@@ -2485,9 +2189,9 @@
       );
 
 
-    /* -----------------------------------------
+    /* -------------------------------------------------------
        FICHIERS
-       ----------------------------------------- */
+       ------------------------------------------------------- */
 
     $('attach-btn')
       ?.addEventListener(
@@ -2511,14 +2215,13 @@
           handleFile(
             event.target.files?.[0]
           );
-
         }
       );
 
 
-    /* -----------------------------------------
+    /* -------------------------------------------------------
        THÈME
-       ----------------------------------------- */
+       ------------------------------------------------------- */
 
     $('theme-btn')
       ?.addEventListener(
@@ -2527,9 +2230,9 @@
       );
 
 
-    /* -----------------------------------------
+    /* -------------------------------------------------------
        MODES
-       ----------------------------------------- */
+       ------------------------------------------------------- */
 
     $('mode')
       ?.addEventListener(
@@ -2556,22 +2259,18 @@
               event.target.value =
                 state.role === 'admin'
                   ? 'Admin'
-                  : state.role ===
-                    'professeur'
+                  : state.role === 'professeur'
                     ? 'Professeur'
                     : 'Kids';
-
             }
-
           }
-
         }
       );
 
 
-    /* -----------------------------------------
+    /* -------------------------------------------------------
        THÈME SAUVEGARDÉ
-       ----------------------------------------- */
+       ------------------------------------------------------- */
 
     if (
       localStorage.getItem(
@@ -2582,9 +2281,7 @@
       document.body.classList.add(
         'dark'
       );
-
     }
-
   }
 
 
@@ -2600,54 +2297,51 @@
 
 
       /*
-        Valeur initiale.
+        État visuel initial.
+        Il sera immédiatement remplacé par
+        la vraie valeur du serveur après /login.
       */
 
-      updateEcoGuacate(
-        0
-      );
+      updateEcoGuacate(0);
 
+
+      /*
+        Connexion.
+        La consommation et les conversations
+        sont récupérées depuis le serveur.
+      */
 
       await login();
-
     }
   );
 
 
   /* =========================================================
-     EXPORTS GLOBAUX
+     EXPORTS
      ========================================================= */
 
   window.AguacateState =
     state;
 
-
   window.updateEcoGuacate =
     updateEcoGuacate;
-
 
   window.sendMessage =
     sendMessage;
 
-
   window.newConversation =
     newConversation;
-
 
   window.deleteConversation =
     deleteConversation;
 
-
   window.renameConversation =
     renameConversation;
-
 
   window.showThinking =
     showThinking;
 
-
   window.hideThinking =
     hideThinking;
-
 
 })();
