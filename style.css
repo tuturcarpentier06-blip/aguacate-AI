@@ -25,3 +25,292 @@
 .admin-user-row{display:flex;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.025);margin:7px 0}.admin-user-row>div:first-child{min-width:0}.admin-user-row b{display:block}.admin-user-row span{display:inline-block;color:var(--green);font-size:9px;margin:3px 0}.admin-user-row small{display:block;color:var(--muted);font-size:9px}.admin-user-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap}.admin-user-actions button{border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--text);padding:7px 8px;border-radius:9px;font-size:9px;cursor:pointer}.admin-user-actions button:hover{background:rgba(85,227,154,.1)}
 .admin-conv-user{border-bottom:1px solid var(--line);padding:10px 0}.admin-conv-user>b{display:block;margin-bottom:7px}.admin-conv-user button{display:block;width:100%;text-align:left;border:0;background:rgba(255,255,255,.04);color:var(--text);padding:9px;border-radius:9px;margin:4px 0;cursor:pointer}.admin-conversation-view{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.12)}.admin-msg{padding:9px;border-radius:10px;margin:6px 0;background:rgba(255,255,255,.035)}.admin-msg.user{border-left:3px solid #5ae6a0}.admin-msg.assistant{border-left:3px solid #7b9cff}.admin-msg p{white-space:pre-wrap;margin:5px 0;font-size:11px}.admin-footer{display:flex;gap:8px;margin-top:12px}.admin-footer .modal-action{margin:0}.log-row{padding:9px;border-bottom:1px solid var(--line);font-size:10px}.log-row b{margin-right:7px}.log-row small{display:block;color:var(--muted);margin-top:3px}
 @media(max-width:650px){.admin-user-row{display:block}.admin-user-actions{justify-content:flex-start;margin-top:8px}.admin-summary{grid-template-columns:1fr 1fr 1fr}.admin-summary b{font-size:18px}}
+/* =========================================================
+   ÉCOGUACATE — LAYOUT COMPACT
+   ========================================================= */
+
+.eco-panel {
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Zone arbre + pompe */
+.eco-visual {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Conteneur de l'arbre */
+.avocado-wrap {
+  position: relative;
+  width: 150px;
+  height: 205px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Lumière derrière l'arbre */
+.avocado-glow {
+  width: 125px;
+  height: 125px;
+}
+
+/* ARBRE PLUS PETIT */
+.eco-tree-svg {
+  width: 145px;
+  height: 198px;
+  max-width: 100%;
+  overflow: visible;
+  position: relative;
+  z-index: 2;
+}
+
+/* =========================================================
+   POMPE COMPACTE
+   ========================================================= */
+
+.water-pump {
+  position: absolute;
+  right: -2px;
+  bottom: 16px;
+
+  width: 43px;
+  height: 72px;
+
+  z-index: 4;
+  transform: scale(.72);
+  transform-origin: bottom right;
+}
+
+/* Corps */
+.pump-body {
+  left: 9px;
+  width: 25px;
+  height: 38px;
+  border-width: 2px;
+  border-radius: 6px 6px 4px 4px;
+}
+
+/* Partie supérieure */
+.pump-top {
+  bottom: 35px;
+  left: 12px;
+  width: 19px;
+  height: 19px;
+  border-width: 2px;
+}
+
+/* Poignée */
+.pump-handle {
+  top: 4px;
+  left: 11px;
+  width: 5px;
+  height: 38px;
+}
+
+.pump-handle::after {
+  top: -5px;
+  left: -7px;
+  width: 20px;
+  height: 6px;
+}
+
+/* Tuyau */
+.pump-pipe {
+  left: 0;
+  top: 39px;
+  width: 18px;
+  height: 6px;
+}
+
+/* Eau qui sort */
+.water-stream {
+  left: -1px;
+  top: 46px;
+  width: 3px;
+  height: 27px;
+}
+
+/* Niveau d'eau dans la pompe */
+.pump-water-level {
+  left: 12px;
+  bottom: 5px;
+  width: 19px;
+  height: 29px;
+}
+
+/* =========================================================
+   BARRE DE CONSOMMATION
+   ========================================================= */
+
+.eco-visual > .scale {
+  width: calc(100% - 10px);
+  max-width: 100%;
+  margin: 0;
+  padding: 0 3px;
+  box-sizing: border-box;
+}
+
+/* La barre reste TOUJOURS horizontale */
+.scale-track {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  min-height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+/* Remplissage */
+#eco-bar-fill {
+  height: 100%;
+  min-width: 0;
+  max-width: 100%;
+  border-radius: inherit;
+}
+
+/* Curseur beaucoup plus petit */
+#eco-marker {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+/* =========================================================
+   REPÈRES DE LA JAUGE
+   ========================================================= */
+
+.scale-labels {
+  width: 100%;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2px;
+
+  margin-top: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.scale-labels span {
+  flex: 0 0 auto;
+  font-size: 8px;
+  line-height: 1;
+}
+
+/* =========================================================
+   COMPTEUR
+   ========================================================= */
+
+.eco-number {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.eco-number #eco-litres {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.eco-number small {
+  font-size: 12px;
+}
+
+.eco-number p {
+  font-size: 8px;
+  margin-top: 3px;
+}
+
+.eco-percent {
+  font-size: 18px;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   STATUT
+   ========================================================= */
+
+.eco-status {
+  margin-top: 7px;
+  font-size: 10px;
+  text-align: center;
+}
+
+/* =========================================================
+   GRADIENT + LÉGENDE
+   ========================================================= */
+
+.eco-gradient {
+  width: 100%;
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.eco-legend {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 3px;
+
+  margin-top: 6px;
+  white-space: nowrap;
+}
+
+.eco-legend span {
+  font-size: 8px;
+}
+
+/* =========================================================
+   SOUS-TITRE
+   ========================================================= */
+
+.eco-sub {
+  font-size: 9px;
+  line-height: 1.3;
+  margin: 4px 0 6px;
+}
+
+/* =========================================================
+   PETITS ÉCRANS
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+  .avocado-wrap {
+    width: 135px;
+    height: 185px;
+  }
+
+  .eco-tree-svg {
+    width: 130px;
+    height: 178px;
+  }
+
+  .water-pump {
+    transform: scale(.62);
+  }
+
+  .scale-labels span {
+    font-size: 7px;
+  }
+
+  .eco-number #eco-litres {
+    font-size: 27px;
+  }
+}
