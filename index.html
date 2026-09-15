@@ -1969,3 +1969,42 @@
 
 </body>
 </html>
+<script>
+  
+document.addEventListener('DOMContentLoaded', () => {
+
+  const openBtn = document.getElementById('info-rules-btn');
+  const panel = document.getElementById('info-rules-panel');
+  const closeBtn = document.getElementById('close-info-rules');
+  const closeBottom = document.getElementById('close-info-rules-bottom');
+
+  function openInfoRules() {
+    if (panel) panel.classList.add('show');
+  }
+
+  function closeInfoRules() {
+    if (panel) panel.classList.remove('show');
+  }
+
+  if (openBtn) {
+    openBtn.addEventListener('click', openInfoRules);
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeInfoRules);
+  }
+
+  if (closeBottom) {
+    closeBottom.addEventListener('click', closeInfoRules);
+  }
+
+  if (panel) {
+    panel.addEventListener('click', (event) => {
+      if (event.target === panel) {
+        closeInfoRules();
+      }
+    });
+  }
+
+});
+</script>
