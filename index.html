@@ -18,597 +18,573 @@
 <link rel="stylesheet" href="avatar.css">
 
 <style>
-/* =========================================================
-   ÉCOGUACATE — BARRE HORIZONTALE + VALEURS SOUS LA BARRE
-   ========================================================= */
-
-.eco-visual {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-/* Zone contenant la barre */
-.scale {
-  width: 100%;
-  max-width: 270px;
-  margin: 4px auto 0;
-}
-
-/* Barre horizontale */
-.scale-track {
-  position: relative;
-  width: 100%;
-  height: 10px;
-  border-radius: 999px;
-  overflow: visible;
-  background: linear-gradient(
-    to right,
-    #22c55e 0%,
-    #22c55e 20%,
-    #eab308 20%,
-    #eab308 50%,
-    #f97316 50%,
-    #f97316 85%,
-    #ef4444 85%,
-    #ef4444 100%
-  );
-}
-
-/* Remplissage de la consommation */
-#eco-bar-fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 0%;
-  border-radius: 999px;
-  transition:
-    width .7s ease,
-    background .5s ease,
-    box-shadow .5s ease;
-}
-
-/* Curseur */
-#eco-marker {
-  position: absolute;
-  top: 50%;
-  left: 0%;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  background: white;
-  border: 3px solid #22c55e;
-  box-shadow: 0 2px 8px rgba(0,0,0,.35);
-  transition:
-    left .7s ease,
-    border-color .5s ease;
-  z-index: 5;
-}
-
-/* =========================================================
-   VALEURS SOUS LA BARRE
-   ========================================================= */
-
-.scale-labels {
-  display: flex !important;
-  flex-direction: row !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-
-  width: 100%;
-  margin-top: 9px;
-
-  white-space: nowrap;
-  writing-mode: horizontal-tb !important;
-}
-
-/* Chaque valeur */
-.scale-labels span {
-  display: block !important;
-  position: static !important;
-
-  font-size: 9px;
-  line-height: 1;
-  color: rgba(255,255,255,.55);
-
-  white-space: nowrap;
-  writing-mode: horizontal-tb !important;
-}
-
-/* Première et dernière valeurs */
-.scale-labels span:first-child {
-  text-align: left;
-}
-
-.scale-labels span:last-child {
-  text-align: right;
-}
-
-/* =========================================================
-   PETITS ÉCRANS
-   ========================================================= */
-
-@media (max-width: 900px) {
-
-  .scale {
-    max-width: 250px;
-  }
-
-  .scale-labels span {
-    font-size: 8px;
-  }
-
-}
-/* =========================================================
-   ÉCOGUACATE
-   ========================================================= */
-
-.eco-panel {
-  overflow: hidden;
-}
-
-.eco-visual {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-}
-
-/* Zone compacte */
-
-.avocado-wrap {
-  position: relative;
-  width: 185px;
-  height: 205px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  flex-shrink: 0;
-}
-
-.avocado-glow {
-  position: absolute;
-
-  width: 135px;
-  height: 135px;
-
-  border-radius: 50%;
-
-  background:
-    radial-gradient(
-      circle,
-      rgba(34,197,94,.22),
-      rgba(34,197,94,.05) 50%,
-      transparent 72%
-    );
-
-  filter: blur(7px);
-
-  transition:
-    background .7s ease,
-    opacity .7s ease,
-    transform .7s ease;
-}
-
-/* =========================================================
-   ARBRE
-   ========================================================= */
-
-.eco-tree-svg {
-  position: relative;
-
-  width: 145px;
-  height: 200px;
-
-  z-index: 2;
-
-  overflow: visible;
-
-  transition:
-    filter .8s ease,
-    transform .8s ease;
-}
-
-/* Feuillage */
-
-.tree-leaves {
-  transform-origin: center;
-  transition:
-    opacity .8s ease,
-    transform .8s ease,
-    filter .8s ease;
-}
-
-/* Avocats */
-
-.tree-fruit {
-  opacity: 1;
-
-  transition:
-    opacity .8s ease,
-    transform .8s ease;
-}
-
-/* Tronc */
-
-.tree-trunk {
-  transition:
-    filter .8s ease,
-    opacity .8s ease;
-}
-
-/* =========================================================
-   ÉTATS DE L'ARBRE
-   ========================================================= */
-
-.eco-tree-svg.tree-good .tree-leaves {
-  opacity: 1;
-  transform: scale(1);
-  filter: saturate(1.15);
-}
-
-.eco-tree-svg.tree-warning .tree-leaves {
-  opacity: .86;
-  transform: scale(.97);
-  filter: saturate(.9);
-}
-
-.eco-tree-svg.tree-danger .tree-leaves {
-  opacity: .50;
-  transform: scale(.93);
-  filter: saturate(.65);
-}
-
-.eco-tree-svg.tree-dry .tree-leaves {
-  opacity: .13;
-  transform: scale(.86);
-  filter: grayscale(.8);
-}
-
-.eco-tree-svg.tree-dead .tree-leaves {
-  opacity: 0;
-  transform: scale(.72);
-}
-
-.eco-tree-svg.tree-dead .tree-fruit {
-  opacity: 0;
-}
-
-/* Pas d'animation de chute */
-.tree-fruit ellipse {
-  animation: none !important;
-}
-
-/* =========================================================
-   POMPE
-   ========================================================= */
-
-.water-pump {
-  position: absolute;
-
-  right: 0;
-  bottom: 17px;
-
-  width: 50px;
-  height: 85px;
-
-  z-index: 5;
-
-  transform-origin: bottom right;
-
-  transition:
-    opacity .8s ease,
-    filter .8s ease;
-}
-
-.pump-body {
-  position: absolute;
-
-  bottom: 0;
-  left: 11px;
-
-  width: 29px;
-  height: 43px;
-
-  border-radius: 7px 7px 4px 4px;
-
-  background:
-    linear-gradient(
-      145deg,
-      #60a5fa,
-      #2563eb
-    );
-
-  border: 2px solid rgba(255,255,255,.5);
-
-  box-shadow:
-    0 5px 12px rgba(37,99,235,.25),
-    inset 0 0 8px rgba(255,255,255,.2);
-}
-
-.pump-top {
-  position: absolute;
-
-  bottom: 40px;
-  left: 15px;
-
-  width: 22px;
-  height: 22px;
-
-  border-radius: 50%;
-
-  background: #dbeafe;
-
-  border: 2px solid #2563eb;
-}
-
-.pump-handle {
-  position: absolute;
-
-  top: 4px;
-  left: 13px;
-
-  width: 5px;
-  height: 43px;
-
-  border-radius: 10px;
-
-  background: #374151;
-
-  transform-origin: bottom center;
-
-  animation:
-    pumpMove 1.4s ease-in-out infinite;
-}
-
-.pump-handle::after {
-  content: "";
-
-  position: absolute;
-
-  top: -5px;
-  left: -8px;
-
-  width: 21px;
-  height: 7px;
-
-  border-radius: 10px;
-
-  background: #374151;
-}
-
-.pump-pipe {
-  position: absolute;
-
-  left: 0;
-  top: 45px;
-
-  width: 22px;
-  height: 6px;
-
-  border-radius: 8px;
-
-  background: #60a5fa;
-
-  transform: rotate(-22deg);
-
-  transform-origin: right center;
-}
-
-.water-stream {
-  position: absolute;
-
-  left: 0;
-  top: 55px;
-
-  width: 4px;
-  height: 28px;
-
-  border-radius: 10px;
-
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(96,165,250,.95),
-      rgba(59,130,246,.1)
-    );
-
-  animation:
-    waterFlow .8s linear infinite;
-}
-
-.pump-water-level {
-  position: absolute;
-
-  left: 14px;
-  bottom: 5px;
-
-  width: 21px;
-  height: 31px;
-
-  border-radius: 3px;
-
-  overflow: hidden;
-
-  pointer-events: none;
-}
-
-.pump-water {
-  position: absolute;
-
-  left: 0;
-  bottom: 0;
-
-  width: 100%;
-  height: 100%;
-
-  background:
-    linear-gradient(
-      to top,
-      #2563eb,
-      #60a5fa
-    );
-
-  transition:
-    height .8s ease;
-}
-
-.water-pump.dry .pump-handle,
-.water-pump.dry .water-stream {
-  animation-play-state: paused;
-}
-
-.water-pump.dry {
-  filter: grayscale(.8);
-  opacity: .7;
-}
-
-@keyframes pumpMove {
-
-  0%,100% {
-    transform: rotate(-12deg);
-  }
-
-  50% {
-    transform: rotate(15deg);
-  }
-}
-
-@keyframes waterFlow {
-
-  0% {
-    transform: translateY(-3px);
-    opacity: 0;
-  }
-
-  20% {
-    opacity: 1;
-  }
-
-  100% {
-    transform: translateY(8px);
-    opacity: 0;
-  }
-}
-
-/* =========================================================
-   BARRE
-   ========================================================= */
-
-.eco-scale {
-  width: 100%;
-  max-width: 270px;
-  margin-top: 2px;
-}
-
-.scale-track {
-  position: relative;
-
-  width: 100%;
-  height: 13px;
-
-  border-radius: 999px;
-
-  background: rgba(148,163,184,.18);
-
-  overflow: hidden;
-
-  box-shadow:
-    inset 0 1px 3px rgba(0,0,0,.12);
-}
-
-#eco-bar-fill {
-  position: absolute;
-
-  left: 0;
-  top: 0;
-
-  width: 0%;
-  height: 100%;
-
-  border-radius: inherit;
-
-  background: #22c55e;
-
-  transition:
-    width .7s ease,
-    background .7s ease,
-    box-shadow .7s ease;
-}
-
-#eco-marker {
-  position: absolute;
-
-  top: 50%;
-
-  left: 0%;
-
-  width: 16px;
-  height: 16px;
-
-  border-radius: 50%;
-
-  background: white;
-
-  border: 3px solid #22c55e;
-
-  transform:
-    translate(-50%,-50%);
-
-  box-shadow:
-    0 2px 8px rgba(0,0,0,.25);
-
-  transition:
-    left .7s ease,
-    border-color .7s ease;
-}
-
-.scale-labels {
-  display: flex;
-
-  justify-content: space-between;
-
-  margin-top: 5px;
-
-  font-size: 10px;
-
-  opacity: .7;
-}
-
-/* =========================================================
-   COMPTEUR
-   ========================================================= */
-
-.eco-number {
-  margin-top: 8px;
-}
-
-#eco-litres {
-  transition: color .5s ease;
-}
-
-.eco-percent {
-  transition: color .5s ease;
-}
-
-/* =========================================================
-   LÉGENDE
-   ========================================================= */
-
-.eco-gradient {
-  margin-top: 8px;
-}
-
-.eco-legend {
-  font-size: 10px;
-}
-
+<!-- =====================================================
+     ÉCOGUACATE
+     ===================================================== -->
+
+<aside class="eco-panel">
+
+  <style>
+    /* ================================
+       ÉCOGUACATE — LAYOUT COMPACT
+       ================================ */
+
+    .eco-panel {
+      overflow: hidden;
+    }
+
+    .eco-panel .eco-visual {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Zone arbre + pompe */
+    .eco-panel .avocado-wrap {
+      position: relative;
+      width: 175px !important;
+      height: 215px !important;
+      min-height: 215px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+    }
+
+    /* Arbre */
+    .eco-panel .eco-tree-svg {
+      width: 150px !important;
+      height: 205px !important;
+      max-width: 150px !important;
+      max-height: 205px !important;
+      display: block;
+      overflow: visible;
+    }
+
+    /* Lumière */
+    .eco-panel .avocado-glow {
+      width: 130px !important;
+      height: 130px !important;
+    }
+
+    /* Pompe */
+    .eco-panel .water-pump {
+      position: absolute;
+      width: 52px !important;
+      height: 88px !important;
+      right: 2px !important;
+      bottom: 16px !important;
+      transform: scale(.72);
+      transform-origin: bottom right;
+    }
+
+    /* ================================
+       BARRE HORIZONTALE
+       ================================ */
+
+    .eco-panel .scale {
+      width: calc(100% - 18px) !important;
+      max-width: 330px !important;
+      margin: 0 auto !important;
+      display: block !important;
+      position: relative !important;
+    }
+
+    .eco-panel .scale-track {
+      position: relative !important;
+      display: block !important;
+      width: 100% !important;
+      height: 13px !important;
+      min-height: 13px !important;
+      border-radius: 999px !important;
+      overflow: hidden !important;
+      margin: 0 !important;
+
+      background: linear-gradient(
+        to right,
+        #22c55e 0%,
+        #22c55e 20%,
+        #eab308 20%,
+        #eab308 35%,
+        #f97316 35%,
+        #f97316 85%,
+        #ef4444 85%,
+        #ef4444 100%
+      ) !important;
+    }
+
+    #eco-bar-fill {
+      position: absolute !important;
+      left: 0 !important;
+      top: 0 !important;
+      height: 100% !important;
+      width: 0% !important;
+      border-radius: 999px !important;
+      z-index: 2 !important;
+      transition:
+        width .7s ease,
+        background .5s ease !important;
+    }
+
+    #eco-marker {
+      position: absolute !important;
+      top: 50% !important;
+      left: 0% !important;
+      width: 18px !important;
+      height: 18px !important;
+      border-radius: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      background: white !important;
+      border: 3px solid #166534 !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25) !important;
+      z-index: 5 !important;
+      transition: left .7s ease !important;
+    }
+
+    /* ================================
+       CHIFFRES SOUS LA BARRE
+       ================================ */
+
+    .eco-panel .scale-labels {
+      width: 100% !important;
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: nowrap !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      gap: 0 !important;
+      margin-top: 7px !important;
+      padding: 0 1px !important;
+    }
+
+    .eco-panel .scale-labels span {
+      display: block !important;
+      flex: 0 0 auto !important;
+      white-space: nowrap !important;
+      text-align: center !important;
+      font-size: 10px !important;
+      line-height: 1 !important;
+    }
+
+    /* ================================
+       COMPTEUR
+       ================================ */
+
+    .eco-panel .eco-number {
+      margin-top: 10px !important;
+    }
+
+    .eco-panel .eco-number span {
+      font-size: 28px !important;
+    }
+
+    .eco-panel .eco-status {
+      margin-top: 7px !important;
+    }
+
+    /* Légende */
+    .eco-panel .eco-legend {
+      display: flex !important;
+      flex-direction: row !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      width: 100% !important;
+      gap: 5px !important;
+    }
+
+    .eco-panel .eco-legend span {
+      white-space: nowrap !important;
+      font-size: 10px !important;
+    }
+
+    /* Mobile / petite fenêtre */
+    @media (max-width: 900px) {
+      .eco-panel .avocado-wrap {
+        width: 160px !important;
+        height: 195px !important;
+      }
+
+      .eco-panel .eco-tree-svg {
+        width: 135px !important;
+        height: 190px !important;
+      }
+
+      .eco-panel .scale {
+        max-width: 300px !important;
+      }
+    }
+  </style>
+
+
+  <!-- EN-TÊTE -->
+
+  <div class="eco-head">
+
+    <div>
+      <div class="eyebrow">ÉCOGUACATE</div>
+
+      <h2>
+        🌱 Ton impact
+      </h2>
+    </div>
+
+    <div class="eco-live">
+      ● LIVE
+    </div>
+
+  </div>
+
+
+  <p class="eco-sub">
+    Plus tu consommes d'eau, plus l'arbre se dégrade.
+  </p>
+
+
+  <!-- ARBRE + POMPE -->
+
+  <div class="eco-visual">
+
+    <div class="avocado-wrap">
+
+      <div class="avocado-glow"></div>
+
+
+      <!-- ============================
+           ARBRE
+           ============================ -->
+
+      <svg
+        id="eco-tree"
+        class="eco-tree-svg tree-good"
+        viewBox="0 0 220 300"
+        aria-label="Arbre ÉcoGuacate"
+      >
+
+        <!-- sol -->
+        <ellipse
+          class="tree-ground"
+          cx="105"
+          cy="275"
+          rx="70"
+          ry="12"
+        />
+
+
+        <!-- tronc -->
+
+        <path
+          class="tree-trunk"
+          d="
+            M93 265
+            C94 235 91 215 88 190
+            C84 165 79 142 78 118
+            C78 103 84 92 96 91
+            C108 90 116 101 114 117
+            C111 142 108 165 108 190
+            C108 215 112 239 116 265
+            Z
+          "
+          fill="#7c4a25"
+        />
+
+
+        <!-- branches -->
+
+        <path
+          d="M94 150 C72 137 55 120 43 101"
+          stroke="#7c4a25"
+          stroke-width="10"
+          stroke-linecap="round"
+          fill="none"
+        />
+
+        <path
+          d="M105 151 C124 136 139 117 153 94"
+          stroke="#7c4a25"
+          stroke-width="10"
+          stroke-linecap="round"
+          fill="none"
+        />
+
+        <path
+          d="M91 125 C77 108 69 93 66 77"
+          stroke="#7c4a25"
+          stroke-width="8"
+          stroke-linecap="round"
+          fill="none"
+        />
+
+        <path
+          d="M111 124 C126 106 136 90 139 72"
+          stroke="#7c4a25"
+          stroke-width="8"
+          stroke-linecap="round"
+          fill="none"
+        />
+
+
+        <!-- ============================
+             FEUILLAGE
+             ============================ -->
+
+        <g class="tree-leaves">
+
+          <circle cx="57" cy="83" r="39" fill="#166534"/>
+          <circle cx="102" cy="62" r="48" fill="#15803d"/>
+          <circle cx="151" cy="83" r="40" fill="#166534"/>
+          <circle cx="73" cy="48" r="32" fill="#22c55e"/>
+          <circle cx="126" cy="39" r="36" fill="#16a34a"/>
+          <circle cx="164" cy="52" r="31" fill="#22c55e"/>
+          <circle cx="101" cy="95" r="42" fill="#15803d"/>
+
+
+          <!-- petites feuilles -->
+
+          <ellipse
+            class="leaf"
+            cx="39"
+            cy="64"
+            rx="13"
+            ry="7"
+            fill="#4ade80"
+            transform="rotate(-25 39 64)"
+          />
+
+          <ellipse
+            class="leaf"
+            cx="67"
+            cy="30"
+            rx="14"
+            ry="7"
+            fill="#4ade80"
+            transform="rotate(18 67 30)"
+          />
+
+          <ellipse
+            class="leaf"
+            cx="110"
+            cy="22"
+            rx="15"
+            ry="7"
+            fill="#4ade80"
+            transform="rotate(-10 110 22)"
+          />
+
+          <ellipse
+            class="leaf"
+            cx="154"
+            cy="30"
+            rx="14"
+            ry="7"
+            fill="#4ade80"
+            transform="rotate(20 154 30)"
+          />
+
+          <ellipse
+            class="leaf"
+            cx="183"
+            cy="70"
+            rx="14"
+            ry="7"
+            fill="#4ade80"
+            transform="rotate(-25 183 70)"
+          />
+
+        </g>
+
+
+        <!-- ============================
+             AVOCATS
+             ============================ -->
+
+        <g class="tree-fruit">
+
+          <ellipse
+            cx="55"
+            cy="90"
+            rx="10"
+            ry="15"
+            fill="#65a30d"
+            transform="rotate(-20 55 90)"
+          />
+
+          <ellipse
+            cx="83"
+            cy="58"
+            rx="10"
+            ry="15"
+            fill="#84cc16"
+            transform="rotate(15 83 58)"
+          />
+
+          <ellipse
+            cx="112"
+            cy="77"
+            rx="10"
+            ry="15"
+            fill="#65a30d"
+            transform="rotate(-10 112 77)"
+          />
+
+          <ellipse
+            cx="143"
+            cy="56"
+            rx="10"
+            ry="15"
+            fill="#84cc16"
+            transform="rotate(20 143 56)"
+          />
+
+          <ellipse
+            cx="158"
+            cy="96"
+            rx="10"
+            ry="15"
+            fill="#65a30d"
+            transform="rotate(-15 158 96)"
+          />
+
+          <ellipse
+            cx="94"
+            cy="112"
+            rx="10"
+            ry="15"
+            fill="#84cc16"
+            transform="rotate(15 94 112)"
+          />
+
+        </g>
+
+      </svg>
+
+
+      <!-- ============================
+           POMPE
+           ============================ -->
+
+      <div
+        id="eco-water-pump"
+        class="water-pump"
+        aria-label="Pompe à eau"
+      >
+
+        <div class="pump-handle"></div>
+
+        <div class="pump-pipe"></div>
+
+        <div class="water-stream"></div>
+
+        <div class="pump-top"></div>
+
+        <div class="pump-body">
+
+          <div class="pump-water-level">
+
+            <div
+              id="pump-water"
+              class="pump-water"
+            ></div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- ============================
+         BARRE HORIZONTALE
+         ============================ -->
+
+    <div class="scale">
+
+      <div class="scale-track">
+
+        <div id="eco-bar-fill"></div>
+
+        <div id="eco-marker"></div>
+
+      </div>
+
+
+      <!-- TOUJOURS SUR UNE SEULE LIGNE -->
+
+      <div class="scale-labels">
+
+        <span>0 L</span>
+        <span>25 L</span>
+        <span>50 L</span>
+        <span>75 L</span>
+        <span>100 L+</span>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ============================
+       COMPTEUR
+       ============================ -->
+
+  <div class="eco-number">
+
+    <div>
+
+      <span id="eco-litres">0,0</span>
+
+      <small>L</small>
+
+      <p>
+        d'eau consommés
+      </p>
+
+    </div>
+
+    <div
+      class="eco-percent"
+      id="eco-pct"
+    >
+      0%
+    </div>
+
+  </div>
+
+
+  <!-- STATUT -->
+
+  <div
+    class="eco-status"
+    id="eco-status"
+  >
+    Excellent 🌿
+  </div>
+
+
+  <!-- GRADIENT -->
+
+  <div class="eco-gradient">
+    <i></i>
+  </div>
+
+
+  <!-- LÉGENDE -->
+
+  <div class="eco-legend">
+
+    <span>🟢 Faible</span>
+    <span>🟡 Moyen</span>
+    <span>🟠 Élevé</span>
+    <span>🔴 Critique</span>
+
+  </div>
+
+</aside>
 /* =========================================================
    RESPONSIVE
    ========================================================= */
