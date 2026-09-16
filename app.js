@@ -2069,22 +2069,20 @@
      THÈME
      ========================================================= */
 
-  function toggleTheme() {
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark');
 
-    document.body.classList.toggle(
-      'dark'
-    );
+  localStorage.setItem(
+    'aguacate_dark',
+    isDark ? 'true' : 'false'
+  );
 
-
-    localStorage.setItem(
-      'aguacate_dark',
-      document.body.classList.contains(
-        'dark'
-      )
-    );
-  }
-
-
+  showToast(
+    isDark
+      ? '🌙 Mode sombre activé.'
+      : '☀️ Mode clair activé.'
+  );
+}
   /* =========================================================
      ÉVÉNEMENTS
      ========================================================= */
@@ -2229,7 +2227,6 @@
         toggleTheme
       );
 
-
     /* -------------------------------------------------------
        MODES
        ------------------------------------------------------- */
@@ -2272,19 +2269,14 @@
        THÈME SAUVEGARDÉ
        ------------------------------------------------------- */
 
-    if (
-      localStorage.getItem(
-        'aguacate_dark'
-      ) === 'true'
-    ) {
+const savedTheme =
+  localStorage.getItem('aguacate_dark');
 
-      document.body.classList.add(
-        'dark'
-      );
-    }
-  }
-
-
+if (savedTheme === 'true') {
+  document.body.classList.add('dark');
+} else {
+  document.body.classList.remove('dark');
+}
   /* =========================================================
      DÉMARRAGE
      ========================================================= */
