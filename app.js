@@ -1,2669 +1,2799 @@
-// =========================================================
-// AGUACATE AI v4.0.0
-// BACKEND COMPLET
-// =========================================================
+/* =========================================================
+   AGUACATE AI v4.0.0
+   APP.JS — FRONTEND COMPLET CORRIGÉ
+   ========================================================= */
 
-const express = require('express');
-const OpenAI = require('openai');
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
-const multer = require('multer');
-const pdfParse = require('pdf-parse');
-const mammoth = require('mammoth');
-const XLSX = require('xlsx');
-const rateLimit = require('express-rate-limit');
+(() => {
 
-const app = express();
+  'use strict';
 
-const ROOT = __dirname;
-const DATA_DIR = path.join(ROOT, 'data');
-const DATA_FILE = path.join(DATA_DIR, 'aguacate-data.json');
 
-fs.mkdirSync(DATA_DIR, { recursive: true });
+  /* =========================================================
+     ÉTAT CENTRAL
+     ========================================================= */
 
+  const state = {
 
-// =========================================================
-// IMPORTANT POUR RENDER
-// =========================================================
-//
-// Render place ton serveur derrière un proxy.
-// express-rate-limit utilise X-Forwarded-For.
-//
-// Sans cette ligne, Render provoque :
-// ERR_ERL_UNEXPECTED_X_FORWARDED_FOR
-//
-// =========================================================
+    token:
+      localStorage.getItem(
+        'aguacate_token'
+      ) || '',
 
-app.set('trust proxy', 1);
+    userId:
+      localStorage.getItem(
+        'aguacate_user_id'
+      ) || '',
 
+    role:
+      localStorage.getItem(
+        'aguacate_role'
+      ) || 'user',
 
-// =========================================================
-// MIDDLEWARES
-// =========================================================
+    consumptionLitres:
+      0,
 
-app.use(express.json({ limit: '1mb' }));
+    ecoMaxLitres:
+      24.8,
 
-app.use(
-  express.urlencoded({
-    extended: true,
-    limit: '1mb'
-  })
-);
+    conversations:
+      [],
 
-app.use(express.static(ROOT));
+    currentConversationId:
+      null,
 
+    selectedFile:
+      null,
 
-// =========================================================
-// CONFIGURATION IA
-// =========================================================
-
-const OPENROUTER_API_KEY =
-  process.env.OPENROUTER_API_KEY || '';
-
-const OPENAI_API_KEY =
-  process.env.OPENAI_API_KEY || '';
-
-
-// Détection fiable du fournisseur.
-//
-// Si OPENROUTER_API_KEY existe : OpenRouter.
-// Sinon si OPENAI_API_KEY existe : OpenAI.
-//
-// AI_BASE_URL peut toujours être forcée avec Render.
-
-let USING_OPENROUTER =
-  Boolean(OPENROUTER_API_KEY);
-
-let AI_API_KEY =
-  OPENROUTER_API_KEY ||
-  OPENAI_API_KEY;
-
-let AI_BASE_URL =
-  process.env.AI_BASE_URL || '';
-
-
-// Si aucune URL n'est configurée,
-// on choisit automatiquement le bon fournisseur.
-
-if (!AI_BASE_URL) {
-
-  AI_BASE_URL =
-    USING_OPENROUTER
-      ? 'https://openrouter.ai/api/v1'
-      : 'https://api.openai.com/v1';
-}
-
-
-// Si AI_BASE_URL contient OpenRouter,
-// on considère qu'on utilise OpenRouter.
-
-if (
-  AI_BASE_URL.includes('openrouter.ai')
-) {
-  USING_OPENROUTER = true;
-}
-
-
-// Modèle.
-//
-// OpenRouter : openrouter/auto
-// OpenAI : gpt-5.5
-
-const AI_MODEL =
-  process.env.AI_MODEL ||
-  (
-    USING_OPENROUTER
-      ? 'openrouter/auto'
-      : 'gpt-5.5'
-  );
-
-
-// =========================================================
-// LIMITES
-// =========================================================
-
-const MAX_FILE_MB =
-  Math.max(
-    1,
-    Math.min(
-      15,
-      Number(
-        process.env.MAX_FILE_MB || 10
-      )
-    )
-  );
-
-const ECO_MAX_LITRES =
-  Number(
-    process.env.ECOGUACATE_MAX_LITRES || 24.8
-  );
-
-const ONLINE_TIMEOUT_MS =
-  90 * 1000;
-
-const RECENT_WINDOW_MS =
-  24 * 60 * 60 * 1000;
-
-
-// =========================================================
-// CLIENT OPENAI / OPENROUTER
-// =========================================================
-
-const openai =
-  AI_API_KEY
-    ? new OpenAI({
-        apiKey: AI_API_KEY,
-        baseURL: AI_BASE_URL,
-        timeout: 60_000,
-        maxRetries: 1,
-
-        defaultHeaders:
-          USING_OPENROUTER
-            ? {
-                'HTTP-Referer':
-                  process.env.APP_URL ||
-                  'https://aguacate-ai.onrender.com',
-
-                'X-Title':
-                  'Aguacate AI v4.0.0'
-              }
-            : undefined
-      })
-    : null;
-
-
-// =========================================================
-// UPLOADS
-// =========================================================
-
-const upload =
-  multer({
-    storage:
-      multer.memoryStorage(),
-
-    limits: {
-      fileSize:
-        MAX_FILE_MB *
-        1024 *
-        1024
-    }
-  });
-
-
-// =========================================================
-// DONNÉES
-// =========================================================
-
-const DEFAULT_DATA = {
-  users: {},
-  conversations: {},
-  memories: {},
-  adminLogs: []
-};
-
-let data = loadData();
-
-
-function loadData() {
-
-  try {
-
-    if (
-      fs.existsSync(DATA_FILE)
-    ) {
-
-      return {
-        ...DEFAULT_DATA,
-        ...JSON.parse(
-          fs.readFileSync(
-            DATA_FILE,
-            'utf8'
-          )
-        )
-      };
-    }
-
-  }
-
-  catch (error) {
-
-    console.error(
-      '[data] lecture impossible:',
-      error.message
-    );
-  }
-
-  return JSON.parse(
-    JSON.stringify(
-      DEFAULT_DATA
-    )
-  );
-}
-
-
-function saveData() {
-
-  try {
-
-    const tmp =
-      DATA_FILE + '.tmp';
-
-    fs.writeFileSync(
-      tmp,
-      JSON.stringify(data),
-      'utf8'
-    );
-
-    fs.renameSync(
-      tmp,
-      DATA_FILE
-    );
-
-  }
-
-  catch (error) {
-
-    console.error(
-      '[data] sauvegarde impossible:',
-      error.message
-    );
-  }
-}
-
-
-// =========================================================
-// UTILITAIRES
-// =========================================================
-
-function now() {
-  return Date.now();
-}
-
-
-function genToken() {
-
-  return crypto
-    .randomBytes(32)
-    .toString('hex');
-}
-
-
-function genUserId() {
-
-  let id;
-
-  do {
-
-    id =
-      String(
-        Math.floor(
-          1000 +
-          Math.random() *
-          9000
-        )
-      );
-
-  }
-
-  while (
-    Object.values(data.users)
-      .some(
-        user =>
-          user.id === id
-      )
-  );
-
-  return id;
-}
-
-
-function safeText(
-  value,
-  max = 30000
-) {
-
-  return typeof value === 'string'
-    ? value.slice(0, max)
-    : '';
-}
-
-
-function hashPassword(value) {
-
-  return crypto
-    .createHash('sha256')
-    .update(
-      String(value || '')
-    )
-    .digest('hex');
-}
-
-
-function passwordMatches(
-  provided,
-  configured
-) {
-
-  if (
-    !configured ||
-    !provided
-  ) {
-    return false;
-  }
-
-  return crypto.timingSafeEqual(
-    Buffer.from(
-      hashPassword(provided)
-    ),
-    Buffer.from(
-      hashPassword(configured)
-    )
-  );
-}
-
-
-// =========================================================
-// UTILISATEURS
-// =========================================================
-
-function userRecord(id) {
-
-  if (!data.users[id]) {
-
-    data.users[id] = {
-
-      id,
-
-      role: 'user',
-
-      warnings: [],
-
-      bannedUntil: 0,
-
-      connected: false,
-
-      lastSeen: 0,
-
-      token:
-        genToken(),
-
-      sessionVersion: 1,
-
-      consumptionLitres: 0,
-
-      createdAt:
-        now()
-    };
-
-    saveData();
-  }
-
-  return data.users[id];
-}
-
-
-function isBanned(user) {
-
-  return (
-    Number(
-      user.bannedUntil || 0
-    ) > now()
-  );
-}
-
-
-function isOnline(user) {
-
-  return (
-    !!user.connected &&
-    !!user.lastSeen &&
-    now() -
-      user.lastSeen <
-      ONLINE_TIMEOUT_MS &&
-    !isBanned(user)
-  );
-}
-
-
-function publicUser(user) {
-
-  const {
-    token,
-    ...safe
-  } = user;
-
-  return {
-    ...safe,
-    online:
-      isOnline(user)
-  };
-}
-
-
-// =========================================================
-// BAN
-// =========================================================
-
-function banFor24h(
-  user,
-  reason,
-  by = 'system'
-) {
-
-  user.bannedUntil =
-    now() +
-    24 * 60 * 60 * 1000;
-
-  user.connected = false;
-
-  user.sessionVersion =
-    (user.sessionVersion || 1) + 1;
-
-  user.token =
-    genToken();
-
-  data.adminLogs.push({
-
-    type: 'ban',
-
-    reason,
-
-    user: user.id,
-
-    by,
-
-    date: now(),
-
-    until:
-      user.bannedUntil
-  });
-
-  saveData();
-}
-
-
-// =========================================================
-// AVERTISSEMENTS
-// =========================================================
-
-function addWarning(
-  user,
-  reason,
-  by = 'admin'
-) {
-
-  const item = {
-
-    id:
-      crypto
-        .randomBytes(5)
-        .toString('hex'),
-
-    reason:
-      safeText(
-        reason,
-        300
-      ),
-
-    date:
-      now(),
-
-    by
+    sending:
+      false
   };
 
-  if (
-    !Array.isArray(
-      user.warnings
+
+  /* =========================================================
+     UTILITAIRE DOM
+     ========================================================= */
+
+  const $ =
+    id =>
+      document.getElementById(id);
+
+
+  /* =========================================================
+     SÉCURITÉ HTML
+     ========================================================= */
+
+  function escapeHTML(
+    value
+  ) {
+
+    return String(
+      value ?? ''
     )
-  ) {
-    user.warnings = [];
-  }
 
-  user.warnings.push(item);
-
-
-  // 3 avertissements = ban 24h
-
-  if (
-    user.warnings.length >= 3
-  ) {
-
-    banFor24h(
-      user,
-      `Avertissement n°${user.warnings.length}`,
-      by
-    );
-  }
-
-
-  data.adminLogs.push({
-
-    type: 'warning',
-
-    user:
-      user.id,
-
-    by,
-
-    reason:
-      item.reason,
-
-    warningNumber:
-      user.warnings.length,
-
-    date:
-      item.date
-  });
-
-  saveData();
-
-  return item;
-}
-
-
-function removeWarning(
-  user,
-  warningId
-) {
-
-  const before =
-    Array.isArray(user.warnings)
-      ? user.warnings.length
-      : 0;
-
-  user.warnings =
-    (
-      user.warnings || []
-    ).filter(
-      warning =>
-        warning.id !==
-        warningId
-    );
-
-  if (
-    before !==
-    user.warnings.length
-  ) {
-
-    if (!isBanned(user)) {
-      user.bannedUntil = 0;
-    }
-
-    data.adminLogs.push({
-
-      type:
-        'warning-removed',
-
-      user:
-        user.id,
-
-      warningId,
-
-      date:
-        now()
-    });
-
-    saveData();
-
-    return true;
-  }
-
-  return false;
-}
-
-
-// =========================================================
-// AUTHENTIFICATION
-// =========================================================
-
-function getUserFromRequest(req) {
-
-  const auth =
-    req.headers.authorization ||
-    '';
-
-  const token =
-    auth.startsWith('Bearer ')
-      ? auth.slice(7)
-      : (
-          req.query.token ||
-          req.body?.token
-        );
-
-  if (!token) {
-    return null;
-  }
-
-  return Object.values(
-    data.users
-  ).find(
-    user =>
-      user.token === token
-  ) || null;
-}
-
-
-function ensureAuth(
-  req,
-  res,
-  next
-) {
-
-  const user =
-    getUserFromRequest(req);
-
-  if (!user) {
-
-    return res
-      .status(401)
-      .json({
-        ok: false,
-        error:
-          'unauthenticated'
-      });
-  }
-
-  if (isBanned(user)) {
-
-    return res
-      .status(403)
-      .json({
-
-        ok: false,
-
-        error:
-          'banned',
-
-        bannedUntil:
-          user.bannedUntil
-      });
-  }
-
-  user.connected = true;
-
-  user.lastSeen = now();
-
-  req.authUser = user;
-
-  next();
-}
-
-
-function ensureAdmin(
-  req,
-  res,
-  next
-) {
-
-  ensureAuth(
-    req,
-    res,
-    () => {
-
-      if (
-        req.authUser.role !==
-        'admin'
-      ) {
-
-        return res
-          .status(403)
-          .json({
-            ok: false,
-            error:
-              'forbidden'
-          });
-      }
-
-      next();
-    }
-  );
-}
-
-
-function ensureProfessor(
-  req,
-  res,
-  next
-) {
-
-  ensureAuth(
-    req,
-    res,
-    () => {
-
-      if (
-        ![
-          'professeur',
-          'admin'
-        ].includes(
-          req.authUser.role
-        )
-      ) {
-
-        return res
-          .status(403)
-          .json({
-            ok: false,
-            error:
-              'forbidden'
-          });
-      }
-
-      next();
-    }
-  );
-}
-
-
-// =========================================================
-// CONSOMMATION ÉCOGUACATE
-// =========================================================
-
-function resetDailyConsumption() {
-
-  Object.values(
-    data.users
-  ).forEach(
-    user => {
-      user.consumptionLitres = 0;
-    }
-  );
-
-  data.adminLogs.push({
-
-    type:
-      'reset-consumption',
-
-    date:
-      now()
-  });
-
-  saveData();
-}
-
-
-function scheduleReset() {
-
-  const current =
-    new Date();
-
-  const next =
-    new Date(current);
-
-  next.setHours(
-    24,
-    0,
-    0,
-    0
-  );
-
-  setTimeout(
-    () => {
-
-      resetDailyConsumption();
-
-      setInterval(
-        resetDailyConsumption,
-        86400000
+      .replace(
+        /&/g,
+        '&amp;'
+      )
+
+      .replace(
+        /</g,
+        '&lt;'
+      )
+
+      .replace(
+        />/g,
+        '&gt;'
+      )
+
+      .replace(
+        /"/g,
+        '&quot;'
+      )
+
+      .replace(
+        /'/g,
+        '&#039;'
       );
-
-    },
-    Math.max(
-      1000,
-      next - current + 1000
-    )
-  );
-}
-
-scheduleReset();
+  }
 
 
-setInterval(
-  () => {
+  /* =========================================================
+     TOAST
+     ========================================================= */
 
-    Object.values(
-      data.users
-    ).forEach(
-      user => {
+  function showToast(
+    message
+  ) {
 
-        if (
-          user.connected &&
-          now() -
-            user.lastSeen >
-            ONLINE_TIMEOUT_MS
-        ) {
+    const toast =
+      $('toast');
 
-          user.connected = false;
-        }
-      }
+    if (!toast)
+      return;
+
+
+    toast.textContent =
+      message;
+
+    toast.classList.add(
+      'show'
     );
 
-    saveData();
 
-  },
-  30000
-);
-
-
-// =========================================================
-// RATE LIMITER
-// =========================================================
-//
-// IMPORTANT :
-// app.set('trust proxy', 1)
-// est placé AVANT le rate limiter.
-//
-// Cela corrige l'erreur Render
-// X-Forwarded-For.
-// =========================================================
-
-const chatLimiter =
-  rateLimit({
-
-    windowMs:
-      60 * 1000,
-
-    max: 30,
-
-    standardHeaders: true,
-
-    legacyHeaders: false,
-
-    message: {
-      ok: false,
-      error:
-        'rate-limit',
-      message:
-        'Trop de messages envoyés. Attends un peu avant de réessayer.'
-    }
-  });
+    clearTimeout(
+      showToast.timer
+    );
 
 
-// =========================================================
-// MODÉRATION
-// =========================================================
+    showToast.timer =
+      setTimeout(
+        () => {
 
-const GROSS_WORD_PATTERNS = [
-
-  /\b(?:putain|merde|connard|connasse|encule|enculé|salope|fdp|nique|niquer)\b/i,
-
-  /\b(?:fuck|shit|bitch|asshole)\b/i
-];
-
-
-function containsGrossLanguage(
-  text
-) {
-
-  return GROSS_WORD_PATTERNS.some(
-    regex =>
-      regex.test(text)
-  );
-}
-
-
-// IMPORTANT :
-// Un langage grossier crée ici
-// UN AVERTISSEMENT.
-//
-// Il ne provoque PAS un ban immédiat.
-//
-// Le ban arrive au 3e avertissement.
-
-function moderationHit(
-  user,
-  message
-) {
-
-  if (
-    !containsGrossLanguage(
-      message
-    )
-  ) {
-    return false;
-  }
-
-  addWarning(
-    user,
-    'Langage grossier détecté automatiquement',
-    'system'
-  );
-
-  return true;
-}
-
-
-// =========================================================
-// HEALTH
-// =========================================================
-
-app.get(
-  '/health',
-  (req, res) => {
-
-    res.json({
-
-      ok: true,
-
-      version:
-        '4.0.0',
-
-      ai:
-        !!openai,
-
-      provider:
-        USING_OPENROUTER
-          ? 'openrouter'
-          : 'openai',
-
-      model:
-        AI_MODEL,
-
-      baseURL:
-        AI_BASE_URL,
-
-      hasOpenRouterKey:
-        !!OPENROUTER_API_KEY,
-
-      hasOpenAIKey:
-        !!OPENAI_API_KEY
-    });
-  }
-);
-
-
-// =========================================================
-// LOGIN
-// =========================================================
-
-app.post(
-  '/login',
-  (req, res) => {
-
-    const requested =
-      String(
-        req.body.deviceId || ''
-      ).slice(0, 64);
-
-    const id =
-      requested &&
-      data.users[requested]
-        ? requested
-        : (
-            requested ||
-            genUserId()
+          toast.classList.remove(
+            'show'
           );
 
-    const user =
-      userRecord(id);
-
-    if (
-      isBanned(user)
-    ) {
-
-      return res
-        .status(403)
-        .json({
-
-          ok: false,
-
-          error:
-            'banned',
-
-          bannedUntil:
-            user.bannedUntil
-        });
-    }
-
-    user.connected =
-      true;
-
-    user.lastSeen =
-      now();
-
-    user.token =
-      genToken();
-
-    user.sessionVersion =
-      (user.sessionVersion || 1) + 1;
-
-    data.adminLogs.push({
-
-      type:
-        'login',
-
-      user:
-        user.id,
-
-      date:
-        now()
-    });
-
-    saveData();
-
-    res.json({
-
-      ok: true,
-
-      id:
-        user.id,
-
-      role:
-        user.role,
-
-      token:
-        user.token,
-
-      consumptionLitres:
-        user.consumptionLitres || 0,
-
-      version:
-        '4.0.0'
-    });
-  }
-);
-
-
-// =========================================================
-// HEARTBEAT
-// =========================================================
-
-app.post(
-  '/heartbeat',
-  ensureAuth,
-  (req, res) => {
-
-    req.authUser.connected =
-      true;
-
-    req.authUser.lastSeen =
-      now();
-
-    saveData();
-
-    res.json({
-      ok: true,
-      online: true
-    });
-  }
-);
-
-
-// =========================================================
-// LOGOUT
-// =========================================================
-
-app.post(
-  '/logout',
-  ensureAuth,
-  (req, res) => {
-
-    req.authUser.connected =
-      false;
-
-    req.authUser.lastSeen =
-      now();
-
-    saveData();
-
-    res.json({
-      ok: true
-    });
-  }
-);
-
-
-// =========================================================
-// MODES
-// =========================================================
-
-app.post(
-  '/modes/verify',
-  ensureAuth,
-  (req, res) => {
-
-    const mode =
-      safeText(
-        req.body.mode,
-        30
+        },
+        3000
       );
-
-    const password =
-      String(
-        req.body.password || ''
-      );
-
-    const user =
-      req.authUser;
-
-
-    if (
-      mode === 'Professeur' &&
-      passwordMatches(
-        password,
-        process.env.PROFESSOR_PASSWORD
-      )
-    ) {
-
-      user.role =
-        'professeur';
-
-      saveData();
-
-      return res.json({
-
-        ok: true,
-
-        role:
-          user.role
-      });
-    }
-
-
-    if (
-      mode === 'Admin' &&
-      passwordMatches(
-        password,
-        process.env.ADMIN_PASSWORD
-      )
-    ) {
-
-      user.role =
-        'admin';
-
-      saveData();
-
-      return res.json({
-
-        ok: true,
-
-        role:
-          user.role
-      });
-    }
-
-
-    return res
-      .status(401)
-      .json({
-
-        ok: false,
-
-        error:
-          'invalid-password'
-      });
-  }
-);
-
-
-// =========================================================
-// ADMIN — UTILISATEURS
-// =========================================================
-
-app.get(
-  '/users',
-  ensureAdmin,
-  (req, res) => {
-
-    res.json(
-
-      Object.values(
-        data.users
-      )
-      .map(publicUser)
-      .sort(
-        (a, b) =>
-          Number(
-            b.lastSeen || 0
-          ) -
-          Number(
-            a.lastSeen || 0
-          )
-      )
-    );
-  }
-);
-
-
-app.get(
-  '/users/online',
-  ensureAdmin,
-  (req, res) => {
-
-    res.json(
-
-      Object.values(
-        data.users
-      )
-      .filter(isOnline)
-      .map(publicUser)
-    );
-  }
-);
-
-
-app.get(
-  '/users/recent',
-  ensureAdmin,
-  (req, res) => {
-
-    res.json(
-
-      Object.values(
-        data.users
-      )
-      .filter(
-        user =>
-          user.lastSeen &&
-          now() -
-            user.lastSeen <=
-            RECENT_WINDOW_MS
-      )
-      .map(publicUser)
-      .sort(
-        (a, b) =>
-          b.lastSeen -
-          a.lastSeen
-      )
-    );
-  }
-);
-
-
-// =========================================================
-// ADMIN — DÉCONNEXION
-// =========================================================
-
-app.post(
-  '/users/:id/disconnect',
-  ensureAdmin,
-  (req, res) => {
-
-    const user =
-      data.users[
-        String(
-          req.params.id
-        )
-      ];
-
-    if (!user) {
-
-      return res
-        .status(404)
-        .json({
-          ok: false,
-          error:
-            'not-found'
-        });
-    }
-
-    user.connected =
-      false;
-
-    user.lastSeen =
-      now();
-
-    user.sessionVersion =
-      (user.sessionVersion || 1) + 1;
-
-    user.token =
-      genToken();
-
-    data.adminLogs.push({
-
-      type:
-        'disconnect',
-
-      user:
-        user.id,
-
-      by:
-        req.authUser.id,
-
-      date:
-        now()
-    });
-
-    saveData();
-
-    res.json({
-      ok: true
-    });
-  }
-);
-
-
-// =========================================================
-// ADMIN — BAN
-// =========================================================
-
-app.post(
-  '/users/:id/ban',
-  ensureAdmin,
-  (req, res) => {
-
-    const user =
-      data.users[
-        String(
-          req.params.id
-        )
-      ];
-
-    if (!user) {
-
-      return res
-        .status(404)
-        .json({
-          ok: false,
-          error:
-            'not-found'
-        });
-    }
-
-    banFor24h(
-      user,
-      safeText(
-        req.body.reason ||
-          'Bannissement manuel',
-        300
-      ),
-      req.authUser.id
-    );
-
-    res.json({
-
-      ok: true,
-
-      bannedUntil:
-        user.bannedUntil
-    });
-  }
-);
-
-
-// =========================================================
-// ADMIN — UNBAN
-// =========================================================
-
-app.post(
-  '/users/:id/unban',
-  ensureAdmin,
-  (req, res) => {
-
-    const user =
-      data.users[
-        String(
-          req.params.id
-        )
-      ];
-
-    if (!user) {
-
-      return res
-        .status(404)
-        .json({
-          ok: false,
-          error:
-            'not-found'
-        });
-    }
-
-    user.bannedUntil =
-      0;
-
-    data.adminLogs.push({
-
-      type:
-        'unban',
-
-      user:
-        user.id,
-
-      by:
-        req.authUser.id,
-
-      date:
-        now()
-    });
-
-    saveData();
-
-    res.json({
-      ok: true
-    });
-  }
-);
-
-
-// =========================================================
-// ADMIN — AVERTISSEMENTS
-// =========================================================
-
-app.post(
-  '/users/:id/warnings',
-  ensureAdmin,
-  (req, res) => {
-
-    const user =
-      data.users[
-        String(
-          req.params.id
-        )
-      ];
-
-    if (!user) {
-
-      return res
-        .status(404)
-        .json({
-          ok: false,
-          error:
-            'not-found'
-        });
-    }
-
-    const warning =
-      addWarning(
-        user,
-        req.body.reason ||
-          'Avertissement administrateur',
-        req.authUser.id
-      );
-
-    res.json({
-
-      ok: true,
-
-      warning,
-
-      warnings:
-        user.warnings,
-
-      bannedUntil:
-        user.bannedUntil || 0
-    });
-  }
-);
-
-
-app.delete(
-  '/users/:id/warnings/:warningId',
-  ensureAdmin,
-  (req, res) => {
-
-    const user =
-      data.users[
-        String(
-          req.params.id
-        )
-      ];
-
-    if (!user) {
-
-      return res
-        .status(404)
-        .json({
-          ok: false,
-          error:
-            'not-found'
-        });
-    }
-
-    const ok =
-      removeWarning(
-        user,
-        String(
-          req.params.warningId
-        )
-      );
-
-    res.json({
-      ok
-    });
-  }
-);
-
-
-// =========================================================
-// ADMIN — LOGS
-// =========================================================
-
-app.get(
-  '/adminlogs',
-  ensureAdmin,
-  (req, res) => {
-
-    res.json(
-      data.adminLogs
-        .slice(-500)
-        .reverse()
-    );
-  }
-);
-
-
-// =========================================================
-// ADMIN — CONVERSATIONS
-// =========================================================
-
-app.get(
-  '/admin/conversations',
-  ensureAdmin,
-  (req, res) => {
-
-    const result =
-      Object.entries(
-        data.conversations
-      )
-      .map(
-        ([userId, conversations]) => ({
-          userId,
-          conversations
-        })
-      )
-      .filter(
-        item =>
-          item.conversations.length
-      );
-
-    res.json(result);
-  }
-);
-
-
-app.get(
-  '/admin/conversations/:userId',
-  ensureAdmin,
-  (req, res) => {
-
-    res.json(
-      data.conversations[
-        String(
-          req.params.userId
-        )
-      ] || []
-    );
-  }
-);
-
-
-// =========================================================
-// CONVERSATIONS
-// =========================================================
-
-app.post(
-  '/newConversation',
-  ensureAuth,
-  (req, res) => {
-
-    const user =
-      req.authUser.id;
-
-    const id =
-      Date.now().toString(36) +
-      crypto
-        .randomBytes(3)
-        .toString('hex');
-
-    if (
-      !data.conversations[user]
-    ) {
-
-      data.conversations[user] =
-        [];
-    }
-
-    data.conversations[user]
-      .push({
-
-        id,
-
-        title:
-          'Nouvelle conversation',
-
-        messages: [],
-
-        createdAt:
-          now(),
-
-        updatedAt:
-          now()
-      });
-
-    saveData();
-
-    res.json({
-
-      ok: true,
-
-      id,
-
-      conversations:
-        data.conversations[user]
-    });
-  }
-);
-
-
-app.get(
-  '/conversations',
-  ensureAuth,
-  (req, res) => {
-
-    res.json(
-      data.conversations[
-        req.authUser.id
-      ] || []
-    );
-  }
-);
-
-
-app.post(
-  '/renameConversation',
-  ensureAuth,
-  (req, res) => {
-
-    const user =
-      req.authUser.id;
-
-    const id =
-      String(
-        req.body.conversationId ||
-          ''
-      );
-
-    const title =
-      safeText(
-        req.body.title ||
-          'Nouvelle conversation',
-        80
-      ).trim();
-
-    const conversation =
-      (
-        data.conversations[user] ||
-        []
-      ).find(
-        item =>
-          item.id === id
-      );
-
-    if (!conversation) {
-
-      return res
-        .status(404)
-        .json({
-          ok: false,
-          error:
-            'not-found'
-        });
-    }
-
-    conversation.title =
-      title ||
-      'Nouvelle conversation';
-
-    conversation.updatedAt =
-      now();
-
-    saveData();
-
-    res.json({
-
-      ok: true,
-
-      conversation
-    });
-  }
-);
-
-
-app.post(
-  '/deleteConversation',
-  ensureAuth,
-  (req, res) => {
-
-    const user =
-      req.authUser.id;
-
-    const id =
-      String(
-        req.body.conversationId ||
-          ''
-      );
-
-    data.conversations[user] =
-      (
-        data.conversations[user] ||
-        []
-      ).filter(
-        conversation =>
-          conversation.id !== id
-      );
-
-    saveData();
-
-    res.json({
-
-      ok: true,
-
-      conversations:
-        data.conversations[user]
-    });
-  }
-);
-
-
-// =========================================================
-// IA
-// =========================================================
-
-async function askAI(messages) {
-
-  if (!openai) {
-
-    throw new Error(
-      'Aucune clé IA configurée. Ajoute OPENROUTER_API_KEY ou OPENAI_API_KEY dans Render.'
-    );
   }
 
 
-  console.log(
-    '[AI] Requête envoyée',
-    {
-      provider:
-        USING_OPENROUTER
-          ? 'OpenRouter'
-          : 'OpenAI',
+  /* =========================================================
+     API
+     ========================================================= */
 
-      model:
-        AI_MODEL,
-
-      baseURL:
-        AI_BASE_URL
-    }
-  );
-
-
-  const response =
-    await openai.chat.completions.create({
-
-      model:
-        AI_MODEL,
-
-      messages,
-
-      temperature:
-        0.7
-    });
-
-
-  const reply =
-    response
-      ?.choices?.[0]
-      ?.message
-      ?.content;
-
-
-  if (
-    typeof reply !==
-      'string' ||
-    !reply.trim()
+  async function api(
+    url,
+    options = {}
   ) {
 
-    throw new Error(
-      `Réponse IA vide. Modèle: ${AI_MODEL}`
-    );
-  }
+    const headers = {
+
+      ...(options.headers || {})
+    };
 
 
-  return reply.trim();
-}
+    if (state.token) {
+
+      headers.Authorization =
+        `Bearer ${state.token}`;
+    }
 
 
-// =========================================================
-// CHAT
-// =========================================================
+    const response =
+      await fetch(
+        url,
+        {
+          ...options,
+          headers
+        }
+      );
 
-app.post(
-  '/chat',
-  chatLimiter,
-  ensureAuth,
-  async (req, res) => {
+
+    let data = {};
+
 
     try {
 
-      const user =
-        req.authUser;
+      data =
+        await response.json();
 
-      const message =
-        safeText(
-          req.body.message
-        ).trim();
+    } catch {
 
-      const mode =
-        safeText(
-          req.body.mode
-        ) || 'Kids';
+      data = {};
+    }
 
 
-      if (!message) {
+    if (!response.ok) {
 
-        return res
-          .status(400)
-          .json({
+      const error =
+        new Error(
+          data.message ||
+          data.error ||
+          `Erreur HTTP ${response.status}`
+        );
 
-            ok: false,
+      error.status =
+        response.status;
 
-            error:
-              'empty-message'
-          });
+      error.data =
+        data;
+
+      throw error;
+    }
+
+
+    return data;
+  }
+
+
+  /* =========================================================
+     STYLE DES MESSAGES
+     ========================================================= */
+
+  function installChatStyles() {
+
+    if (
+      $('aguacate-chat-styles')
+    ) {
+      return;
+    }
+
+
+    const style =
+      document.createElement(
+        'style'
+      );
+
+
+    style.id =
+      'aguacate-chat-styles';
+
+
+    style.textContent = `
+
+      #messages {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 14px;
+
+        width: 100%;
+
+        box-sizing: border-box;
+
+        overflow-y: auto;
+
+        scroll-behavior: smooth;
       }
 
 
-      // MODÉRATION
+      #messages .message {
 
-      if (
-        moderationHit(
-          user,
-          message
-        )
-      ) {
+        display: flex;
 
-        return res
-          .status(403)
-          .json({
+        width: 100%;
 
-            ok: false,
+        box-sizing: border-box;
 
-            error:
-              'moderated',
+        align-items: flex-end;
 
-            bannedUntil:
-              user.bannedUntil || 0,
+        gap: 9px;
 
-            message:
-              user.bannedUntil
-                ? 'Ton message contient un langage interdit. Tu as atteint le nombre maximal d’avertissements et ton accès est suspendu pendant 24 heures.'
-                : 'Ton message contient un langage interdit. Un avertissement a été ajouté.'
-          });
+        animation:
+          aguacateMessageIn
+          .25s
+          ease-out;
       }
 
 
-      // MÉMOIRE
+      #messages .message.assistant {
 
-      if (
-        !data.memories[user.id]
-      ) {
-
-        data.memories[user.id] =
-          [];
+        justify-content:
+          flex-start;
       }
 
 
-      let system;
+      #messages .message.user {
+
+        justify-content:
+          flex-end;
+      }
+
+
+      .aguacate-message-avatar {
+
+        width: 34px;
+
+        height: 34px;
+
+        min-width: 34px;
+
+        border-radius: 11px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        background:
+          linear-gradient(
+            145deg,
+            rgba(34,197,94,.25),
+            rgba(16,185,129,.10)
+          );
+
+        border:
+          1px solid
+          rgba(74,222,128,.22);
+
+        box-shadow:
+          0 5px 15px
+          rgba(0,0,0,.15);
+
+        font-size: 18px;
+      }
+
+
+      #messages .message-bubble {
+
+        max-width:
+          min(78%, 720px);
+
+        padding:
+          11px 15px;
+
+        border-radius:
+          17px;
+
+        line-height:
+          1.55;
+
+        font-size:
+          14px;
+
+        word-wrap:
+          break-word;
+
+        overflow-wrap:
+          anywhere;
+
+        box-sizing:
+          border-box;
+      }
+
+
+      #messages
+      .message.assistant
+      .message-bubble {
+
+        background:
+          rgba(255,255,255,.055);
+
+        border:
+          1px solid
+          rgba(255,255,255,.09);
+
+        border-bottom-left-radius:
+          5px;
+      }
+
+
+      #messages
+      .message.user
+      .message-bubble {
+
+        background:
+          linear-gradient(
+            135deg,
+            #22c55e,
+            #10b981
+          );
+
+        color:
+          #06251a;
+
+        border:
+          1px solid
+          rgba(255,255,255,.14);
+
+        border-bottom-right-radius:
+          5px;
+
+        font-weight:
+          500;
+
+        box-shadow:
+          0 7px 20px
+          rgba(16,185,129,.16);
+      }
+
+
+      @keyframes aguacateMessageIn {
+
+        from {
+
+          opacity: 0;
+
+          transform:
+            translateY(7px)
+            scale(.98);
+        }
+
+        to {
+
+          opacity: 1;
+
+          transform:
+            translateY(0)
+            scale(1);
+        }
+      }
+
+
+      .aguacate-thinking {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 9px;
+      }
+
+
+      .aguacate-thinking-bubble {
+
+        min-width:
+          64px;
+
+        padding:
+          12px 15px !important;
+
+        display:
+          flex;
+
+        align-items:
+          center;
+
+        justify-content:
+          center;
+
+        gap:
+          4px;
+      }
+
+
+      .aguacate-thinking-bubble span {
+
+        width:
+          7px;
+
+        height:
+          7px;
+
+        border-radius:
+          50%;
+
+        background:
+          #4ade80;
+
+        display:
+          block;
+
+        animation:
+          aguacateThinking
+          1.2s
+          infinite
+          ease-in-out;
+      }
+
+
+      .aguacate-thinking-bubble
+      span:nth-child(2) {
+
+        animation-delay:
+          .15s;
+      }
+
+
+      .aguacate-thinking-bubble
+      span:nth-child(3) {
+
+        animation-delay:
+          .30s;
+      }
+
+
+      @keyframes aguacateThinking {
+
+        0%,
+        60%,
+        100% {
+
+          transform:
+            translateY(0);
+
+          opacity:
+            .35;
+        }
+
+        30% {
+
+          transform:
+            translateY(-4px);
+
+          opacity:
+            1;
+        }
+      }
+
+
+      @media (max-width: 700px) {
+
+        #messages
+        .message-bubble {
+
+          max-width:
+            86%;
+        }
+      }
+
+    `;
+
+
+    document.head.appendChild(
+      style
+    );
+  }
+
+
+  /* =========================================================
+     ÉCOGUACATE
+     ========================================================= */
+
+  function getEcoState(
+    litres
+  ) {
+
+    const value =
+      Math.max(
+        0,
+        Number(litres) || 0
+      );
+
+
+    const max =
+      Math.max(
+        1,
+        Number(
+          state.ecoMaxLitres
+        ) || 24.8
+      );
+
+
+    const percentage =
+      Math.min(
+        100,
+        (
+          value / max
+        ) * 100
+      );
+
+
+    let level;
+    let color;
+    let status;
+
+
+    if (
+      percentage <= 40
+    ) {
+
+      level =
+        'good';
+
+      color =
+        '#22c55e';
+
+      status =
+        'Excellent 🌿';
+
+    }
+
+    else if (
+      percentage <= 65
+    ) {
+
+      level =
+        'warning';
+
+      color =
+        '#eab308';
+
+      status =
+        'Attention 🌱';
+
+    }
+
+    else if (
+      percentage <= 85
+    ) {
+
+      level =
+        'danger';
+
+      color =
+        '#f97316';
+
+      status =
+        'Impact élevé 🍂';
+
+    }
+
+    else {
+
+      level =
+        'dead';
+
+      color =
+        '#ef4444';
+
+      status =
+        'Très forte consommation 🔴';
+    }
+
+
+    return {
+
+      litres:
+        value,
+
+      percentage,
+
+      level,
+
+      color,
+
+      status
+    };
+  }
+
+
+  function updateEcoGuacate(
+    litres
+  ) {
+
+    const eco =
+      getEcoState(
+        litres
+      );
+
+
+    state.consumptionLitres =
+      eco.litres;
+
+
+    /* -------------------------------------------------------
+       COMPTEUR
+       ------------------------------------------------------- */
+
+    const litresElement =
+      $('eco-litres');
+
+
+    if (
+      litresElement
+    ) {
+
+      litresElement.textContent =
+        eco.litres
+          .toFixed(1)
+          .replace(
+            '.',
+            ','
+          );
+    }
+
+
+    /* -------------------------------------------------------
+       POURCENTAGE
+       ------------------------------------------------------- */
+
+    const percentElement =
+      $('eco-pct');
+
+
+    if (
+      percentElement
+    ) {
+
+      percentElement.textContent =
+        `${Math.round(
+          eco.percentage
+        )}%`;
+
+      percentElement.style.color =
+        eco.color;
+    }
+
+
+    /* -------------------------------------------------------
+       BARRE
+       ------------------------------------------------------- */
+
+    const bar =
+      $('eco-bar-fill');
+
+
+    if (bar) {
+
+      bar.style.width =
+        `${eco.percentage}%`;
+
+      bar.style.background =
+        eco.color;
+
+      bar.style.boxShadow =
+        `0 0 10px ${eco.color}55`;
+    }
+
+
+    /* -------------------------------------------------------
+       CURSEUR
+       ------------------------------------------------------- */
+
+    const marker =
+      $('eco-marker');
+
+
+    if (marker) {
+
+      marker.style.left =
+        `${eco.percentage}%`;
+
+      marker.style.borderColor =
+        eco.color;
+    }
+
+
+    /* -------------------------------------------------------
+       ARBRE
+       ------------------------------------------------------- */
+
+    const tree =
+      $('eco-tree');
+
+
+    if (tree) {
+
+      tree.classList.remove(
+
+        'tree-good',
+
+        'tree-warning',
+
+        'tree-danger',
+
+        'tree-dry',
+
+        'tree-dead'
+      );
+
 
       if (
-        mode === 'Kids'
+        eco.percentage <= 40
       ) {
 
-        system =
-          'Tu es Aguacate AI. Explique avec des mots simples, adaptés à un enfant, sans être infantilisant.';
+        tree.classList.add(
+          'tree-good'
+        );
+
       }
 
       else if (
-        mode === 'Collégien'
+        eco.percentage <= 65
       ) {
 
-        system =
-          'Tu es Aguacate AI, un assistant pédagogique pour collégien. Explique clairement et aide à raisonner.';
+        tree.classList.add(
+          'tree-warning'
+        );
+
       }
 
       else if (
-        mode === 'Professeur'
+        eco.percentage <= 85
       ) {
 
-        system =
-          'Tu es Aguacate AI, assistant pédagogique pour enseignants. Sois structuré et précis.';
+        tree.classList.add(
+          'tree-danger'
+        );
+
+      }
+
+      else if (
+        eco.percentage < 100
+      ) {
+
+        tree.classList.add(
+          'tree-dry'
+        );
+
       }
 
       else {
 
-        system =
-          'Tu es Aguacate AI, un assistant polyvalent.';
+        tree.classList.add(
+          'tree-dead'
+        );
       }
+    }
 
 
-      data.memories[user.id]
-        .push({
+    /* -------------------------------------------------------
+       POMPE
+       ------------------------------------------------------- */
 
-          role:
-            'user',
+    const pump =
+      $('eco-water-pump');
 
-          content:
-            message
-        });
-
-
-      const messages = [
-
-        {
-          role:
-            'system',
-
-          content:
-            system
-        },
-
-        ...data.memories[user.id]
-          .slice(-16)
-      ];
+    const pumpWater =
+      $('pump-water');
 
 
-      const reply =
-        await askAI(
-          messages
+    if (
+      pumpWater
+    ) {
+
+      const remaining =
+        Math.max(
+          0,
+          1 -
+          eco.percentage /
+            100
         );
 
 
-      data.memories[user.id]
-        .push({
-
-          role:
-            'assistant',
-
-          content:
-            reply
-        });
+      pumpWater.style.height =
+        `${remaining * 100}%`;
+    }
 
 
-      // CONVERSATION
+    if (pump) {
 
-      if (
-        !data.conversations[user.id]
-      ) {
-
-        data.conversations[user.id] =
-          [];
-      }
+      pump.classList.toggle(
+        'dry',
+        eco.percentage >= 100
+      );
+    }
 
 
-      if (
-        !data.conversations[user.id]
-          .length
-      ) {
+    /* -------------------------------------------------------
+       LUMIÈRE
+       ------------------------------------------------------- */
 
-        data.conversations[user.id]
-          .push({
-
-            id:
-              Date.now().toString(36),
-
-            title:
-              'Conversation',
-
-            messages: [],
-
-            createdAt:
-              now(),
-
-            updatedAt:
-              now()
-          });
-      }
-
-
-      const conversation =
-        data.conversations[user.id]
-          [
-            data.conversations[user.id]
-              .length - 1
-          ];
-
-
-      conversation.messages.push(
-
-        {
-          role:
-            'user',
-
-          content:
-            message,
-
-          date:
-            now()
-        },
-
-        {
-          role:
-            'assistant',
-
-          content:
-            reply,
-
-          date:
-            now()
-        }
-
+    const glow =
+      $('eco-glow') ||
+      document.querySelector(
+        '.avocado-glow'
       );
 
 
-      conversation.updatedAt =
-        now();
+    if (glow) {
+
+      glow.style.opacity =
+        eco.level === 'dead'
+          ? '.35'
+          : '1';
 
 
-      // ÉCOGUACATE
+      glow.style.background =
+        `radial-gradient(
+          circle,
+          ${eco.color}44,
+          ${eco.color}0d 50%,
+          transparent 72%
+        )`;
+    }
 
-      user.consumptionLitres =
-        Number(
-          (
-            (user.consumptionLitres || 0) +
-            (
-              1 +
-              Math.floor(
-                reply.length / 200
-              )
-            )
-          ).toFixed(1)
+
+    /* -------------------------------------------------------
+       STATUT
+       ------------------------------------------------------- */
+
+    const status =
+      $('eco-status');
+
+
+    if (status) {
+
+      status.textContent =
+        eco.status;
+
+      status.style.color =
+        eco.color;
+    }
+  }
+
+
+  /* =========================================================
+     LOGIN
+     ========================================================= */
+
+  async function login() {
+
+    try {
+
+      let deviceId =
+        localStorage.getItem(
+          'aguacate_device_id'
         );
 
 
-      user.lastSeen =
-        now();
+      if (!deviceId) {
 
-      user.connected =
-        true;
+        deviceId =
+          crypto.randomUUID
+            ? crypto.randomUUID()
+            : (
+                Date.now() +
+                '-' +
+                Math.random()
+                  .toString(36)
+                  .slice(2)
+              );
 
 
-      saveData();
+        localStorage.setItem(
+          'aguacate_device_id',
+          deviceId
+        );
+      }
 
 
-      res.json({
+      const result =
+        await api(
+          '/login',
+          {
 
-        ok: true,
+            method:
+              'POST',
 
-        reply,
+            headers: {
 
-        consumptionLitres:
-          user.consumptionLitres,
+              'Content-Type':
+                'application/json'
+            },
 
-        ecoMaxLitres:
-          ECO_MAX_LITRES
-      });
+            body:
+              JSON.stringify({
+                deviceId
+              })
+          }
+        );
+
+
+      state.token =
+        result.token;
+
+      state.userId =
+        result.id;
+
+      state.role =
+        result.role ||
+        'user';
+
+
+      if (
+        result.ecoMaxLitres !==
+        undefined
+      ) {
+
+        state.ecoMaxLitres =
+          Number(
+            result.ecoMaxLitres
+          ) || 24.8;
+      }
+
+
+      localStorage.setItem(
+        'aguacate_token',
+        state.token
+      );
+
+      localStorage.setItem(
+        'aguacate_user_id',
+        state.userId
+      );
+
+      localStorage.setItem(
+        'aguacate_role',
+        state.role
+      );
+
+
+      updateUserInterface();
+
+
+      updateEcoGuacate(
+        Number(
+          result.consumptionLitres ||
+          0
+        )
+      );
+
+
+      await loadConversations();
+
+
+      startHeartbeat();
 
     }
 
     catch (error) {
 
       console.error(
-        '[chat] ERREUR IA',
-        {
-          name:
-            error?.name,
-
-          message:
-            error?.message,
-
-          status:
-            error?.status,
-
-          code:
-            error?.code,
-
-          type:
-            error?.type,
-
-          model:
-            AI_MODEL,
-
-          baseURL:
-            AI_BASE_URL,
-
-          provider:
-            USING_OPENROUTER
-              ? 'openrouter'
-              : 'openai'
-        }
+        '[login]',
+        error
       );
-
-
-      res
-        .status(502)
-        .json({
-
-          ok: false,
-
-          error:
-            'ai-error',
-
-          message:
-            '🥑 Le service IA ne répond pas correctement. Vérifie la clé API, le modèle et la configuration IA dans Render.'
-        });
-    }
-  }
-);
-
-
-// =========================================================
-// LECTURE DES FICHIERS
-// =========================================================
-
-function extractText(file) {
-
-  const ext =
-    path
-      .extname(
-        file.originalname
-      )
-      .toLowerCase();
-
-
-  if (
-    [
-      '.txt',
-      '.md',
-      '.csv',
-      '.json',
-      '.xml'
-    ].includes(ext)
-  ) {
-
-    return Promise.resolve(
-      file.buffer
-        .toString('utf8')
-        .slice(
-          0,
-          50000
-        )
-    );
-  }
-
-
-  if (
-    ext === '.pdf'
-  ) {
-
-    return pdfParse(
-      file.buffer
-    )
-    .then(
-      result =>
-        result.text.slice(
-          0,
-          50000
-        )
-    );
-  }
-
-
-  if (
-    ext === '.docx'
-  ) {
-
-    return mammoth
-      .extractRawText({
-        buffer:
-          file.buffer
-      })
-      .then(
-        result =>
-          result.value.slice(
-            0,
-            50000
-          )
-      );
-  }
-
-
-  if (
-    [
-      '.xlsx',
-      '.xls'
-    ].includes(ext)
-  ) {
-
-    const workbook =
-      XLSX.read(
-        file.buffer,
-        {
-          type:
-            'buffer'
-        }
-      );
-
-    return Promise.resolve(
-
-      workbook.SheetNames
-        .map(
-          name =>
-            `[${name}]\n${
-              XLSX.utils.sheet_to_csv(
-                workbook.Sheets[name]
-              )
-            }`
-        )
-        .join('\n\n')
-        .slice(
-          0,
-          50000
-        )
-    );
-  }
-
-
-  return Promise.reject(
-    new Error(
-      'unsupported-type'
-    )
-  );
-}
-
-
-const ALLOWED_EXT = [
-
-  '.pdf',
-  '.docx',
-  '.txt',
-  '.md',
-  '.csv',
-  '.json',
-  '.xml',
-  '.xlsx',
-  '.xls'
-
-];
-
-
-// =========================================================
-// SCAN
-// =========================================================
-
-app.post(
-  '/scan',
-  ensureAuth,
-  upload.single('file'),
-  async (req, res) => {
-
-    try {
-
-      if (!req.file) {
-
-        return res
-          .status(400)
-          .json({
-
-            ok: false,
-
-            error:
-              'no-file'
-          });
-      }
-
-
-      const ext =
-        path
-          .extname(
-            req.file.originalname
-          )
-          .toLowerCase();
 
 
       if (
-        !ALLOWED_EXT.includes(
-          ext
-        )
+        error.status === 403 &&
+        error.data?.error ===
+          'banned'
       ) {
 
-        return res
-          .status(415)
-          .json({
+        const until =
+          error.data.bannedUntil
+            ? new Date(
+                error.data.bannedUntil
+              ).toLocaleString(
+                'fr-FR'
+              )
+            : 'plus tard';
 
-            ok: false,
 
-            error:
-              'unsupported-type'
-          });
+        showToast(
+          `🚫 Accès suspendu jusqu'au ${until}`
+        );
+
+        return;
       }
 
 
-      const text =
-        await extractText(
-          req.file
+      showToast(
+        'Impossible de se connecter à Aguacate AI.'
+      );
+    }
+  }
+
+
+  /* =========================================================
+     INTERFACE UTILISATEUR
+     ========================================================= */
+
+  function updateUserInterface() {
+
+    const badge =
+      $('user-badge');
+
+
+    if (badge) {
+
+      badge.textContent =
+        `🥑 Aguacate AI #${
+          state.userId ||
+          '0000'
+        }`;
+    }
+
+
+    const role =
+      $('role-badge');
+
+
+    if (role) {
+
+      const labels = {
+
+        admin:
+          'ADMINISTRATEUR',
+
+        professeur:
+          'PROFESSEUR',
+
+        user:
+          'UTILISATEUR'
+      };
+
+
+      role.textContent =
+        labels[
+          state.role
+        ] ||
+        'UTILISATEUR';
+
+
+      role.className =
+        `role-badge ${
+          state.role
+        }`;
+    }
+  }
+
+
+  /* =========================================================
+     HEARTBEAT
+     ========================================================= */
+
+  let heartbeatTimer =
+    null;
+
+
+  function startHeartbeat() {
+
+    if (
+      heartbeatTimer
+    ) {
+
+      clearInterval(
+        heartbeatTimer
+      );
+    }
+
+
+    heartbeatTimer =
+      setInterval(
+        async () => {
+
+          if (
+            !state.token
+          ) {
+            return;
+          }
+
+
+          try {
+
+            await api(
+              '/heartbeat',
+              {
+                method:
+                  'POST'
+              }
+            );
+
+          } catch (
+            error
+          ) {
+
+            console.warn(
+              '[heartbeat]',
+              error
+            );
+          }
+
+        },
+        30000
+      );
+  }
+
+
+  /* =========================================================
+     CONVERSATIONS
+     ========================================================= */
+
+  async function loadConversations() {
+
+    try {
+
+      const result =
+        await api(
+          '/conversations'
         );
 
 
-      res.json({
+      state.conversations =
+        Array.isArray(result)
+          ? result
+          : [];
 
-        ok: true,
 
-        fileName:
-          req.file.originalname,
+      renderConversationList();
 
-        fileType:
-          ext.slice(1),
 
-        characters:
-          text.length,
+      if (
+        state.currentConversationId &&
+        state.conversations.some(
+          conversation =>
+            conversation.id ===
+            state.currentConversationId
+        )
+      ) {
 
-        text
-      });
+        openConversation(
+          state.currentConversationId
+        );
+
+        return;
+      }
+
+
+      if (
+        state.conversations.length
+      ) {
+
+        openConversation(
+          state.conversations[
+            state.conversations.length - 1
+          ].id
+        );
+
+      } else {
+
+        renderMessages([]);
+      }
 
     }
 
     catch (error) {
+
+      console.error(
+        '[conversations]',
+        error
+      );
+    }
+  }
+
+
+  function renderConversationList() {
+
+    const list =
+      $('conversation-list');
+
+
+    if (!list)
+      return;
+
+
+    list.innerHTML =
+      '';
+
+
+    state.conversations.forEach(
+      conversation => {
+
+        const item =
+          document.createElement(
+            'div'
+          );
+
+
+        item.className =
+          'conversation-item';
+
+
+        if (
+          conversation.id ===
+          state.currentConversationId
+        ) {
+
+          item.classList.add(
+            'active'
+          );
+        }
+
+
+        item.innerHTML = `
+
+          <button
+            class="conversation-open"
+            type="button"
+          >
+            💬
+
+            <span>
+              ${escapeHTML(
+                conversation.title ||
+                'Conversation'
+              )}
+            </span>
+          </button>
+
+          <button
+            class="conversation-delete"
+            type="button"
+            title="Supprimer"
+          >
+            🗑️
+          </button>
+
+        `;
+
+
+        item
+          .querySelector(
+            '.conversation-open'
+          )
+          ?.addEventListener(
+            'click',
+            () => {
+
+              openConversation(
+                conversation.id
+              );
+            }
+          );
+
+
+        item
+          .querySelector(
+            '.conversation-delete'
+          )
+          ?.addEventListener(
+            'click',
+            event => {
+
+              event.stopPropagation();
+
+              deleteConversation(
+                conversation.id
+              );
+            }
+          );
+
+
+        list.appendChild(
+          item
+        );
+      }
+    );
+  }
+
+
+  function openConversation(
+    id
+  ) {
+
+    const conversation =
+      state.conversations.find(
+        item =>
+          item.id === id
+      );
+
+
+    if (!conversation)
+      return;
+
+
+    state.currentConversationId =
+      id;
+
+
+    renderConversationList();
+
+
+    renderMessages(
+      conversation.messages ||
+      []
+    );
+  }
+
+
+  /* =========================================================
+     MESSAGES
+     ========================================================= */
+
+  function renderMessages(
+    messages
+  ) {
+
+    const container =
+      $('messages');
+
+
+    if (!container)
+      return;
+
+
+    container.innerHTML =
+      '';
+
+
+    messages.forEach(
+      message => {
+
+        addMessageToUI(
+          message.role,
+          message.content,
+          false
+        );
+      }
+    );
+
+
+    scrollMessages();
+  }
+
+
+  function addMessageToUI(
+    role,
+    content,
+    scroll = true
+  ) {
+
+    const container =
+      $('messages');
+
+
+    if (!container)
+      return null;
+
+
+    const message =
+      document.createElement(
+        'div'
+      );
+
+
+    const normalizedRole =
+      role === 'assistant'
+        ? 'assistant'
+        : 'user';
+
+
+    message.className =
+      `message ${
+        normalizedRole
+      }`;
+
+
+    const safeContent =
+      escapeHTML(
+        content
+      )
+      .replace(
+        /\n/g,
+        '<br>'
+      );
+
+
+    if (
+      normalizedRole ===
+      'assistant'
+    ) {
+
+      message.innerHTML = `
+
+        <div
+          class="aguacate-message-avatar"
+          aria-hidden="true"
+        >
+          🥑
+        </div>
+
+        <div
+          class="message-bubble"
+        >
+          ${safeContent}
+        </div>
+
+      `;
+
+    } else {
+
+      message.innerHTML = `
+
+        <div
+          class="message-bubble"
+        >
+          ${safeContent}
+        </div>
+
+      `;
+    }
+
+
+    container.appendChild(
+      message
+    );
+
+
+    if (scroll) {
+
+      scrollMessages();
+    }
+
+
+    return message;
+  }
+
+
+  /* =========================================================
+     AGUACATE RÉFLÉCHIT
+     ========================================================= */
+
+  function showThinking() {
+
+    const container =
+      $('messages');
+
+
+    if (!container)
+      return null;
+
+
+    const old =
+      $('aguacate-thinking');
+
+
+    if (old) {
+      old.remove();
+    }
+
+
+    const message =
+      document.createElement(
+        'div'
+      );
+
+
+    message.id =
+      'aguacate-thinking';
+
+
+    message.className =
+      'message assistant aguacate-thinking';
+
+
+    message.innerHTML = `
+
+      <div
+        class="aguacate-message-avatar"
+        aria-hidden="true"
+      >
+        🥑
+      </div>
+
+      <div
+        class="message-bubble aguacate-thinking-bubble"
+        aria-label="Aguacate AI réfléchit"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+    `;
+
+
+    container.appendChild(
+      message
+    );
+
+
+    scrollMessages();
+
+
+    return message;
+  }
+
+
+  function hideThinking() {
+
+    const thinking =
+      $('aguacate-thinking');
+
+
+    if (thinking) {
+      thinking.remove();
+    }
+  }
+
+
+  function scrollMessages() {
+
+    const container =
+      $('messages');
+
+
+    if (!container)
+      return;
+
+
+    requestAnimationFrame(
+      () => {
+
+        container.scrollTop =
+          container.scrollHeight;
+      }
+    );
+  }
+
+
+  /* =========================================================
+     NOUVELLE CONVERSATION
+     ========================================================= */
+
+  async function newConversation() {
+
+    try {
+
+      const result =
+        await api(
+          '/newConversation',
+          {
+
+            method:
+              'POST',
+
+            headers: {
+
+              'Content-Type':
+                'application/json'
+            },
+
+            body:
+              '{}'
+          }
+        );
+
+
+      state.conversations =
+        result.conversations ||
+        [];
+
+
+      state.currentConversationId =
+        result.id;
+
+
+      renderConversationList();
+
+      renderMessages([]);
+
+
+      showToast(
+        '✨ Nouvelle conversation créée.'
+      );
+
+    }
+
+    catch (error) {
+
+      console.error(
+        '[new conversation]',
+        error
+      );
+
+
+      showToast(
+        'Impossible de créer la conversation.'
+      );
+    }
+  }
+
+
+  /* =========================================================
+     SUPPRESSION
+     ========================================================= */
+
+  async function deleteConversation(
+    id
+  ) {
+
+    const conversation =
+      state.conversations.find(
+        item =>
+          item.id === id
+      );
+
+
+    const name =
+      conversation?.title ||
+      'cette conversation';
+
+
+    if (
+      !window.confirm(
+        `Voulez-vous vraiment supprimer "${name}" ?`
+      )
+    ) {
+
+      return;
+    }
+
+
+    try {
+
+      const result =
+        await api(
+          '/deleteConversation',
+          {
+
+            method:
+              'POST',
+
+            headers: {
+
+              'Content-Type':
+                'application/json'
+            },
+
+            body:
+              JSON.stringify({
+                conversationId:
+                  id
+              })
+          }
+        );
+
+
+      state.conversations =
+        result.conversations ||
+        [];
+
+
+      if (
+        state.currentConversationId ===
+        id
+      ) {
+
+        state.currentConversationId =
+          state.conversations[0]?.id ||
+          null;
+
+
+        if (
+          state.currentConversationId
+        ) {
+
+          openConversation(
+            state.currentConversationId
+          );
+
+        } else {
+
+          renderMessages([]);
+        }
+      }
+
+
+      renderConversationList();
+
+
+      showToast(
+        '🗑️ Conversation supprimée.'
+      );
+
+    }
+
+    catch (error) {
+
+      console.error(
+        '[delete conversation]',
+        error
+      );
+
+
+      showToast(
+        'Impossible de supprimer la conversation.'
+      );
+    }
+  }
+
+
+  /* =========================================================
+     RENOMMER
+     ========================================================= */
+
+  async function renameConversation() {
+
+    if (
+      !state.currentConversationId
+    ) {
+
+      showToast(
+        'Sélectionne une conversation.'
+      );
+
+      return;
+    }
+
+
+    const conversation =
+      state.conversations.find(
+        item =>
+          item.id ===
+          state.currentConversationId
+      );
+
+
+    const title =
+      window.prompt(
+        'Nouveau nom de la conversation :',
+        conversation?.title ||
+        'Conversation'
+      );
+
+
+    if (
+      title === null ||
+      !title.trim()
+    ) {
+
+      return;
+    }
+
+
+    try {
+
+      const result =
+        await api(
+          '/renameConversation',
+          {
+
+            method:
+              'POST',
+
+            headers: {
+
+              'Content-Type':
+                'application/json'
+            },
+
+            body:
+              JSON.stringify({
+
+                conversationId:
+                  state.currentConversationId,
+
+                title:
+                  title.trim()
+              })
+          }
+        );
+
+
+      const index =
+        state.conversations.findIndex(
+          item =>
+            item.id ===
+            state.currentConversationId
+        );
+
+
+      if (
+        index !== -1
+      ) {
+
+        state.conversations[index] =
+          result.conversation;
+      }
+
+
+      renderConversationList();
+
+
+      showToast(
+        '✏️ Conversation renommée.'
+      );
+
+    }
+
+    catch (error) {
+
+      console.error(
+        '[rename]',
+        error
+      );
+
+
+      showToast(
+        'Impossible de renommer la conversation.'
+      );
+    }
+  }
+
+
+  /* =========================================================
+     CHAT
+     ========================================================= */
+
+  async function sendMessage(
+    text
+  ) {
+
+    const message =
+      String(
+        text || ''
+      ).trim();
+
+
+    if (!message)
+      return;
+
+
+    if (state.sending)
+      return;
+
+
+    state.sending =
+      true;
+
+
+    const prompt =
+      $('prompt');
+
+
+    if (prompt) {
+
+      prompt.value =
+        '';
+    }
+
+
+    addMessageToUI(
+      'user',
+      message
+    );
+
+
+    showThinking();
+
+
+    const thinkingStart =
+      Date.now();
+
+
+    try {
+
+      const mode =
+        $('mode')?.value ||
+        'Kids';
+
+
+      const result =
+        await api(
+          '/chat',
+          {
+
+            method:
+              'POST',
+
+            headers: {
+
+              'Content-Type':
+                'application/json'
+            },
+
+            body:
+              JSON.stringify({
+
+                message,
+
+                mode,
+
+                // IMPORTANT :
+                // on envoie maintenant
+                // la conversation sélectionnée.
+
+                conversationId:
+                  state.currentConversationId
+              })
+          }
+        );
+
+
+      const elapsed =
+        Date.now() -
+        thinkingStart;
+
+
+      const minimumThinkingTime =
+        500;
+
+
+      if (
+        elapsed <
+        minimumThinkingTime
+      ) {
+
+        await new Promise(
+          resolve =>
+            setTimeout(
+              resolve,
+              minimumThinkingTime -
+              elapsed
+            )
+        );
+      }
+
+
+      hideThinking();
+
+
+      addMessageToUI(
+        'assistant',
+        result.reply ||
+        'Je n’ai pas reçu de réponse.'
+      );
+
+
+      if (
+        result.conversationId
+      ) {
+
+        state.currentConversationId =
+          result.conversationId;
+      }
+
+
+      if (
+        result.ecoMaxLitres !==
+        undefined
+      ) {
+
+        state.ecoMaxLitres =
+          Number(
+            result.ecoMaxLitres
+          ) ||
+          state.ecoMaxLitres;
+      }
+
+
+      if (
+        result.consumptionLitres !==
+        undefined
+      ) {
+
+        const litres =
+          Number(
+            result.consumptionLitres
+          );
+
+
+        if (
+          Number.isFinite(
+            litres
+          )
+        ) {
+
+          updateEcoGuacate(
+            litres
+          );
+        }
+      }
+
+
+      await loadConversations();
+
+    }
+
+    catch (error) {
+
+      console.error(
+        '[chat]',
+        error
+      );
+
+
+      hideThinking();
+
+
+      if (
+        error.status === 403 &&
+        (
+          error.data?.error ===
+            'moderation-warning' ||
+          error.data?.error ===
+            'auto-banned'
+        )
+      ) {
+
+        const warnings =
+          error.data?.warnings;
+
+
+        if (
+          error.data?.bannedUntil
+        ) {
+
+          const until =
+            new Date(
+              error.data.bannedUntil
+            ).toLocaleString(
+              'fr-FR'
+            );
+
+
+          showToast(
+            `🚫 Compte suspendu jusqu'au ${until}`
+          );
+
+        } else {
+
+          showToast(
+            `⚠️ Avertissement ajouté${
+              warnings
+                ? ` (${warnings}/3)`
+                : ''
+            }.`
+          );
+        }
+
+      }
+
+      else if (
+        error.status === 403 &&
+        error.data?.error ===
+          'banned'
+      ) {
+
+        const until =
+          error.data.bannedUntil
+            ? new Date(
+                error.data.bannedUntil
+              ).toLocaleString(
+                'fr-FR'
+              )
+            : 'plus tard';
+
+
+        showToast(
+          `🚫 Compte suspendu jusqu'au ${until}`
+        );
+
+      }
+
+      else if (
+        error.status === 502
+      ) {
+
+        showToast(
+          '🥑 Le serveur IA a rencontré un problème. Vérifie les variables IA dans Render.'
+        );
+
+
+        addMessageToUI(
+          'assistant',
+          '🥑 Désolé, je n’ai pas réussi à répondre. Le serveur IA a rencontré une erreur.'
+        );
+
+      }
+
+      else {
+
+        addMessageToUI(
+          'assistant',
+          '🥑 Désolé, je n’ai pas réussi à répondre.'
+        );
+      }
+
+    }
+
+    finally {
+
+      hideThinking();
+
+      state.sending =
+        false;
+    }
+  }
+
+
+  /* =========================================================
+     MODES PROFESSEUR / ADMIN
+     ========================================================= */
+
+  async function verifyMode(
+    mode
+  ) {
+
+    const password =
+      window.prompt(
+        `Mot de passe ${mode} :`
+      );
+
+
+    if (
+      password === null
+    ) {
+
+      return false;
+    }
+
+
+    try {
+
+      const result =
+        await api(
+          '/modes/verify',
+          {
+
+            method:
+              'POST',
+
+            headers: {
+
+              'Content-Type':
+                'application/json'
+            },
+
+            body:
+              JSON.stringify({
+
+                mode,
+
+                password
+              })
+          }
+        );
+
+
+      state.role =
+        result.role;
+
+
+      localStorage.setItem(
+        'aguacate_role',
+        state.role
+      );
+
+
+      updateUserInterface();
+
+
+      showToast(
+        `🔓 Mode ${mode} activé.`
+      );
+
+
+      return true;
+
+    }
+
+    catch (error) {
+
+      console.error(
+        '[mode]',
+        error
+      );
+
+
+      showToast(
+        '❌ Mot de passe incorrect.'
+      );
+
+
+      return false;
+    }
+  }
+
+
+  /* =========================================================
+     FICHIERS
+     ========================================================= */
+
+  function openFilePicker() {
+
+    const input =
+      $('file-input');
+
+
+    if (input) {
+
+      input.click();
+    }
+  }
+
+
+  async function handleFile(
+    file
+  ) {
+
+    if (!file)
+      return;
+
+
+    state.selectedFile =
+      file;
+
+
+    const preview =
+      $('file-preview');
+
+
+    if (!preview)
+      return;
+
+
+    preview.classList.remove(
+      'hidden'
+    );
+
+
+    preview.innerHTML = `
+
+      <div>
+
+        📎
+
+        <b>
+          ${escapeHTML(
+            file.name
+          )}
+        </b>
+
+        <small>
+          ${
+            (
+              file.size /
+              1024
+            ).toFixed(1)
+          }
+          Ko
+        </small>
+
+      </div>
+
+      <button
+        id="file-analyse-btn"
+        type="button"
+      >
+        🤖 Analyser
+      </button>
+
+    `;
+
+
+    $('file-analyse-btn')
+      ?.addEventListener(
+        'click',
+        () =>
+          scanAndAsk(file)
+      );
+  }
+
+
+  async function scanAndAsk(
+    file
+  ) {
+
+    if (!file)
+      return;
+
+
+    const question =
+      window.prompt(
+        'Que veux-tu demander à Aguacate AI sur ce fichier ?',
+        'Analyse ce fichier et résume les points importants.'
+      );
+
+
+    if (
+      question === null
+    ) {
+
+      return;
+    }
+
+
+    const form =
+      new FormData();
+
+
+    form.append(
+      'file',
+      file
+    );
+
+
+    form.append(
+      'question',
+      question
+    );
+
+
+    try {
+
+      showToast(
+        '📄 Lecture du fichier...'
+      );
+
+
+      showThinking();
+
+
+      const result =
+        await api(
+          '/scan-and-ask',
+          {
+
+            method:
+              'POST',
+
+            body:
+              form
+          }
+        );
+
+
+      hideThinking();
+
+
+      addMessageToUI(
+        'user',
+        `📎 ${file.name}\n${question}`
+      );
+
+
+      addMessageToUI(
+        'assistant',
+        result.reply ||
+        'Aucune réponse.'
+      );
+
+
+      await loadConversations();
+
+
+      const preview =
+        $('file-preview');
+
+
+      if (preview) {
+
+        preview.classList.add(
+          'hidden'
+        );
+
+        preview.innerHTML =
+          '';
+      }
+
+
+      state.selectedFile =
+        null;
+
+
+      showToast(
+        '✅ Fichier analysé.'
+      );
+
+    }
+
+    catch (error) {
+
+      hideThinking();
+
 
       console.error(
         '[scan]',
         error
       );
 
-      res
-        .status(500)
-        .json({
 
-          ok: false,
+      if (
+        error.status === 403 &&
+        error.data?.error ===
+          'banned'
+      ) {
 
-          error:
-            'scan-error',
+        showToast(
+          '🚫 Ton compte est temporairement suspendu.'
+        );
 
-          message:
-            'Impossible de lire ce fichier.'
-        });
+      } else if (
+        error.status === 502
+      ) {
+
+        showToast(
+          '🥑 L’analyse IA a échoué. Vérifie la configuration IA dans Render.'
+        );
+
+      } else {
+
+        showToast(
+          '❌ Impossible d’analyser ce fichier.'
+        );
+      }
     }
   }
-);
 
 
-// =========================================================
-// SCAN + IA
-// =========================================================
+  /* =========================================================
+     THÈME
+     ========================================================= */
 
-app.post(
-  '/scan-and-ask',
-  chatLimiter,
-  ensureAuth,
-  upload.single('file'),
-  async (req, res) => {
+  function applyTheme(
+    theme
+  ) {
 
-    try {
-
-      if (!req.file) {
-
-        return res
-          .status(400)
-          .json({
-
-            ok: false,
-
-            error:
-              'no-file'
-          });
-      }
+    const isLight =
+      theme === 'light';
 
 
-      const ext =
-        path
-          .extname(
-            req.file.originalname
-          )
-          .toLowerCase();
+    document.body.classList.toggle(
+      'dark',
+      !isLight
+    );
 
 
-      if (
-        !ALLOWED_EXT.includes(
-          ext
-        )
-      ) {
-
-        return res
-          .status(415)
-          .json({
-
-            ok: false,
-
-            error:
-              'unsupported-type'
-          });
-      }
+    document.body.classList.toggle(
+      'light',
+      isLight
+    );
 
 
-      const text =
-        await extractText(
-          req.file
-        );
+    localStorage.setItem(
+      'aguacate_theme',
+      isLight
+        ? 'light'
+        : 'dark'
+    );
+  }
 
 
-      const question =
-        safeText(
-          req.body.question ||
-            'Analyse ce fichier et résume les points importants.'
-        );
+  function toggleTheme() {
 
-
-      const reply =
-        await askAI([
-
-          {
-
-            role:
-              'system',
-
-            content:
-              'Tu es Aguacate AI. Analyse uniquement le contenu fourni et réponds clairement en français.'
-          },
-
-          {
-
-            role:
-              'user',
-
-            content:
-              `Fichier: ${
-                req.file.originalname
-              }
-
-Contenu:
-${text}
-
-Question:
-${question}`
-          }
-
-        ]);
-
-
-      const user =
-        req.authUser;
-
-
-      if (
-        !data.conversations[user.id]
-      ) {
-
-        data.conversations[user.id] =
-          [];
-      }
-
-
-      if (
-        !data.conversations[user.id]
-          .length
-      ) {
-
-        data.conversations[user.id]
-          .push({
-
-            id:
-              Date.now().toString(36),
-
-            title:
-              'Conversation',
-
-            messages: [],
-
-            createdAt:
-              now(),
-
-            updatedAt:
-              now()
-          });
-      }
-
-
-      const conversation =
-        data.conversations[user.id]
-          .at(-1);
-
-
-      conversation.messages.push(
-
-        {
-
-          role:
-            'user',
-
-          content:
-            `📎 ${
-              req.file.originalname
-            }\n${question}`,
-
-          date:
-            now()
-        },
-
-        {
-
-          role:
-            'assistant',
-
-          content:
-            reply,
-
-          date:
-            now()
-        }
-
+    const isCurrentlyLight =
+      document.body.classList.contains(
+        'light'
       );
 
 
-      conversation.updatedAt =
-        now();
-
-
-      saveData();
-
-
-      res.json({
-
-        ok: true,
-
-        reply,
-
-        fileName:
-          req.file.originalname,
-
-        characters:
-          text.length
-      });
-
-    }
-
-    catch (error) {
-
-      console.error(
-        '[scan-and-ask]',
-        error
-      );
-
-      res
-        .status(500)
-        .json({
-
-          ok: false,
-
-          error:
-            'scan-ai-error',
-
-          message:
-            'Le fichier a été lu mais l’analyse IA a échoué. Vérifie la configuration IA.'
-        });
-    }
+    applyTheme(
+      isCurrentlyLight
+        ? 'dark'
+        : 'light'
+    );
   }
-);
 
 
-// =========================================================
-// RESET ÉCOGUACATE
-// =========================================================
+  function loadSavedTheme() {
 
-const RESET_SECRET =
-  process.env.RESET_SECRET ||
-  '';
-
-
-app.post(
-  '/internal/reset-consumption',
-  (req, res) => {
-
-    const provided =
-      req.headers[
-        'x-admin-secret'
-      ] ||
-      req.query.secret;
+    const savedTheme =
+      localStorage.getItem(
+        'aguacate_theme'
+      );
 
 
     if (
-      !RESET_SECRET ||
-      provided !==
-        RESET_SECRET
+      savedTheme === 'light'
     ) {
 
-      return res
-        .status(403)
-        .json({
+      applyTheme(
+        'light'
+      );
 
-          ok: false,
+    } else {
 
-          error:
-            'forbidden'
-        });
+      applyTheme(
+        'dark'
+      );
     }
-
-
-    resetDailyConsumption();
-
-    res.json({
-      ok: true
-    });
   }
-);
 
 
-// =========================================================
-// PAGE PRINCIPALE
-// =========================================================
-//
-// On utilise app.use au lieu de app.get('*')
-// pour être compatible avec Express récent.
-// =========================================================
+  /* =========================================================
+     ÉVÉNEMENTS
+     ========================================================= */
 
-app.use(
-  (req, res) => {
+  function setupEvents() {
 
-    res.sendFile(
-      path.join(
-        ROOT,
-        'index.html'
+    installChatStyles();
+
+
+    /* -------------------------------------------------------
+       ENVOI
+       ------------------------------------------------------- */
+
+    $('send-btn')
+      ?.addEventListener(
+        'click',
+        () => {
+
+          sendMessage(
+            $('prompt')?.value
+          );
+        }
+      );
+
+
+    /* -------------------------------------------------------
+       ENTRÉE
+       ------------------------------------------------------- */
+
+    $('prompt')
+      ?.addEventListener(
+        'keydown',
+        event => {
+
+          if (
+            event.key ===
+              'Enter' &&
+            !event.shiftKey
+          ) {
+
+            event.preventDefault();
+
+
+            sendMessage(
+              event.target.value
+            );
+          }
+        }
+      );
+
+
+    /* -------------------------------------------------------
+       SUGGESTIONS
+       ------------------------------------------------------- */
+
+    document
+      .querySelectorAll(
+        '[data-prompt]'
       )
-    );
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            'click',
+            () => {
+
+              const prompt =
+                $('prompt');
+
+
+              if (prompt) {
+
+                prompt.value =
+                  button.dataset.prompt;
+
+                prompt.focus();
+              }
+            }
+          );
+        }
+      );
+
+
+    /* -------------------------------------------------------
+       NOUVELLE CONVERSATION
+       ------------------------------------------------------- */
+
+    $('new-chat-btn')
+      ?.addEventListener(
+        'click',
+        newConversation
+      );
+
+
+    /* -------------------------------------------------------
+       RENOMMER
+       ------------------------------------------------------- */
+
+    $('rename-btn')
+      ?.addEventListener(
+        'click',
+        renameConversation
+      );
+
+
+    /* -------------------------------------------------------
+       FICHIERS
+       ------------------------------------------------------- */
+
+    $('attach-btn')
+      ?.addEventListener(
+        'click',
+        openFilePicker
+      );
+
+
+    $('file-tool-btn')
+      ?.addEventListener(
+        'click',
+        openFilePicker
+      );
+
+
+    $('file-input')
+      ?.addEventListener(
+        'change',
+        event => {
+
+          handleFile(
+            event.target.files?.[0]
+          );
+        }
+      );
+
+
+    /* -------------------------------------------------------
+       THÈME
+       ------------------------------------------------------- */
+
+    $('theme-btn')
+      ?.addEventListener(
+        'click',
+        toggleTheme
+      );
+
+
+    /* -------------------------------------------------------
+       MODES
+       ------------------------------------------------------- */
+
+    $('mode')
+      ?.addEventListener(
+        'change',
+        async event => {
+
+          const mode =
+            event.target.value;
+
+
+          if (
+            mode ===
+              'Professeur' ||
+            mode ===
+              'Admin'
+          ) {
+
+            const success =
+              await verifyMode(
+                mode
+              );
+
+
+            if (!success) {
+
+              event.target.value =
+                state.role ===
+                  'admin'
+                  ? 'Admin'
+                  : state.role ===
+                      'professeur'
+                    ? 'Professeur'
+                    : 'Kids';
+            }
+          }
+        }
+      );
   }
-);
 
 
-// =========================================================
-// EXPORT
-// =========================================================
+  /* =========================================================
+     DÉMARRAGE
+     ========================================================= */
 
-module.exports = app;
+  document.addEventListener(
+    'DOMContentLoaded',
+    async () => {
+
+      loadSavedTheme();
+
+      setupEvents();
+
+      updateEcoGuacate(0);
+
+      await login();
+    }
+  );
+
+
+  /* =========================================================
+     EXPORTS
+     ========================================================= */
+
+  window.AguacateState =
+    state;
+
+  window.updateEcoGuacate =
+    updateEcoGuacate;
+
+  window.sendMessage =
+    sendMessage;
+
+  window.newConversation =
+    newConversation;
+
+  window.deleteConversation =
+    deleteConversation;
+
+  window.renameConversation =
+    renameConversation;
+
+  window.showThinking =
+    showThinking;
+
+  window.hideThinking =
+    hideThinking;
+
+})();
