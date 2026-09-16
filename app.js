@@ -1,6 +1,6 @@
 /* =========================================================
    AGUACATE AI v4.0.0
-   APP.JS — VERSION PROPRE
+   APP.JS — VERSION COMPLÈTE
    ========================================================= */
 
 (() => {
@@ -15,10 +15,6 @@
     userId: localStorage.getItem('aguacate_user_id') || '',
     role: localStorage.getItem('aguacate_role') || 'user',
 
-    /*
-      UNE SEULE valeur ÉcoGuacate.
-      Elle vient du serveur.
-    */
     consumptionLitres: 0,
 
     conversations: [],
@@ -34,7 +30,6 @@
      ========================================================= */
 
   const $ = id => document.getElementById(id);
-
 
   function escapeHTML(value) {
     return String(value ?? '')
@@ -108,6 +103,428 @@
 
 
   /* =========================================================
+     THÈME
+     ========================================================= */
+
+  function installThemeStyles() {
+
+    if ($('aguacate-theme-styles')) return;
+
+    const style = document.createElement('style');
+
+    style.id = 'aguacate-theme-styles';
+
+    style.textContent = `
+
+      /* =====================================================
+         VARIABLES
+         ===================================================== */
+
+      :root {
+        --agu-bg: #f5f7f6;
+        --agu-panel: #ffffff;
+        --agu-panel-2: #f0f3f1;
+        --agu-border: rgba(0,0,0,.09);
+        --agu-text: #15231d;
+        --agu-text-soft: #607069;
+        --agu-input: #ffffff;
+        --agu-shadow: 0 12px 35px rgba(0,0,0,.08);
+      }
+
+      html,
+      body {
+        transition:
+          background-color .3s ease,
+          color .3s ease;
+      }
+
+
+      /* =====================================================
+         MODE CLAIR
+         ===================================================== */
+
+      body:not(.dark) {
+        background-color: var(--agu-bg);
+        color: var(--agu-text);
+      }
+
+
+      /* =====================================================
+         MODE SOMBRE
+         ===================================================== */
+
+      body.dark {
+        --agu-bg: #172923;
+        --agu-panel: #243932;
+        --agu-panel-2: #2d423a;
+        --agu-border: rgba(255,255,255,.09);
+        --agu-text: #edf7f2;
+        --agu-text-soft: #a9bbb4;
+        --agu-input: #f7faf8;
+        --agu-shadow: 0 15px 45px rgba(0,0,0,.25);
+
+        background-color: #172923;
+        color: #edf7f2;
+      }
+
+
+      /* =====================================================
+         TRANSITIONS GÉNÉRALES
+         ===================================================== */
+
+      body,
+      body *,
+      body *::before,
+      body *::after {
+        transition:
+          background-color .25s ease,
+          border-color .25s ease,
+          color .25s ease,
+          box-shadow .25s ease;
+      }
+
+
+      /* =====================================================
+         CARTES / PANNEAUX
+         ===================================================== */
+
+      body:not(.dark) .sidebar,
+      body:not(.dark) .left-panel,
+      body:not(.dark) .right-panel,
+      body:not(.dark) .eco-panel {
+        background: #ffffff;
+      }
+
+      body.dark .sidebar,
+      body.dark .left-panel,
+      body.dark .right-panel,
+      body.dark .eco-panel {
+        background: #243932;
+      }
+
+
+      /* =====================================================
+         TEXTES
+         ===================================================== */
+
+      body.dark h1,
+      body.dark h2,
+      body.dark h3,
+      body.dark h4,
+      body.dark p,
+      body.dark span,
+      body.dark label {
+        color: inherit;
+      }
+
+
+      /* =====================================================
+         ZONE CENTRALE
+         ===================================================== */
+
+      body:not(.dark) #messages,
+      body:not(.dark) .chat,
+      body:not(.dark) .chat-container {
+        color: #15231d;
+      }
+
+      body.dark #messages,
+      body.dark .chat,
+      body.dark .chat-container {
+        color: #edf7f2;
+      }
+
+
+      /* =====================================================
+         INPUT
+         ===================================================== */
+
+      body:not(.dark) #prompt {
+        background: #ffffff;
+        color: #15231d;
+        border-color: rgba(0,0,0,.1);
+      }
+
+      body.dark #prompt {
+        background: #ffffff;
+        color: #15231d;
+        border-color: rgba(255,255,255,.15);
+      }
+
+      #prompt::placeholder {
+        opacity: .55;
+      }
+
+
+      /* =====================================================
+         CONVERSATIONS
+         ===================================================== */
+
+      body.dark .conversation-item {
+        color: #edf7f2;
+      }
+
+      body.dark .conversation-open {
+        color: #edf7f2;
+      }
+
+      body.dark .conversation-item:hover {
+        background: rgba(255,255,255,.06);
+      }
+
+      body:not(.dark) .conversation-item:hover {
+        background: rgba(34,197,94,.08);
+      }
+
+
+      /* =====================================================
+         BOUTONS
+         ===================================================== */
+
+      body.dark button {
+        color: inherit;
+      }
+
+      body.dark #theme-btn {
+        background: rgba(255,255,255,.08);
+        border-color: rgba(255,255,255,.1);
+      }
+
+      body:not(.dark) #theme-btn {
+        background: rgba(0,0,0,.04);
+        border-color: rgba(0,0,0,.08);
+      }
+
+
+      /* =====================================================
+         SUGGESTIONS
+         ===================================================== */
+
+      body.dark [data-prompt] {
+        background: rgba(255,255,255,.045);
+        border-color: rgba(255,255,255,.08);
+        color: #edf7f2;
+      }
+
+      body:not(.dark) [data-prompt] {
+        background: #ffffff;
+        border-color: rgba(0,0,0,.08);
+        color: #15231d;
+      }
+
+
+      /* =====================================================
+         MESSAGES IA
+         ===================================================== */
+
+      body.dark #messages .message.assistant .message-bubble {
+        background: rgba(255,255,255,.055);
+        border-color: rgba(255,255,255,.09);
+        color: #edf7f2;
+      }
+
+      body:not(.dark) #messages .message.assistant .message-bubble {
+        background: #f0f3f1;
+        border-color: rgba(0,0,0,.08);
+        color: #15231d;
+      }
+
+
+      /* =====================================================
+         AVATAR
+         ===================================================== */
+
+      .aguacate-message-avatar {
+        flex-shrink: 0;
+      }
+
+
+      /* =====================================================
+         TRANSITION DU THÈME
+         ===================================================== */
+
+      body.theme-changing {
+        pointer-events: none;
+      }
+
+      body.theme-changing::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 99999;
+        background: rgba(34,197,94,.04);
+        animation: aguacateThemeFlash .35s ease;
+      }
+
+      @keyframes aguacateThemeFlash {
+        from {
+          opacity: 0;
+        }
+
+        50% {
+          opacity: 1;
+        }
+
+        to {
+          opacity: 0;
+        }
+      }
+
+    `;
+
+    document.head.appendChild(style);
+  }
+
+
+  /* =========================================================
+     APPLICATION DU THÈME
+     ========================================================= */
+
+  function applyTheme(theme, save = true) {
+
+    const isDark = theme === 'dark';
+
+    document.body.classList.toggle(
+      'dark',
+      isDark
+    );
+
+    document.documentElement.classList.toggle(
+      'dark',
+      isDark
+    );
+
+    document.documentElement.dataset.theme =
+      isDark ? 'dark' : 'light';
+
+    if (save) {
+
+      localStorage.setItem(
+        'aguacate_theme',
+        isDark ? 'dark' : 'light'
+      );
+
+      /* Compatibilité avec l'ancien système */
+      localStorage.setItem(
+        'aguacate_dark',
+        String(isDark)
+      );
+    }
+
+    updateThemeButton(isDark);
+  }
+
+
+  /* =========================================================
+     BOUTON THÈME
+     ========================================================= */
+
+  function updateThemeButton(isDark) {
+
+    const button = $('theme-btn');
+
+    if (!button) return;
+
+    button.textContent =
+      isDark ? '☀️' : '🌙';
+
+    button.title =
+      isDark
+        ? 'Passer au mode clair'
+        : 'Passer au mode sombre';
+
+    button.setAttribute(
+      'aria-label',
+      isDark
+        ? 'Passer au mode clair'
+        : 'Passer au mode sombre'
+    );
+  }
+
+
+  function loadSavedTheme() {
+
+    let savedTheme =
+      localStorage.getItem(
+        'aguacate_theme'
+      );
+
+    /* Compatibilité avec ancienne version */
+    if (!savedTheme) {
+
+      const oldDark =
+        localStorage.getItem(
+          'aguacate_dark'
+        );
+
+      if (oldDark !== null) {
+
+        savedTheme =
+          oldDark === 'true'
+            ? 'dark'
+            : 'light';
+      }
+    }
+
+    /*
+      Si aucun thème n'est enregistré,
+      on utilise le thème clair.
+    */
+
+    if (
+      savedTheme !== 'dark' &&
+      savedTheme !== 'light'
+    ) {
+
+      savedTheme = 'light';
+    }
+
+    applyTheme(
+      savedTheme,
+      false
+    );
+  }
+
+
+  function toggleTheme() {
+
+    const isDark =
+      document.body.classList.contains(
+        'dark'
+      );
+
+    const newTheme =
+      isDark
+        ? 'light'
+        : 'dark';
+
+    document.body.classList.add(
+      'theme-changing'
+    );
+
+    applyTheme(
+      newTheme,
+      true
+    );
+
+    setTimeout(() => {
+
+      document.body.classList.remove(
+        'theme-changing'
+      );
+
+    }, 350);
+
+    showToast(
+      newTheme === 'dark'
+        ? '🌙 Mode sombre activé.'
+        : '☀️ Mode clair activé.'
+    );
+  }
+
+
+  /* =========================================================
      STYLE DES MESSAGES
      ========================================================= */
 
@@ -175,33 +592,20 @@
 
       #messages .message-bubble {
         max-width: min(78%, 720px);
-
         padding: 11px 15px;
-
         border-radius: 17px;
-
         line-height: 1.55;
         font-size: 14px;
-
         word-wrap: break-word;
         overflow-wrap: anywhere;
-
         box-sizing: border-box;
       }
 
-      /* IA — gauche */
-
       #messages .message.assistant .message-bubble {
         background: rgba(255,255,255,.055);
-
-        border:
-          1px solid
-          rgba(255,255,255,.09);
-
+        border: 1px solid rgba(255,255,255,.09);
         border-bottom-left-radius: 5px;
       }
-
-      /* UTILISATEUR — droite */
 
       #messages .message.user .message-bubble {
         background:
@@ -213,9 +617,7 @@
 
         color: #06251a;
 
-        border:
-          1px solid
-          rgba(255,255,255,.14);
+        border: 1px solid rgba(255,255,255,.14);
 
         border-bottom-right-radius: 5px;
 
@@ -243,10 +645,6 @@
         }
       }
 
-      /* =====================================================
-         RÉFLEXION
-         ===================================================== */
-
       .aguacate-thinking {
         display: flex;
         align-items: center;
@@ -255,7 +653,6 @@
 
       .aguacate-thinking-bubble {
         min-width: 64px;
-
         padding: 12px 15px !important;
 
         display: flex;
@@ -282,13 +679,11 @@
           ease-in-out;
       }
 
-      .aguacate-thinking-bubble
-      span:nth-child(2) {
+      .aguacate-thinking-bubble span:nth-child(2) {
         animation-delay: .15s;
       }
 
-      .aguacate-thinking-bubble
-      span:nth-child(3) {
+      .aguacate-thinking-bubble span:nth-child(3) {
         animation-delay: .30s;
       }
 
@@ -307,11 +702,6 @@
         }
       }
 
-      .aguacate-thinking-label {
-        font-size: 11px;
-        opacity: .55;
-      }
-
       @media (max-width: 700px) {
 
         #messages .message-bubble {
@@ -328,16 +718,6 @@
 
   /* =========================================================
      ÉCOGUACATE
-     
-     0 → 20 L       VERT
-     21 → 50 L      JAUNE
-     51 → 85 L      ORANGE
-     86 → 100 L+    ROUGE
-
-     IMPORTANT :
-     La consommation réelle peut dépasser 100 L.
-     Le compteur affiche la vraie valeur.
-     La jauge est simplement limitée visuellement à 100 %.
      ========================================================= */
 
   const ECO_MAX = 100;
@@ -351,7 +731,7 @@
     );
 
     const percentage = Math.min(
-      100,
+      ECO_MAX,
       value
     );
 
@@ -365,30 +745,23 @@
       color = '#22c55e';
       status = 'Excellent 🌿';
 
-    }
-
-    else if (value <= 50) {
+    } else if (value <= 50) {
 
       level = 'warning';
       color = '#eab308';
       status = 'Attention 🌱';
 
-    }
-
-    else if (value <= 85) {
+    } else if (value <= 85) {
 
       level = 'danger';
       color = '#f97316';
       status = 'Impact élevé 🍂';
 
-    }
-
-    else {
+    } else {
 
       level = 'dead';
       color = '#ef4444';
       status = 'Très forte consommation 🔴';
-
     }
 
     return {
@@ -401,26 +774,17 @@
   }
 
 
-  /* =========================================================
-     MISE À JOUR UNIQUE ÉCOGUACATE
-     ========================================================= */
-
   function updateEcoGuacate(litres) {
 
-    const eco = getEcoState(litres);
+    const eco =
+      getEcoState(litres);
 
-    /*
-      SOURCE DE VÉRITÉ UNIQUE
-    */
-
-    state.consumptionLitres = eco.litres;
+    state.consumptionLitres =
+      eco.litres;
 
 
-    /* =====================================================
-       COMPTEUR
-       ===================================================== */
-
-    const litresElement = $('eco-litres');
+    const litresElement =
+      $('eco-litres');
 
     if (litresElement) {
 
@@ -431,11 +795,8 @@
     }
 
 
-    /* =====================================================
-       POURCENTAGE
-       ===================================================== */
-
-    const percentElement = $('eco-pct');
+    const percentElement =
+      $('eco-pct');
 
     if (percentElement) {
 
@@ -447,11 +808,8 @@
     }
 
 
-    /* =====================================================
-       BARRE
-       ===================================================== */
-
-    const bar = $('eco-bar-fill');
+    const bar =
+      $('eco-bar-fill');
 
     if (bar) {
 
@@ -466,11 +824,8 @@
     }
 
 
-    /* =====================================================
-       CURSEUR
-       ===================================================== */
-
-    const marker = $('eco-marker');
+    const marker =
+      $('eco-marker');
 
     if (marker) {
 
@@ -482,11 +837,8 @@
     }
 
 
-    /* =====================================================
-       ARBRE
-       ===================================================== */
-
-    const tree = $('eco-tree');
+    const tree =
+      $('eco-tree');
 
     if (tree) {
 
@@ -504,33 +856,25 @@
           'tree-good'
         );
 
-      }
-
-      else if (eco.litres <= 50) {
+      } else if (eco.litres <= 50) {
 
         tree.classList.add(
           'tree-warning'
         );
 
-      }
-
-      else if (eco.litres <= 85) {
+      } else if (eco.litres <= 85) {
 
         tree.classList.add(
           'tree-danger'
         );
 
-      }
-
-      else if (eco.litres < 100) {
+      } else if (eco.litres < 100) {
 
         tree.classList.add(
           'tree-dry'
         );
 
-      }
-
-      else {
+      } else {
 
         tree.classList.add(
           'tree-dead'
@@ -539,10 +883,6 @@
     }
 
 
-    /* =====================================================
-       POMPE
-       ===================================================== */
-
     const pump =
       $('eco-water-pump');
 
@@ -550,12 +890,6 @@
       $('pump-water');
 
     if (pumpWater) {
-
-      /*
-        0 L = 100 % d'eau
-        50 L = 50 %
-        100 L = 0 %
-      */
 
       const remaining =
         Math.max(
@@ -570,20 +904,12 @@
 
     if (pump) {
 
-      if (eco.percentage >= 100) {
-
-        pump.classList.add('dry');
-
-      } else {
-
-        pump.classList.remove('dry');
-      }
+      pump.classList.toggle(
+        'dry',
+        eco.percentage >= 100
+      );
     }
 
-
-    /* =====================================================
-       LUMIÈRE
-       ===================================================== */
 
     const glow =
       $('eco-glow') ||
@@ -607,10 +933,6 @@
         )`;
     }
 
-
-    /* =====================================================
-       STATUT
-       ===================================================== */
 
     const status =
       $('eco-status');
@@ -659,11 +981,6 @@
         );
 
 
-      /*
-        Le serveur reste maître
-        de l'identité et de la consommation.
-      */
-
       state.token =
         result.token;
 
@@ -692,14 +1009,6 @@
 
       updateUserInterface();
 
-
-      /*
-        ÉCOGUACATE :
-        on récupère la valeur persistée
-        sur le serveur.
-
-        Aucun calcul local.
-      */
 
       if (
         result.consumptionLitres !==
@@ -915,7 +1224,6 @@
             'div'
           );
 
-
         item.className =
           'conversation-item';
 
@@ -937,7 +1245,6 @@
             class="conversation-open"
             type="button"
           >
-
             💬
 
             <span>
@@ -948,7 +1255,6 @@
             </span>
 
           </button>
-
 
           <button
             class="conversation-delete"
@@ -1024,7 +1330,7 @@
 
 
   /* =========================================================
-     AFFICHAGE DES MESSAGES
+     MESSAGES
      ========================================================= */
 
   function renderMessages(messages) {
@@ -1115,9 +1421,7 @@
 
       `;
 
-    }
-
-    else {
+    } else {
 
       message.innerHTML = `
 
@@ -1174,7 +1478,6 @@
 
     message.id =
       'aguacate-thinking';
-
 
     message.className =
       'message assistant aguacate-thinking';
@@ -1374,9 +1677,7 @@
             state.currentConversationId
           );
 
-        }
-
-        else {
+        } else {
 
           renderMessages([]);
         }
@@ -1542,20 +1843,11 @@
     }
 
 
-    /*
-      Message utilisateur immédiatement
-      à droite.
-    */
-
     addMessageToUI(
       'user',
       message
     );
 
-
-    /*
-      Aguacate réfléchit.
-    */
 
     showThinking();
 
@@ -1591,11 +1883,6 @@
         );
 
 
-      /*
-        L'animation reste visible
-        au moins 500 ms.
-      */
-
       const elapsed =
         Date.now() -
         thinkingStart;
@@ -1624,35 +1911,12 @@
       hideThinking();
 
 
-      /*
-        VRAIE réponse de l'IA.
-      */
-
       addMessageToUI(
         'assistant',
         result.reply ||
         'Je n’ai pas reçu de réponse.'
       );
 
-
-      /*
-        =====================================================
-        ÉCOGUACATE
-
-        TRÈS IMPORTANT :
-
-        on ne fait PAS :
-
-        + 3 L
-        + 1 L
-        + calcul local
-        + observation du DOM
-        + setInterval
-
-        On utilise uniquement la valeur
-        finale envoyée par le serveur.
-        =====================================================
-      */
 
       if (
         result.consumptionLitres !==
@@ -1676,11 +1940,6 @@
       }
 
 
-      /*
-        Recharge les conversations
-        sauvegardées par le serveur.
-      */
-
       await loadConversations();
 
     }
@@ -1696,12 +1955,6 @@
       hideThinking();
 
 
-      /*
-        Système de modération :
-        le serveur reste responsable
-        des avertissements et bannissements.
-      */
-
       if (
         error.status === 403 &&
         error.data?.error ===
@@ -1712,8 +1965,8 @@
           error.data?.message ||
           '⚠️ Langage interdit détecté.'
         );
-      }
 
+      }
 
       else if (
         error.status === 403 &&
@@ -1734,8 +1987,8 @@
         showToast(
           `🚫 Compte suspendu jusqu'au ${until}`
         );
-      }
 
+      }
 
       else {
 
@@ -1745,7 +1998,6 @@
         );
       }
     }
-
 
     finally {
 
@@ -1841,6 +2093,7 @@
 
     const input =
       $('file-input');
+
 
     if (input) {
 
@@ -1978,11 +2231,6 @@
       );
 
 
-      /*
-        Même système ÉcoGuacate :
-        une seule valeur serveur.
-      */
-
       if (
         result.consumptionLitres !==
         undefined
@@ -2066,30 +2314,24 @@
 
 
   /* =========================================================
-     THÈME
-     ========================================================= */
-
-function toggleTheme() {
-  const isDark = document.body.classList.toggle('dark');
-
-  localStorage.setItem(
-    'aguacate_dark',
-    isDark ? 'true' : 'false'
-  );
-
-  showToast(
-    isDark
-      ? '🌙 Mode sombre activé.'
-      : '☀️ Mode clair activé.'
-  );
-}
-  /* =========================================================
      ÉVÉNEMENTS
      ========================================================= */
 
   function setupEvents() {
 
+    installThemeStyles();
     installChatStyles();
+
+
+    /* -------------------------------------------------------
+       THÈME
+       ------------------------------------------------------- */
+
+    $('theme-btn')
+      ?.addEventListener(
+        'click',
+        toggleTheme
+      );
 
 
     /* -------------------------------------------------------
@@ -2218,16 +2460,6 @@ function toggleTheme() {
 
 
     /* -------------------------------------------------------
-       THÈME
-       ------------------------------------------------------- */
-
-    $('theme-btn')
-      ?.addEventListener(
-        'click',
-        toggleTheme
-      );
-
-    /* -------------------------------------------------------
        MODES
        ------------------------------------------------------- */
 
@@ -2263,20 +2495,9 @@ function toggleTheme() {
           }
         }
       );
+  }
 
 
-    /* -------------------------------------------------------
-       THÈME SAUVEGARDÉ
-       ------------------------------------------------------- */
-
-const savedTheme =
-  localStorage.getItem('aguacate_dark');
-
-if (savedTheme === 'true') {
-  document.body.classList.add('dark');
-} else {
-  document.body.classList.remove('dark');
-}
   /* =========================================================
      DÉMARRAGE
      ========================================================= */
@@ -2285,22 +2506,28 @@ if (savedTheme === 'true') {
     'DOMContentLoaded',
     async () => {
 
+      /*
+        On installe le thème AVANT le login.
+        Cela évite un flash visuel.
+      */
+
+      installThemeStyles();
+
+      loadSavedTheme();
+
       setupEvents();
 
 
       /*
-        État visuel initial.
-        Il sera immédiatement remplacé par
-        la vraie valeur du serveur après /login.
+        Valeur visuelle initiale.
+        Elle sera remplacée par le serveur.
       */
 
       updateEcoGuacate(0);
 
 
       /*
-        Connexion.
-        La consommation et les conversations
-        sont récupérées depuis le serveur.
+        Connexion serveur.
       */
 
       await login();
@@ -2335,5 +2562,11 @@ if (savedTheme === 'true') {
 
   window.hideThinking =
     hideThinking;
+
+  window.toggleTheme =
+    toggleTheme;
+
+  window.applyTheme =
+    applyTheme;
 
 })();
