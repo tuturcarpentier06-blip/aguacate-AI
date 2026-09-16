@@ -101,21 +101,59 @@
     return data;
   }
 
+/* =========================================================
+   THÈME
+   ========================================================= */
 
-  /* =========================================================
-     THÈME
-     ========================================================= */
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark');
 
-  function installThemeStyles() {
+  localStorage.setItem(
+    'aguacate_dark',
+    isDark ? 'true' : 'false'
+  );
+}
 
-    if ($('aguacate-theme-styles')) return;
 
-    const style = document.createElement('style');
+/* =========================================================
+   THÈME AU DÉMARRAGE
+   ========================================================= */
 
-    style.id = 'aguacate-theme-styles';
+function loadTheme() {
 
-    style.textContent = `
+  const savedTheme =
+    localStorage.getItem('aguacate_dark');
 
+  /*
+    Première utilisation :
+    Aguacate AI démarre automatiquement
+    en thème sombre.
+  */
+  if (savedTheme === null) {
+
+    document.body.classList.add('dark');
+
+    localStorage.setItem(
+      'aguacate_dark',
+      'true'
+    );
+
+    return;
+  }
+
+  /*
+    Si l'utilisateur avait choisi
+    le thème sombre précédemment.
+  */
+  if (savedTheme === 'true') {
+
+    document.body.classList.add('dark');
+
+  } else {
+
+    document.body.classList.remove('dark');
+  }
+}
       /* =====================================================
          VARIABLES
          ===================================================== */
