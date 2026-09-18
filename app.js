@@ -1,6 +1,6 @@
 /* =========================================================
    AGUACATE AI v4.0.0
-   APP.JS — FRONTEND COMPLET CORRIGÉ
+   APP.JS — FRONTEND COMPLET
    ========================================================= */
 
 (() => {
@@ -32,9 +32,6 @@
     consumptionLitres:
       0,
 
-    ecoMaxLitres:
-      24.8,
-
     conversations:
       [],
 
@@ -50,7 +47,7 @@
 
 
   /* =========================================================
-     UTILITAIRE DOM
+     UTILITAIRES
      ========================================================= */
 
   const $ =
@@ -58,13 +55,7 @@
       document.getElementById(id);
 
 
-  /* =========================================================
-     SÉCURITÉ HTML
-     ========================================================= */
-
-  function escapeHTML(
-    value
-  ) {
+  function escapeHTML(value) {
 
     return String(
       value ?? ''
@@ -97,10 +88,6 @@
   }
 
 
-  /* =========================================================
-     TOAST
-     ========================================================= */
-
   function showToast(
     message
   ) {
@@ -111,7 +98,6 @@
     if (!toast)
       return;
 
-
     toast.textContent =
       message;
 
@@ -119,11 +105,9 @@
       'show'
     );
 
-
     clearTimeout(
       showToast.timer
     );
-
 
     showToast.timer =
       setTimeout(
@@ -189,6 +173,7 @@
 
       const error =
         new Error(
+
           data.message ||
           data.error ||
           `Erreur HTTP ${response.status}`
@@ -209,14 +194,25 @@
 
 
   /* =========================================================
-     STYLE DES MESSAGES
-     ========================================================= */
+     STYLES CHAT + CONVERSATIONS
+     =========================================================
+
+     IMPORTANT :
+     La poubelle est corrigée ici.
+
+     - taille raisonnable
+     - toujours visible
+     - pas de texte qui déborde
+     - pas de "..."
+     - flex-shrink: 0
+  */
 
   function installChatStyles() {
 
     if (
       $('aguacate-chat-styles')
     ) {
+
       return;
     }
 
@@ -233,21 +229,196 @@
 
     style.textContent = `
 
+      /* ================================
+         CONVERSATIONS
+         ================================ */
+
+      #conversation-list {
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+
+      .conversation-item {
+        width: 100%;
+        min-width: 0;
+
+        display: flex;
+        align-items: center;
+
+        gap: 6px;
+
+        box-sizing: border-box;
+
+        margin-bottom: 6px;
+      }
+
+
+      .conversation-open {
+        flex: 1 1 auto;
+        min-width: 0;
+
+        height: 42px;
+
+        display: flex;
+        align-items: center;
+
+        gap: 8px;
+
+        padding: 0 10px;
+
+        border: 0;
+        border-radius: 9px;
+
+        cursor: pointer;
+
+        overflow: hidden;
+
+        text-align: left;
+
+        white-space: nowrap;
+      }
+
+
+      .conversation-open span {
+        min-width: 0;
+
+        flex: 1;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+      }
+
+
+      /*
+        LA POUBELLE.
+
+        Elle reste petite et visible.
+      */
+
+      .conversation-delete {
+        flex: 0 0 38px;
+
+        width: 38px;
+        min-width: 38px;
+        max-width: 38px;
+
+        height: 38px;
+        min-height: 38px;
+        max-height: 38px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        padding: 0;
+
+        margin: 0;
+
+        border: 1px solid rgba(
+          255,
+          255,
+          255,
+          .10
+        );
+
+        border-radius: 9px;
+
+        background: rgba(
+          255,
+          255,
+          255,
+          .045
+        );
+
+        color: inherit;
+
+        font-size: 15px;
+
+        line-height: 1;
+
+        cursor: pointer;
+
+        opacity: .85;
+
+        overflow: visible;
+
+        box-sizing: border-box;
+      }
+
+
+      .conversation-delete:hover {
+
+        opacity: 1;
+
+        background:
+          rgba(
+            239,
+            68,
+            68,
+            .15
+          );
+
+        border-color:
+          rgba(
+            239,
+            68,
+            68,
+            .35
+          );
+
+        transform:
+          translateY(-1px);
+      }
+
+
+      .conversation-delete:active {
+
+        transform:
+          scale(.94);
+      }
+
+
+      .conversation-item.active
+      .conversation-open {
+
+        background:
+          rgba(
+            34,
+            197,
+            94,
+            .12
+          );
+      }
+
+
+      /* ================================
+         MESSAGES
+         ================================ */
+
       #messages {
 
         display: flex;
 
-        flex-direction: column;
+        flex-direction:
+          column;
 
         gap: 14px;
 
         width: 100%;
 
-        box-sizing: border-box;
+        box-sizing:
+          border-box;
 
-        overflow-y: auto;
+        overflow-y:
+          auto;
 
-        scroll-behavior: smooth;
+        scroll-behavior:
+          smooth;
       }
 
 
@@ -257,9 +428,11 @@
 
         width: 100%;
 
-        box-sizing: border-box;
+        box-sizing:
+          border-box;
 
-        align-items: flex-end;
+        align-items:
+          flex-end;
 
         gap: 9px;
 
@@ -270,14 +443,16 @@
       }
 
 
-      #messages .message.assistant {
+      #messages
+      .message.assistant {
 
         justify-content:
           flex-start;
       }
 
 
-      #messages .message.user {
+      #messages
+      .message.user {
 
         justify-content:
           flex-end;
@@ -287,7 +462,6 @@
       .aguacate-message-avatar {
 
         width: 34px;
-
         height: 34px;
 
         min-width: 34px;
@@ -296,33 +470,59 @@
 
         display: flex;
 
-        align-items: center;
+        align-items:
+          center;
 
-        justify-content: center;
+        justify-content:
+          center;
 
         background:
           linear-gradient(
             145deg,
-            rgba(34,197,94,.25),
-            rgba(16,185,129,.10)
+            rgba(
+              34,
+              197,
+              94,
+              .25
+            ),
+            rgba(
+              16,
+              185,
+              129,
+              .10
+            )
           );
 
         border:
           1px solid
-          rgba(74,222,128,.22);
+          rgba(
+            74,
+            222,
+            128,
+            .22
+          );
 
         box-shadow:
           0 5px 15px
-          rgba(0,0,0,.15);
+          rgba(
+            0,
+            0,
+            0,
+            .15
+          );
 
         font-size: 18px;
       }
 
 
-      #messages .message-bubble {
+      #messages
+      .message-bubble {
 
         max-width:
-          min(78%, 720px);
+          min(
+            78%,
+            720px
+          );
 
         padding:
           11px 15px;
@@ -352,11 +552,21 @@
       .message-bubble {
 
         background:
-          rgba(255,255,255,.055);
+          rgba(
+            255,
+            255,
+            255,
+            .055
+          );
 
         border:
           1px solid
-          rgba(255,255,255,.09);
+          rgba(
+            255,
+            255,
+            255,
+            .09
+          );
 
         border-bottom-left-radius:
           5px;
@@ -379,7 +589,12 @@
 
         border:
           1px solid
-          rgba(255,255,255,.14);
+          rgba(
+            255,
+            255,
+            255,
+            .14
+          );
 
         border-bottom-right-radius:
           5px;
@@ -389,7 +604,12 @@
 
         box-shadow:
           0 7px 20px
-          rgba(16,185,129,.16);
+          rgba(
+            16,
+            185,
+            129,
+            .16
+          );
       }
 
 
@@ -415,11 +635,16 @@
       }
 
 
+      /* ================================
+         RÉFLEXION
+         ================================ */
+
       .aguacate-thinking {
 
         display: flex;
 
-        align-items: center;
+        align-items:
+          center;
 
         gap: 9px;
       }
@@ -433,8 +658,7 @@
         padding:
           12px 15px !important;
 
-        display:
-          flex;
+        display: flex;
 
         align-items:
           center;
@@ -442,18 +666,14 @@
         justify-content:
           center;
 
-        gap:
-          4px;
+        gap: 4px;
       }
 
 
       .aguacate-thinking-bubble span {
 
-        width:
-          7px;
-
-        height:
-          7px;
+        width: 7px;
+        height: 7px;
 
         border-radius:
           50%;
@@ -512,13 +732,28 @@
       }
 
 
-      @media (max-width: 700px) {
+      @media (
+        max-width: 700px
+      ) {
 
         #messages
         .message-bubble {
 
           max-width:
             86%;
+        }
+
+
+        .conversation-delete {
+
+          width:
+            36px;
+
+          min-width:
+            36px;
+
+          flex-basis:
+            36px;
         }
       }
 
@@ -535,6 +770,10 @@
      ÉCOGUACATE
      ========================================================= */
 
+  const ECO_MAX =
+    100;
+
+
   function getEcoState(
     litres
   ) {
@@ -546,21 +785,10 @@
       );
 
 
-    const max =
-      Math.max(
-        1,
-        Number(
-          state.ecoMaxLitres
-        ) || 24.8
-      );
-
-
     const percentage =
       Math.min(
-        100,
-        (
-          value / max
-        ) * 100
+        ECO_MAX,
+        value
       );
 
 
@@ -570,7 +798,7 @@
 
 
     if (
-      percentage <= 40
+      value <= 20
     ) {
 
       level =
@@ -582,10 +810,8 @@
       status =
         'Excellent 🌿';
 
-    }
-
-    else if (
-      percentage <= 65
+    } else if (
+      value <= 50
     ) {
 
       level =
@@ -597,10 +823,8 @@
       status =
         'Attention 🌱';
 
-    }
-
-    else if (
-      percentage <= 85
+    } else if (
+      value <= 85
     ) {
 
       level =
@@ -612,9 +836,7 @@
       status =
         'Impact élevé 🍂';
 
-    }
-
-    else {
+    } else {
 
       level =
         'dead';
@@ -657,9 +879,7 @@
       eco.litres;
 
 
-    /* -------------------------------------------------------
-       COMPTEUR
-       ------------------------------------------------------- */
+    /* COMPTEUR */
 
     const litresElement =
       $('eco-litres');
@@ -679,9 +899,7 @@
     }
 
 
-    /* -------------------------------------------------------
-       POURCENTAGE
-       ------------------------------------------------------- */
+    /* POURCENTAGE */
 
     const percentElement =
       $('eco-pct');
@@ -701,15 +919,15 @@
     }
 
 
-    /* -------------------------------------------------------
-       BARRE
-       ------------------------------------------------------- */
+    /* BARRE */
 
     const bar =
       $('eco-bar-fill');
 
 
-    if (bar) {
+    if (
+      bar
+    ) {
 
       bar.style.width =
         `${eco.percentage}%`;
@@ -722,15 +940,15 @@
     }
 
 
-    /* -------------------------------------------------------
-       CURSEUR
-       ------------------------------------------------------- */
+    /* MARQUEUR */
 
     const marker =
       $('eco-marker');
 
 
-    if (marker) {
+    if (
+      marker
+    ) {
 
       marker.style.left =
         `${eco.percentage}%`;
@@ -740,15 +958,15 @@
     }
 
 
-    /* -------------------------------------------------------
-       ARBRE
-       ------------------------------------------------------- */
+    /* ARBRE */
 
     const tree =
       $('eco-tree');
 
 
-    if (tree) {
+    if (
+      tree
+    ) {
 
       tree.classList.remove(
 
@@ -765,46 +983,38 @@
 
 
       if (
-        eco.percentage <= 40
+        eco.litres <= 20
       ) {
 
         tree.classList.add(
           'tree-good'
         );
 
-      }
-
-      else if (
-        eco.percentage <= 65
+      } else if (
+        eco.litres <= 50
       ) {
 
         tree.classList.add(
           'tree-warning'
         );
 
-      }
-
-      else if (
-        eco.percentage <= 85
+      } else if (
+        eco.litres <= 85
       ) {
 
         tree.classList.add(
           'tree-danger'
         );
 
-      }
-
-      else if (
-        eco.percentage < 100
+      } else if (
+        eco.litres < 100
       ) {
 
         tree.classList.add(
           'tree-dry'
         );
 
-      }
-
-      else {
+      } else {
 
         tree.classList.add(
           'tree-dead'
@@ -813,9 +1023,7 @@
     }
 
 
-    /* -------------------------------------------------------
-       POMPE
-       ------------------------------------------------------- */
+    /* POMPE */
 
     const pump =
       $('eco-water-pump');
@@ -832,7 +1040,7 @@
         Math.max(
           0,
           1 -
-          eco.percentage /
+            eco.percentage /
             100
         );
 
@@ -842,18 +1050,19 @@
     }
 
 
-    if (pump) {
+    if (
+      pump
+    ) {
 
       pump.classList.toggle(
         'dry',
-        eco.percentage >= 100
+        eco.percentage >=
+          100
       );
     }
 
 
-    /* -------------------------------------------------------
-       LUMIÈRE
-       ------------------------------------------------------- */
+    /* LUMIÈRE */
 
     const glow =
       $('eco-glow') ||
@@ -862,10 +1071,13 @@
       );
 
 
-    if (glow) {
+    if (
+      glow
+    ) {
 
       glow.style.opacity =
-        eco.level === 'dead'
+        eco.level ===
+        'dead'
           ? '.35'
           : '1';
 
@@ -880,15 +1092,15 @@
     }
 
 
-    /* -------------------------------------------------------
-       STATUT
-       ------------------------------------------------------- */
+    /* STATUT */
 
     const status =
       $('eco-status');
 
 
-    if (status) {
+    if (
+      status
+    ) {
 
       status.textContent =
         eco.status;
@@ -900,38 +1112,71 @@
 
 
   /* =========================================================
-     LOGIN
+     IDENTIFIANT APPAREIL
+     ========================================================= */
+
+  function ensureDeviceId() {
+
+    let deviceId =
+      localStorage.getItem(
+        'aguacate_device_id'
+      );
+
+
+    /*
+      Les anciens identifiants
+      trop longs sont remplacés.
+    */
+
+    if (
+      !deviceId ||
+      !/^[A-Z0-9]{4}$/i.test(
+        deviceId
+      )
+    ) {
+
+      const chars =
+        'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+      deviceId = '';
+
+      for (
+        let i = 0;
+        i < 4;
+        i++
+      ) {
+
+        deviceId +=
+          chars[
+            Math.floor(
+              Math.random() *
+              chars.length
+            )
+          ];
+      }
+
+      localStorage.setItem(
+        'aguacate_device_id',
+        deviceId
+      );
+    }
+
+
+    return deviceId
+      .toUpperCase();
+  }
+
+
+  /* =========================================================
+     CONNEXION
      ========================================================= */
 
   async function login() {
 
     try {
 
-      let deviceId =
-        localStorage.getItem(
-          'aguacate_device_id'
-        );
-
-
-      if (!deviceId) {
-
-        deviceId =
-          crypto.randomUUID
-            ? crypto.randomUUID()
-            : (
-                Date.now() +
-                '-' +
-                Math.random()
-                  .toString(36)
-                  .slice(2)
-              );
-
-
-        localStorage.setItem(
-          'aguacate_device_id',
-          deviceId
-        );
-      }
+      const deviceId =
+        ensureDeviceId();
 
 
       const result =
@@ -967,27 +1212,17 @@
         'user';
 
 
-      if (
-        result.ecoMaxLitres !==
-        undefined
-      ) {
-
-        state.ecoMaxLitres =
-          Number(
-            result.ecoMaxLitres
-          ) || 24.8;
-      }
-
-
       localStorage.setItem(
         'aguacate_token',
         state.token
       );
 
+
       localStorage.setItem(
         'aguacate_user_id',
         state.userId
       );
+
 
       localStorage.setItem(
         'aguacate_role',
@@ -998,12 +1233,17 @@
       updateUserInterface();
 
 
-      updateEcoGuacate(
-        Number(
-          result.consumptionLitres ||
-          0
-        )
-      );
+      if (
+        result.consumptionLitres !==
+        undefined
+      ) {
+
+        updateEcoGuacate(
+          Number(
+            result.consumptionLitres
+          )
+        );
+      }
 
 
       await loadConversations();
@@ -1011,9 +1251,9 @@
 
       startHeartbeat();
 
-    }
-
-    catch (error) {
+    } catch (
+      error
+    ) {
 
       console.error(
         '[login]',
@@ -1041,6 +1281,7 @@
           `🚫 Accès suspendu jusqu'au ${until}`
         );
 
+
         return;
       }
 
@@ -1062,12 +1303,14 @@
       $('user-badge');
 
 
-    if (badge) {
+    if (
+      badge
+    ) {
 
       badge.textContent =
-        `🥑 Aguacate AI #${
+        `🥑 Aguacate #${
           state.userId ||
-          '0000'
+          'XXXX'
         }`;
     }
 
@@ -1076,7 +1319,9 @@
       $('role-badge');
 
 
-    if (role) {
+    if (
+      role
+    ) {
 
       const labels = {
 
@@ -1132,9 +1377,8 @@
 
           if (
             !state.token
-          ) {
+          )
             return;
-          }
 
 
           try {
@@ -1178,7 +1422,9 @@
 
 
       state.conversations =
-        Array.isArray(result)
+        Array.isArray(
+          result
+        )
           ? result
           : [];
 
@@ -1187,19 +1433,28 @@
 
 
       if (
-        state.currentConversationId &&
-        state.conversations.some(
-          conversation =>
-            conversation.id ===
-            state.currentConversationId
-        )
+        state.currentConversationId
       ) {
 
-        openConversation(
-          state.currentConversationId
-        );
+        const stillExists =
+          state.conversations
+            .some(
+              conversation =>
+                conversation.id ===
+                state.currentConversationId
+            );
 
-        return;
+
+        if (
+          stillExists
+        ) {
+
+          openConversation(
+            state.currentConversationId
+          );
+
+          return;
+        }
       }
 
 
@@ -1207,20 +1462,30 @@
         state.conversations.length
       ) {
 
+        const latest =
+          state.conversations
+            .slice()
+            .sort(
+              (a, b) =>
+                (
+                  b.updatedAt ||
+                  0
+                ) -
+                (
+                  a.updatedAt ||
+                  0
+                )
+            )[0];
+
+
         openConversation(
-          state.conversations[
-            state.conversations.length - 1
-          ].id
+          latest.id
         );
-
-      } else {
-
-        renderMessages([]);
       }
 
-    }
-
-    catch (error) {
+    } catch (
+      error
+    ) {
 
       console.error(
         '[conversations]',
@@ -1236,7 +1501,9 @@
       $('conversation-list');
 
 
-    if (!list)
+    if (
+      !list
+    )
       return;
 
 
@@ -1244,62 +1511,104 @@
       '';
 
 
-    state.conversations.forEach(
-      conversation => {
+    state.conversations
+      .slice()
+      .sort(
+        (a, b) =>
+          (
+            b.updatedAt ||
+            0
+          ) -
+          (
+            a.updatedAt ||
+            0
+          )
+      )
+      .forEach(
+        conversation => {
 
-        const item =
-          document.createElement(
-            'div'
-          );
-
-
-        item.className =
-          'conversation-item';
-
-
-        if (
-          conversation.id ===
-          state.currentConversationId
-        ) {
-
-          item.classList.add(
-            'active'
-          );
-        }
+          const item =
+            document.createElement(
+              'div'
+            );
 
 
-        item.innerHTML = `
+          item.className =
+            'conversation-item';
 
-          <button
-            class="conversation-open"
-            type="button"
-          >
-            💬
 
-            <span>
-              ${escapeHTML(
+          if (
+            conversation.id ===
+            state.currentConversationId
+          ) {
+
+            item.classList.add(
+              'active'
+            );
+          }
+
+
+          /*
+            Pas de "..."
+            dans la poubelle.
+
+            Le texte peut être tronqué,
+            mais le bouton poubelle
+            reste toujours à droite.
+          */
+
+          item.innerHTML = `
+
+            <button
+              class="conversation-open"
+              type="button"
+              title="${escapeHTML(
                 conversation.title ||
                 'Conversation'
-              )}
-            </span>
-          </button>
+              )}"
+            >
 
-          <button
-            class="conversation-delete"
-            type="button"
-            title="Supprimer"
-          >
-            🗑️
-          </button>
+              <span
+                aria-hidden="true"
+              >
+                💬
+              </span>
 
-        `;
+              <span>
+                ${escapeHTML(
+                  conversation.title ||
+                  'Conversation'
+                )}
+              </span>
+
+            </button>
 
 
-        item
-          .querySelector(
-            '.conversation-open'
-          )
-          ?.addEventListener(
+            <button
+              class="conversation-delete"
+              type="button"
+              title="Supprimer cette conversation"
+              aria-label="Supprimer cette conversation"
+            >
+              🗑️
+            </button>
+
+          `;
+
+
+          const openButton =
+            item.querySelector(
+              '.conversation-open'
+            );
+
+
+          const deleteButton =
+            item.querySelector(
+              '.conversation-delete'
+            );
+
+
+          openButton?.addEventListener(
             'click',
             () => {
 
@@ -1310,13 +1619,11 @@
           );
 
 
-        item
-          .querySelector(
-            '.conversation-delete'
-          )
-          ?.addEventListener(
+          deleteButton?.addEventListener(
             'click',
             event => {
+
+              event.preventDefault();
 
               event.stopPropagation();
 
@@ -1327,11 +1634,11 @@
           );
 
 
-        list.appendChild(
-          item
-        );
-      }
-    );
+          list.appendChild(
+            item
+          );
+        }
+      );
   }
 
 
@@ -1346,7 +1653,9 @@
       );
 
 
-    if (!conversation)
+    if (
+      !conversation
+    )
       return;
 
 
@@ -1376,7 +1685,9 @@
       $('messages');
 
 
-    if (!container)
+    if (
+      !container
+    )
       return;
 
 
@@ -1410,7 +1721,9 @@
       $('messages');
 
 
-    if (!container)
+    if (
+      !container
+    )
       return null;
 
 
@@ -1435,8 +1748,7 @@
     const safeContent =
       escapeHTML(
         content
-      )
-      .replace(
+      ).replace(
         /\n/g,
         '<br>'
       );
@@ -1483,7 +1795,9 @@
     );
 
 
-    if (scroll) {
+    if (
+      scroll
+    ) {
 
       scrollMessages();
     }
@@ -1503,7 +1817,9 @@
       $('messages');
 
 
-    if (!container)
+    if (
+      !container
+    )
       return null;
 
 
@@ -1511,9 +1827,10 @@
       $('aguacate-thinking');
 
 
-    if (old) {
+    if (
+      old
+    )
       old.remove();
-    }
 
 
     const message =
@@ -1543,9 +1860,11 @@
         class="message-bubble aguacate-thinking-bubble"
         aria-label="Aguacate AI réfléchit"
       >
+
         <span></span>
         <span></span>
         <span></span>
+
       </div>
 
     `;
@@ -1569,7 +1888,10 @@
       $('aguacate-thinking');
 
 
-    if (thinking) {
+    if (
+      thinking
+    ) {
+
       thinking.remove();
     }
   }
@@ -1581,7 +1903,9 @@
       $('messages');
 
 
-    if (!container)
+    if (
+      !container
+    )
       return;
 
 
@@ -1634,6 +1958,7 @@
 
       renderConversationList();
 
+
       renderMessages([]);
 
 
@@ -1641,9 +1966,9 @@
         '✨ Nouvelle conversation créée.'
       );
 
-    }
-
-    catch (error) {
+    } catch (
+      error
+    ) {
 
       console.error(
         '[new conversation]',
@@ -1706,6 +2031,7 @@
 
             body:
               JSON.stringify({
+
                 conversationId:
                   id
               })
@@ -1724,16 +2050,31 @@
       ) {
 
         state.currentConversationId =
-          state.conversations[0]?.id ||
           null;
 
 
         if (
-          state.currentConversationId
+          state.conversations.length
         ) {
 
+          const next =
+            state.conversations
+              .slice()
+              .sort(
+                (a, b) =>
+                  (
+                    b.updatedAt ||
+                    0
+                  ) -
+                  (
+                    a.updatedAt ||
+                    0
+                  )
+              )[0];
+
+
           openConversation(
-            state.currentConversationId
+            next.id
           );
 
         } else {
@@ -1750,9 +2091,9 @@
         '🗑️ Conversation supprimée.'
       );
 
-    }
-
-    catch (error) {
+    } catch (
+      error
+    ) {
 
       console.error(
         '[delete conversation]',
@@ -1851,7 +2192,9 @@
         index !== -1
       ) {
 
-        state.conversations[index] =
+        state.conversations[
+          index
+        ] =
           result.conversation;
       }
 
@@ -1863,9 +2206,9 @@
         '✏️ Conversation renommée.'
       );
 
-    }
-
-    catch (error) {
+    } catch (
+      error
+    ) {
 
       console.error(
         '[rename]',
@@ -1894,12 +2237,13 @@
       ).trim();
 
 
-    if (!message)
-      return;
+    if (
+      !message ||
+      state.sending
+    ) {
 
-
-    if (state.sending)
       return;
+    }
 
 
     state.sending =
@@ -1910,7 +2254,9 @@
       $('prompt');
 
 
-    if (prompt) {
+    if (
+      prompt
+    ) {
 
       prompt.value =
         '';
@@ -1956,14 +2302,7 @@
 
                 message,
 
-                mode,
-
-                // IMPORTANT :
-                // on envoie maintenant
-                // la conversation sélectionnée.
-
-                conversationId:
-                  state.currentConversationId
+                mode
               })
           }
         );
@@ -1974,21 +2313,21 @@
         thinkingStart;
 
 
-      const minimumThinkingTime =
+      const minimum =
         500;
 
 
       if (
         elapsed <
-        minimumThinkingTime
+        minimum
       ) {
 
         await new Promise(
           resolve =>
             setTimeout(
               resolve,
-              minimumThinkingTime -
-              elapsed
+              minimum -
+                elapsed
             )
         );
       }
@@ -2000,30 +2339,8 @@
       addMessageToUI(
         'assistant',
         result.reply ||
-        'Je n’ai pas reçu de réponse.'
+          'Je n’ai pas reçu de réponse.'
       );
-
-
-      if (
-        result.conversationId
-      ) {
-
-        state.currentConversationId =
-          result.conversationId;
-      }
-
-
-      if (
-        result.ecoMaxLitres !==
-        undefined
-      ) {
-
-        state.ecoMaxLitres =
-          Number(
-            result.ecoMaxLitres
-          ) ||
-          state.ecoMaxLitres;
-      }
 
 
       if (
@@ -2031,30 +2348,19 @@
         undefined
       ) {
 
-        const litres =
+        updateEcoGuacate(
           Number(
             result.consumptionLitres
-          );
-
-
-        if (
-          Number.isFinite(
-            litres
           )
-        ) {
-
-          updateEcoGuacate(
-            litres
-          );
-        }
+        );
       }
 
 
       await loadConversations();
 
-    }
-
-    catch (error) {
+    } catch (
+      error
+    ) {
 
       console.error(
         '[chat]',
@@ -2066,50 +2372,24 @@
 
 
       if (
-        error.status === 403 &&
-        (
-          error.data?.error ===
-            'moderation-warning' ||
-          error.data?.error ===
-            'auto-banned'
-        )
+        error.status ===
+          400 &&
+        error.data?.error ===
+          'warning'
       ) {
 
-        const warnings =
-          error.data?.warnings;
+        showToast(
+          error.data.message ||
+          '⚠️ Avertissement.'
+        );
 
-
-        if (
-          error.data?.bannedUntil
-        ) {
-
-          const until =
-            new Date(
-              error.data.bannedUntil
-            ).toLocaleString(
-              'fr-FR'
-            );
-
-
-          showToast(
-            `🚫 Compte suspendu jusqu'au ${until}`
-          );
-
-        } else {
-
-          showToast(
-            `⚠️ Avertissement ajouté${
-              warnings
-                ? ` (${warnings}/3)`
-                : ''
-            }.`
-          );
-        }
-
+        return;
       }
 
-      else if (
-        error.status === 403 &&
+
+      if (
+        error.status ===
+          403 &&
         error.data?.error ===
           'banned'
       ) {
@@ -2128,33 +2408,17 @@
           `🚫 Compte suspendu jusqu'au ${until}`
         );
 
+        return;
       }
 
-      else if (
-        error.status === 502
-      ) {
 
-        showToast(
-          '🥑 Le serveur IA a rencontré un problème. Vérifie les variables IA dans Render.'
-        );
-
-
-        addMessageToUI(
-          'assistant',
-          '🥑 Désolé, je n’ai pas réussi à répondre. Le serveur IA a rencontré une erreur.'
-        );
-
-      }
-
-      else {
-
-        addMessageToUI(
-          'assistant',
+      addMessageToUI(
+        'assistant',
+        error.data?.message ||
           '🥑 Désolé, je n’ai pas réussi à répondre.'
-        );
-      }
-
+      );
     }
+
 
     finally {
 
@@ -2167,7 +2431,7 @@
 
 
   /* =========================================================
-     MODES PROFESSEUR / ADMIN
+     MODES
      ========================================================= */
 
   async function verifyMode(
@@ -2235,9 +2499,9 @@
 
       return true;
 
-    }
-
-    catch (error) {
+    } catch (
+      error
+    ) {
 
       console.error(
         '[mode]',
@@ -2265,7 +2529,9 @@
       $('file-input');
 
 
-    if (input) {
+    if (
+      input
+    ) {
 
       input.click();
     }
@@ -2276,7 +2542,9 @@
     file
   ) {
 
-    if (!file)
+    if (
+      !file
+    )
       return;
 
 
@@ -2288,7 +2556,9 @@
       $('file-preview');
 
 
-    if (!preview)
+    if (
+      !preview
+    )
       return;
 
 
@@ -2310,16 +2580,17 @@
         </b>
 
         <small>
-          ${
-            (
-              file.size /
-              1024
-            ).toFixed(1)
-          }
+
+          ${(
+            file.size /
+            1024
+          ).toFixed(1)}
           Ko
+
         </small>
 
       </div>
+
 
       <button
         id="file-analyse-btn"
@@ -2335,7 +2606,9 @@
       ?.addEventListener(
         'click',
         () =>
-          scanAndAsk(file)
+          scanAndAsk(
+            file
+          )
       );
   }
 
@@ -2344,23 +2617,25 @@
     file
   ) {
 
-    if (!file)
+    if (
+      !file
+    )
       return;
 
 
     const question =
       window.prompt(
+
         'Que veux-tu demander à Aguacate AI sur ce fichier ?',
+
         'Analyse ce fichier et résume les points importants.'
       );
 
 
     if (
       question === null
-    ) {
-
+    )
       return;
-    }
 
 
     const form =
@@ -2415,8 +2690,21 @@
       addMessageToUI(
         'assistant',
         result.reply ||
-        'Aucune réponse.'
+          'Aucune réponse.'
       );
+
+
+      if (
+        result.consumptionLitres !==
+        undefined
+      ) {
+
+        updateEcoGuacate(
+          Number(
+            result.consumptionLitres
+          )
+        );
+      }
 
 
       await loadConversations();
@@ -2426,7 +2714,9 @@
         $('file-preview');
 
 
-      if (preview) {
+      if (
+        preview
+      ) {
 
         preview.classList.add(
           'hidden'
@@ -2445,9 +2735,9 @@
         '✅ Fichier analysé.'
       );
 
-    }
-
-    catch (error) {
+    } catch (
+      error
+    ) {
 
       hideThinking();
 
@@ -2459,7 +2749,8 @@
 
 
       if (
-        error.status === 403 &&
+        error.status ===
+          403 &&
         error.data?.error ===
           'banned'
       ) {
@@ -2468,17 +2759,10 @@
           '🚫 Ton compte est temporairement suspendu.'
         );
 
-      } else if (
-        error.status === 502
-      ) {
-
-        showToast(
-          '🥑 L’analyse IA a échoué. Vérifie la configuration IA dans Render.'
-        );
-
       } else {
 
         showToast(
+          error.data?.message ||
           '❌ Impossible d’analyser ce fichier.'
         );
       }
@@ -2495,7 +2779,8 @@
   ) {
 
     const isLight =
-      theme === 'light';
+      theme ===
+      'light';
 
 
     document.body.classList.toggle(
@@ -2521,14 +2806,14 @@
 
   function toggleTheme() {
 
-    const isCurrentlyLight =
+    const isLight =
       document.body.classList.contains(
         'light'
       );
 
 
     applyTheme(
-      isCurrentlyLight
+      isLight
         ? 'dark'
         : 'light'
     );
@@ -2537,26 +2822,17 @@
 
   function loadSavedTheme() {
 
-    const savedTheme =
+    const saved =
       localStorage.getItem(
         'aguacate_theme'
       );
 
 
-    if (
-      savedTheme === 'light'
-    ) {
-
-      applyTheme(
-        'light'
-      );
-
-    } else {
-
-      applyTheme(
-        'dark'
-      );
-    }
+    applyTheme(
+      saved === 'light'
+        ? 'light'
+        : 'dark'
+    );
   }
 
 
@@ -2569,9 +2845,7 @@
     installChatStyles();
 
 
-    /* -------------------------------------------------------
-       ENVOI
-       ------------------------------------------------------- */
+    /* ENVOI */
 
     $('send-btn')
       ?.addEventListener(
@@ -2585,9 +2859,7 @@
       );
 
 
-    /* -------------------------------------------------------
-       ENTRÉE
-       ------------------------------------------------------- */
+    /* ENTRÉE */
 
     $('prompt')
       ?.addEventListener(
@@ -2611,9 +2883,7 @@
       );
 
 
-    /* -------------------------------------------------------
-       SUGGESTIONS
-       ------------------------------------------------------- */
+    /* SUGGESTIONS */
 
     document
       .querySelectorAll(
@@ -2630,7 +2900,9 @@
                 $('prompt');
 
 
-              if (prompt) {
+              if (
+                prompt
+              ) {
 
                 prompt.value =
                   button.dataset.prompt;
@@ -2643,9 +2915,7 @@
       );
 
 
-    /* -------------------------------------------------------
-       NOUVELLE CONVERSATION
-       ------------------------------------------------------- */
+    /* NOUVELLE CONVERSATION */
 
     $('new-chat-btn')
       ?.addEventListener(
@@ -2654,9 +2924,7 @@
       );
 
 
-    /* -------------------------------------------------------
-       RENOMMER
-       ------------------------------------------------------- */
+    /* RENOMMER */
 
     $('rename-btn')
       ?.addEventListener(
@@ -2665,9 +2933,7 @@
       );
 
 
-    /* -------------------------------------------------------
-       FICHIERS
-       ------------------------------------------------------- */
+    /* FICHIERS */
 
     $('attach-btn')
       ?.addEventListener(
@@ -2695,9 +2961,7 @@
       );
 
 
-    /* -------------------------------------------------------
-       THÈME
-       ------------------------------------------------------- */
+    /* THÈME */
 
     $('theme-btn')
       ?.addEventListener(
@@ -2706,9 +2970,7 @@
       );
 
 
-    /* -------------------------------------------------------
-       MODES
-       ------------------------------------------------------- */
+    /* MODES */
 
     $('mode')
       ?.addEventListener(
@@ -2732,15 +2994,21 @@
               );
 
 
-            if (!success) {
+            if (
+              !success
+            ) {
 
               event.target.value =
                 state.role ===
                   'admin'
+
                   ? 'Admin'
+
                   : state.role ===
                       'professeur'
+
                     ? 'Professeur'
+
                     : 'Kids';
             }
           }
@@ -2761,7 +3029,9 @@
 
       setupEvents();
 
-      updateEcoGuacate(0);
+      updateEcoGuacate(
+        0
+      );
 
       await login();
     }
@@ -2795,5 +3065,8 @@
 
   window.hideThinking =
     hideThinking;
+
+  window.toggleTheme =
+    toggleTheme;
 
 })();
